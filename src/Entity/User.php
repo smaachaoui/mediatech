@@ -102,6 +102,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Notification::class)]
     private DoctrineCollection $notifications;
 
+    #[ORM\ManyToMany(targetEntity: Genre::class, inversedBy: 'usersWhoFavorited')]
+    #[ORM\JoinTable(name: 'user_favorite_genre')]
+    private DoctrineCollection $favoriteGenres;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -116,6 +120,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->reportsMade = new ArrayCollection();
         $this->reportsReceived = new ArrayCollection();
         $this->notifications = new ArrayCollection();
+        $this->favoriteGenres = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -551,6 +556,30 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $notification->setUser(null);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * @return DoctrineCollection<int, Genre>
+     */
+    public function getFavoriteGenres(): DoctrineCollection
+    {
+        return $this->favoriteGenres;
+    }
+
+    public function addFavoriteGenre(Genre $favoriteGenre): static
+    {
+        if (!$this->favoriteGenres->contains($favoriteGenre)) {
+            $this->favoriteGenres->add($favoriteGenre);
+        }
+
+        return $this;
+    }
+
+    public function removeFavoriteGenre(Genre $favoriteGenre): static
+    {
+        $this->favoriteGenres->removeElement($favoriteGenre);
 
         return $this;
     }
