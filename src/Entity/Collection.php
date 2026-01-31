@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\CollectionRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection as DoctrineCollection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -39,11 +41,18 @@ class Collection
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
+    #[ORM\OneToMany(mappedBy: 'collection', targetEntity: CollectionBook::class, orphanRemoval: true, cascade: ['persist', 'remove'])]
+    private DoctrineCollection $collectionBooks;
+
+    #[ORM\OneToMany(mappedBy: 'collection', targetEntity: CollectionMovie::class, orphanRemoval: true, cascade: ['persist', 'remove'])]
+    private DoctrineCollection $collectionMovies;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
+        $this->collectionBooks = new ArrayCollection();
+        $this->collectionMovies = new ArrayCollection();
     }
-
 
     public function getId(): ?int
     {
@@ -74,7 +83,7 @@ class Collection
         return $this;
     }
 
-    public function getType(): ?string
+    public function getType(): string
     {
         return $this->type;
     }
@@ -139,9 +148,63 @@ class Collection
         return $this->user;
     }
 
-    public function setUser(?User $user): static
+    public function setUser(User $user): static
     {
         $this->user = $user;
+
+        return $this;
+    }
+
+    /**
+     * @return DoctrineCollection<int, CollectionBook>
+     */
+    public function getCollectionBooks(): DoctrineCollection
+    {
+        return $this->collectionBooks;
+    }
+
+    public function addCollectionBook(CollectionBook $collectionBook): static
+    {
+        if (!$this->collectionBooks->contains($collectionBook)) {
+            $this->collectionBooks->add($collectionBook);
+            $collectionBook->setCollection($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCollectionBook(CollectionBook $collectionBook): static
+    {
+        if ($this->collectionBooks->removeElement($collectionBook)) {
+            // Je ne mets pas collection à null, je laisse Doctrine supprimer la ligne pivot.
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return DoctrineCollection<int, CollectionMovie>
+     */
+    public function getCollectionMovies(): DoctrineCollection
+    {
+        return $this->collectionMovies;
+    }
+
+    public function addCollectionMovie(CollectionMovie $collectionMovie): static
+    {
+        if (!$this->collectionMovies->contains($collectionMovie)) {
+            $this->collectionMovies->add($collectionMovie);
+            $collectionMovie->setCollection($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCollectionMovie(CollectionMovie $collectionMovie): static
+    {
+        if ($this->collectionMovies->removeElement($collectionMovie)) {
+            // Je ne mets pas collection à null, je laisse Doctrine supprimer la ligne pivot.
+        }
 
         return $this;
     }

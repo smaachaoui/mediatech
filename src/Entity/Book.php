@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\BookRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection as DoctrineCollection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -62,9 +64,14 @@ class Book
     #[ORM\Column]
     private \DateTimeImmutable $createdAt;
 
+    #[ORM\OneToMany(mappedBy: 'book', targetEntity: CollectionBook::class, orphanRemoval: true, cascade: ['persist', 'remove'])]
+    private DoctrineCollection $collectionBooks;
+
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
+        $this->collectionBooks = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -218,4 +225,32 @@ class Book
 
         return $this;
     }
+
+    /**
+     * @return DoctrineCollection<int, CollectionBook>
+     */
+    public function getCollectionBooks(): DoctrineCollection
+    {
+        return $this->collectionBooks;
+    }
+
+    public function addCollectionBook(CollectionBook $collectionBook): static
+    {
+        if (!$this->collectionBooks->contains($collectionBook)) {
+            $this->collectionBooks->add($collectionBook);
+            $collectionBook->setBook($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCollectionBook(CollectionBook $collectionBook): static
+    {
+        if ($this->collectionBooks->removeElement($collectionBook)) {
+            // Je ne mets pas book à null, je laisse Doctrine supprimer la ligne pivot.
+        }
+
+        return $this;
+    }
+
 }

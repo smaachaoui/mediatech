@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\MovieRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection as DoctrineCollection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -44,9 +46,13 @@ class Movie
     #[ORM\Column]
     private \DateTimeImmutable $createdAt;
 
+    #[ORM\OneToMany(mappedBy: 'movie', targetEntity: CollectionMovie::class, orphanRemoval: true, cascade: ['persist', 'remove'])]
+    private DoctrineCollection $collectionMovies;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
+        $this->collectionMovies = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -149,6 +155,33 @@ class Movie
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    /**
+     * @return DoctrineCollection<int, CollectionMovie>
+     */
+    public function getCollectionMovies(): DoctrineCollection
+    {
+        return $this->collectionMovies;
+    }
+
+    public function addCollectionMovie(CollectionMovie $collectionMovie): static
+    {
+        if (!$this->collectionMovies->contains($collectionMovie)) {
+            $this->collectionMovies->add($collectionMovie);
+            $collectionMovie->setMovie($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCollectionMovie(CollectionMovie $collectionMovie): static
+    {
+        if ($this->collectionMovies->removeElement($collectionMovie)) {
+            // Je ne mets pas movie à null, je laisse Doctrine supprimer la ligne pivot.
+        }
 
         return $this;
     }
