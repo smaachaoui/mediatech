@@ -93,6 +93,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'blocked', targetEntity: BlockedUser::class)]
     private DoctrineCollection $blockedByUsers;
 
+    #[ORM\OneToMany(mappedBy: 'reporter', targetEntity: Report::class)]
+    private DoctrineCollection $reportsMade;
+
+    #[ORM\OneToMany(mappedBy: 'reportedUser', targetEntity: Report::class)]
+    private DoctrineCollection $reportsReceived;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -104,6 +110,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->friendshipsReceived = new ArrayCollection();
         $this->blockedUsers = new ArrayCollection();
         $this->blockedByUsers = new ArrayCollection();
+        $this->reportsMade = new ArrayCollection();
+        $this->reportsReceived = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -447,6 +455,66 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($blockedByUser->getBlocked() === $this) {
                 $blockedByUser->setBlocked(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return DoctrineCollection<int, Report>
+     */
+    public function getReportsMade(): DoctrineCollection
+    {
+        return $this->reportsMade;
+    }
+
+    public function addReportsMade(Report $reportsMade): static
+    {
+        if (!$this->reportsMade->contains($reportsMade)) {
+            $this->reportsMade->add($reportsMade);
+            $reportsMade->setReporter($this);
+        }
+
+        return $this;
+    }
+
+    public function removeReportsMade(Report $reportsMade): static
+    {
+        if ($this->reportsMade->removeElement($reportsMade)) {
+            // set the owning side to null (unless already changed)
+            if ($reportsMade->getReporter() === $this) {
+                $reportsMade->setReporter(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return DoctrineCollection<int, Report>
+     */
+    public function getReportsReceived(): DoctrineCollection
+    {
+        return $this->reportsReceived;
+    }
+
+    public function addReportsReceived(Report $reportsReceived): static
+    {
+        if (!$this->reportsReceived->contains($reportsReceived)) {
+            $this->reportsReceived->add($reportsReceived);
+            $reportsReceived->setReportedUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeReportsReceived(Report $reportsReceived): static
+    {
+        if ($this->reportsReceived->removeElement($reportsReceived)) {
+            // set the owning side to null (unless already changed)
+            if ($reportsReceived->getReportedUser() === $this) {
+                $reportsReceived->setReportedUser(null);
             }
         }
 
