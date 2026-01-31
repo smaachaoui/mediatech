@@ -47,11 +47,19 @@ class Collection
     #[ORM\OneToMany(mappedBy: 'collection', targetEntity: CollectionMovie::class, orphanRemoval: true, cascade: ['persist', 'remove'])]
     private DoctrineCollection $collectionMovies;
 
+    #[ORM\OneToMany(mappedBy: 'collection', targetEntity: Rating::class, orphanRemoval: true, cascade: ['persist', 'remove'])]
+    private DoctrineCollection $ratings;
+
+    #[ORM\OneToMany(mappedBy: 'collection', targetEntity: Comment::class, orphanRemoval: true, cascade: ['persist', 'remove'])]
+    private DoctrineCollection $comments;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->collectionBooks = new ArrayCollection();
         $this->collectionMovies = new ArrayCollection();
+        $this->ratings = new ArrayCollection();
+        $this->comments = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -175,9 +183,7 @@ class Collection
 
     public function removeCollectionBook(CollectionBook $collectionBook): static
     {
-        if ($this->collectionBooks->removeElement($collectionBook)) {
-            // Je ne mets pas collection à null, je laisse Doctrine supprimer la ligne pivot.
-        }
+        $this->collectionBooks->removeElement($collectionBook);
 
         return $this;
     }
@@ -202,9 +208,57 @@ class Collection
 
     public function removeCollectionMovie(CollectionMovie $collectionMovie): static
     {
-        if ($this->collectionMovies->removeElement($collectionMovie)) {
-            // Je ne mets pas collection à null, je laisse Doctrine supprimer la ligne pivot.
+        $this->collectionMovies->removeElement($collectionMovie);
+
+        return $this;
+    }
+
+    /**
+     * @return DoctrineCollection<int, Rating>
+     */
+    public function getRatings(): DoctrineCollection
+    {
+        return $this->ratings;
+    }
+
+    public function addRating(Rating $rating): static
+    {
+        if (!$this->ratings->contains($rating)) {
+            $this->ratings->add($rating);
+            $rating->setCollection($this);
         }
+
+        return $this;
+    }
+
+    public function removeRating(Rating $rating): static
+    {
+        $this->ratings->removeElement($rating);
+
+        return $this;
+    }
+
+    /**
+     * @return DoctrineCollection<int, Comment>
+     */
+    public function getComments(): DoctrineCollection
+    {
+        return $this->comments;
+    }
+
+    public function addComment(Comment $comment): static
+    {
+        if (!$this->comments->contains($comment)) {
+            $this->comments->add($comment);
+            $comment->setCollection($this);
+        }
+
+        return $this;
+    }
+
+    public function removeComment(Comment $comment): static
+    {
+        $this->comments->removeElement($comment);
 
         return $this;
     }

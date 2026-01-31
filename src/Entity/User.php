@@ -72,11 +72,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Collection::class)]
     private DoctrineCollection $collections;
 
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Rating::class)]
+    private DoctrineCollection $ratings;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Comment::class)]
+    private DoctrineCollection $comments;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
-        $this->isActive = true;
         $this->collections = new ArrayCollection();
+        $this->ratings = new ArrayCollection();
+        $this->comments = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -202,9 +209,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
-     * @return Collection<int, Collection>
+     * @return DoctrineCollection<int, Collection>
      */
-    public function getCollections(): Collection
+    public function getCollections(): DoctrineCollection
     {
         return $this->collections;
     }
@@ -221,12 +228,57 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function removeCollection(Collection $collection): static
     {
-        if ($this->collections->removeElement($collection)) {
-            // set the owning side to null (unless already changed)
-            if ($collection->getUser() === $this) {
-                $collection->setUser(null);
-            }
+        $this->collections->removeElement($collection);
+
+        return $this;
+    }
+
+    /**
+     * @return DoctrineCollection<int, Rating>
+     */
+    public function getRatings(): DoctrineCollection
+    {
+        return $this->ratings;
+    }
+
+    public function addRating(Rating $rating): static
+    {
+        if (!$this->ratings->contains($rating)) {
+            $this->ratings->add($rating);
+            $rating->setUser($this);
         }
+
+        return $this;
+    }
+
+    public function removeRating(Rating $rating): static
+    {
+        $this->ratings->removeElement($rating);
+
+        return $this;
+    }
+
+    /**
+     * @return DoctrineCollection<int, Comment>
+     */
+    public function getComments(): DoctrineCollection
+    {
+        return $this->comments;
+    }
+
+    public function addComment(Comment $comment): static
+    {
+        if (!$this->comments->contains($comment)) {
+            $this->comments->add($comment);
+            $comment->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeComment(Comment $comment): static
+    {
+        $this->comments->removeElement($comment);
 
         return $this;
     }
