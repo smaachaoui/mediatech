@@ -87,6 +87,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'addressee', targetEntity: Friendship::class)]
     private DoctrineCollection $friendshipsReceived;
 
+    #[ORM\OneToMany(mappedBy: 'blocker', targetEntity: BlockedUser::class)]
+    private DoctrineCollection $blockedUsers;
+
+    #[ORM\OneToMany(mappedBy: 'blocked', targetEntity: BlockedUser::class)]
+    private DoctrineCollection $blockedByUsers;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -96,6 +102,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->wishlists = new ArrayCollection();
         $this->friendshipsRequested = new ArrayCollection();
         $this->friendshipsReceived = new ArrayCollection();
+        $this->blockedUsers = new ArrayCollection();
+        $this->blockedByUsers = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -379,6 +387,66 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($friendshipsReceived->getAddressee() === $this) {
                 $friendshipsReceived->setAddressee(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return DoctrineCollection<int, BlockedUser>
+     */
+    public function getBlockedUsers(): DoctrineCollection
+    {
+        return $this->blockedUsers;
+    }
+
+    public function addBlockedUser(BlockedUser $blockedUser): static
+    {
+        if (!$this->blockedUsers->contains($blockedUser)) {
+            $this->blockedUsers->add($blockedUser);
+            $blockedUser->setBlocker($this);
+        }
+
+        return $this;
+    }
+
+    public function removeBlockedUser(BlockedUser $blockedUser): static
+    {
+        if ($this->blockedUsers->removeElement($blockedUser)) {
+            // set the owning side to null (unless already changed)
+            if ($blockedUser->getBlocker() === $this) {
+                $blockedUser->setBlocker(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return DoctrineCollection<int, BlockedUser>
+     */
+    public function getBlockedByUsers(): DoctrineCollection
+    {
+        return $this->blockedByUsers;
+    }
+
+    public function addBlockedByUser(BlockedUser $blockedByUser): static
+    {
+        if (!$this->blockedByUsers->contains($blockedByUser)) {
+            $this->blockedByUsers->add($blockedByUser);
+            $blockedByUser->setBlocked($this);
+        }
+
+        return $this;
+    }
+
+    public function removeBlockedByUser(BlockedUser $blockedByUser): static
+    {
+        if ($this->blockedByUsers->removeElement($blockedByUser)) {
+            // set the owning side to null (unless already changed)
+            if ($blockedByUser->getBlocked() === $this) {
+                $blockedByUser->setBlocked(null);
             }
         }
 
