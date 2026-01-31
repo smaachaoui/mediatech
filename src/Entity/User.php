@@ -81,6 +81,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Wishlist::class)]
     private DoctrineCollection $wishlists;
 
+    #[ORM\OneToMany(mappedBy: 'requester', targetEntity: Friendship::class)]
+    private DoctrineCollection $friendshipsRequested;
+
+    #[ORM\OneToMany(mappedBy: 'addressee', targetEntity: Friendship::class)]
+    private DoctrineCollection $friendshipsReceived;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -88,6 +94,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->ratings = new ArrayCollection();
         $this->comments = new ArrayCollection();
         $this->wishlists = new ArrayCollection();
+        $this->friendshipsRequested = new ArrayCollection();
+        $this->friendshipsReceived = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -311,6 +319,66 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($wishlist->getUser() === $this) {
                 $wishlist->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return DoctrineCollection<int, Friendship>
+     */
+    public function getFriendshipsRequested(): DoctrineCollection
+    {
+        return $this->friendshipsRequested;
+    }
+
+    public function addFriendshipsRequested(Friendship $friendshipsRequested): static
+    {
+        if (!$this->friendshipsRequested->contains($friendshipsRequested)) {
+            $this->friendshipsRequested->add($friendshipsRequested);
+            $friendshipsRequested->setRequester($this);
+        }
+
+        return $this;
+    }
+
+    public function removeFriendshipsRequested(Friendship $friendshipsRequested): static
+    {
+        if ($this->friendshipsRequested->removeElement($friendshipsRequested)) {
+            // set the owning side to null (unless already changed)
+            if ($friendshipsRequested->getRequester() === $this) {
+                $friendshipsRequested->setRequester(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return DoctrineCollection<int, Friendship>
+     */
+    public function getFriendshipsReceived(): DoctrineCollection
+    {
+        return $this->friendshipsReceived;
+    }
+
+    public function addFriendshipsReceived(Friendship $friendshipsReceived): static
+    {
+        if (!$this->friendshipsReceived->contains($friendshipsReceived)) {
+            $this->friendshipsReceived->add($friendshipsReceived);
+            $friendshipsReceived->setAddressee($this);
+        }
+
+        return $this;
+    }
+
+    public function removeFriendshipsReceived(Friendship $friendshipsReceived): static
+    {
+        if ($this->friendshipsReceived->removeElement($friendshipsReceived)) {
+            // set the owning side to null (unless already changed)
+            if ($friendshipsReceived->getAddressee() === $this) {
+                $friendshipsReceived->setAddressee(null);
             }
         }
 
