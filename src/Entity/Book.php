@@ -67,11 +67,15 @@ class Book
     #[ORM\OneToMany(mappedBy: 'book', targetEntity: CollectionBook::class, orphanRemoval: true, cascade: ['persist', 'remove'])]
     private DoctrineCollection $collectionBooks;
 
+    #[ORM\OneToMany(mappedBy: 'book', targetEntity: Wishlist::class)]
+    private DoctrineCollection $wishlists;
+
 
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->collectionBooks = new ArrayCollection();
+        $this->wishlists = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -248,6 +252,36 @@ class Book
     {
         if ($this->collectionBooks->removeElement($collectionBook)) {
             // Je ne mets pas book à null, je laisse Doctrine supprimer la ligne pivot.
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return DoctrineCollection<int, Wishlist>
+     */
+    public function getWishlists(): DoctrineCollection
+    {
+        return $this->wishlists;
+    }
+
+    public function addWishlist(Wishlist $wishlist): static
+    {
+        if (!$this->wishlists->contains($wishlist)) {
+            $this->wishlists->add($wishlist);
+            $wishlist->setBook($this);
+        }
+
+        return $this;
+    }
+
+    public function removeWishlist(Wishlist $wishlist): static
+    {
+        if ($this->wishlists->removeElement($wishlist)) {
+            // set the owning side to null (unless already changed)
+            if ($wishlist->getBook() === $this) {
+                $wishlist->setBook(null);
+            }
         }
 
         return $this;

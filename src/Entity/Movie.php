@@ -49,10 +49,14 @@ class Movie
     #[ORM\OneToMany(mappedBy: 'movie', targetEntity: CollectionMovie::class, orphanRemoval: true, cascade: ['persist', 'remove'])]
     private DoctrineCollection $collectionMovies;
 
+    #[ORM\OneToMany(mappedBy: 'movie', targetEntity: Wishlist::class)]
+    private DoctrineCollection $wishlists;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->collectionMovies = new ArrayCollection();
+        $this->wishlists = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -181,6 +185,36 @@ class Movie
     {
         if ($this->collectionMovies->removeElement($collectionMovie)) {
             // Je ne mets pas movie à null, je laisse Doctrine supprimer la ligne pivot.
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return DoctrineCollection<int, Wishlist>
+     */
+    public function getWishlists(): DoctrineCollection
+    {
+        return $this->wishlists;
+    }
+
+    public function addWishlist(Wishlist $wishlist): static
+    {
+        if (!$this->wishlists->contains($wishlist)) {
+            $this->wishlists->add($wishlist);
+            $wishlist->setMovie($this);
+        }
+
+        return $this;
+    }
+
+    public function removeWishlist(Wishlist $wishlist): static
+    {
+        if ($this->wishlists->removeElement($wishlist)) {
+            // set the owning side to null (unless already changed)
+            if ($wishlist->getMovie() === $this) {
+                $wishlist->setMovie(null);
+            }
         }
 
         return $this;
