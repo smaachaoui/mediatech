@@ -2,8 +2,8 @@
 
 namespace App\Controller;
 
-use App\Repository\BookRepository;
-use App\Repository\MovieRepository;
+use App\Service\GoogleBooksService;
+use App\Service\TmdbService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -11,50 +11,46 @@ use Symfony\Component\Routing\Annotation\Route;
 
 final class CatalogController extends AbstractController
 {
-    #[Route('/catalog', name: 'app_catalog', methods: ['GET'])]
+    #[Route('/catalog', name: 'app_catalog')]
     public function index(
         Request $request,
-        BookRepository $bookRepository,
-        MovieRepository $movieRepository
+        GoogleBooksService $googleBooks,
+        TmdbService $tmdb,
     ): Response {
-        $type = $request->query->get('type', 'all'); // all|book|movie
         $q = trim((string) $request->query->get('q', ''));
-        $sort = $request->query->get('sort', 'recent'); // recent|title
-        $page = max(1, (int) $request->query->get('page', 1));
-        $perPage = 12;
+        $type = (string) $request->query->get('type', 'all'); // all|books|movies
 
-        // MVP: on fait 2 listes distinctes (simple et robuste)
-        // Ensuite on pourra unifier et paginer globalement si tu veux.
-        $latestBooks = [];
-        $latestMovies = [];
-
-        // TODO V2: filtrage par $q/$sort côté QueryBuilder (prochaine étape)
-        if ($type === 'all' || $type === 'book') {
-            $latestBooks = $bookRepository->findBy(
-                [],
-                $sort === 'title' ? ['title' => 'ASC'] : ['createdAt' => 'DESC'],
-                $perPage,
-                ($page - 1) * $perPage
-            );
+        if (!in_array($type, ['all', 'books', 'movies'], true)) {
+            $type = 'all';
         }
 
-        if ($type === 'all' || $type === 'movie') {
-            $latestMovies = $movieRepository->findBy(
-                [],
-                $sort === 'title' ? ['title' => 'ASC'] : ['createdAt' => 'DESC'],
-                $perPage,
-                ($page - 1) * $perPage
-            );
+        $results = [
+            'books' => [],
+            'movies' => [],
+        ];
+
+        if ($q !== '') {
+            if ($type === 'all' || $type === 'books') {
+                try {
+                    $results['books'] = $googleBooks->search($q);
+                } catch (\Throwable) {
+                    $this->addFlash('danger', 'Impossible de contacter Google Books pour le moment.');
+                }
+            }
+
+            if ($type === 'all' || $type === 'movies') {
+                try {
+                    $results['movies'] = $tmdb->search($q);
+                } catch (\Throwable) {
+                    $this->addFlash('danger', 'Impossible de contacter TMDB pour le moment.');
+                }
+            }
         }
 
         return $this->render('catalog/index.html.twig', [
-            'type' => $type,
             'q' => $q,
-            'sort' => $sort,
-            'page' => $page,
-            'perPage' => $perPage,
-            'books' => $latestBooks,
-            'movies' => $latestMovies,
+            'type' => $type,
+            'results' => $results,
         ]);
     }
 }

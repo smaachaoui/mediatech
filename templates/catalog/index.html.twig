@@ -30,9 +30,8 @@
         </div>
       </div>
 
-      {# on conserve les filtres #}
+      {# On conserve le filtre type depuis la recherche #}
       <input type="hidden" name="type" value="{{ type }}">
-      <input type="hidden" name="sort" value="{{ sort }}">
 
       <div class="col-12 col-md-auto">
         <button class="btn btn-primary w-100" type="submit">Rechercher</button>
@@ -57,21 +56,23 @@
             <div class="mb-3">
               <label class="form-label">Type</label>
               <select class="form-select" name="type">
-                <option value="all"  {{ type == 'all' ? 'selected' : '' }}>Tout</option>
-                <option value="book" {{ type == 'book' ? 'selected' : '' }}>Livres</option>
-                <option value="movie" {{ type == 'movie' ? 'selected' : '' }}>Films</option>
+                <option value="all"    {{ type == 'all' ? 'selected' : '' }}>Tout</option>
+                <option value="books"  {{ type == 'books' ? 'selected' : '' }}>Livres</option>
+                <option value="movies" {{ type == 'movies' ? 'selected' : '' }}>Films</option>
               </select>
             </div>
 
+            {# TRI: UI-only pour l’instant (pas câblé côté API) #}
             <div class="mb-3">
               <label class="form-label">Tri</label>
-              <select class="form-select" name="sort">
-                <option value="recent" {{ sort == 'recent' ? 'selected' : '' }}>Les plus récents</option>
-                <option value="title"  {{ sort == 'title' ? 'selected' : '' }}>Titre A → Z</option>
+              <select class="form-select" name="sort" disabled>
+                <option value="recent" selected>Les plus récents</option>
+                <option value="title">Titre A → Z</option>
               </select>
+              <div class="form-text">Le tri sera activé dans une étape suivante.</div>
             </div>
 
-            {# on conserve la recherche si présente #}
+            {# On conserve la recherche si présente #}
             {% if q %}
               <input type="hidden" name="q" value="{{ q }}">
             {% endif %}
@@ -87,57 +88,68 @@
       {# ZONE résultats #}
       <div class="col-12 col-lg-9">
 
+        {# Normalisation : on dérive books/movies depuis results #}
+        {% set books = results.books ?? [] %}
+        {% set movies = results.movies ?? [] %}
         {% set hasAny = (books|length) + (movies|length) > 0 %}
 
-        {% if not hasAny %}
+        {# Si aucune recherche saisie, on affiche un état neutre #}
+        {% if not q %}
           {% include 'components/_state_empty.html.twig' with {
-            title: 'Aucun résultat',
-            message: 'Essayez de modifier vos filtres ou votre recherche.'
+            title: 'Recherchez un média',
+            message: 'Saisissez un titre (livre ou film) puis lancez la recherche.'
           } %}
         {% else %}
 
-          {# Si "all", on affiche deux blocs (MVP). Si "book" ou "movie", un seul bloc. #}
-
-          {% if type in ['all','book'] %}
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <h3 class="h6 mb-0">Livres</h3>
-            </div>
-
-            <div class="row g-3 mb-4">
-              {% for book in books %}
-                <div class="col-6 col-md-4 col-lg-3">
-                  {% include 'components/_structure_media.html.twig' with { item: book, kind: 'book' } %}
-                </div>
-              {% endfor %}
-            </div>
-          {% endif %}
-
-          {% if type in ['all','movie'] %}
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <h3 class="h6 mb-0">Films</h3>
-            </div>
-
-            <div class="row g-3">
-              {% for movie in movies %}
-                <div class="col-6 col-md-4 col-lg-3">
-                  {% include 'components/_structure_media.html.twig' with { item: movie, kind: 'movie' } %}
-                </div>
-              {% endfor %}
-            </div>
-          {% endif %}
-
-          {# Pagination (MVP visuelle) #}
-          <div class="mt-4">
-            {% include 'components/_nav_pagination.html.twig' with {
-              page: page,
-              hasPrev: page > 1,
-              hasNext: (books|length == perPage) or (movies|length == perPage),
-              route: 'app_catalog',
-              params: { type: type, sort: sort, q: q }
+          {# Si recherche mais aucun résultat #}
+          {% if not hasAny %}
+            {% include 'components/_state_empty.html.twig' with {
+              title: 'Aucun résultat',
+              message: 'Essayez de modifier vos filtres ou votre recherche.'
             } %}
-          </div>
+          {% else %}
 
+            {# Si "all", deux blocs. Si "books" ou "movies", un seul bloc. #}
+
+            {% if type in ['all','books'] %}
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h3 class="h6 mb-0">Livres</h3>
+              </div>
+
+              {% if books is empty %}
+                <div class="text-muted small mb-4">Aucun livre trouvé.</div>
+              {% else %}
+                <div class="row g-3 mb-4">
+                  {% for book in books %}
+                    <div class="col-6 col-md-4 col-lg-3">
+                      {% include 'components/_structure_media.html.twig' with { item: book, kind: 'book' } only %}
+                    </div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            {% endif %}
+
+            {% if type in ['all','movies'] %}
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h3 class="h6 mb-0">Films</h3>
+              </div>
+
+              {% if movies is empty %}
+                <div class="text-muted small">Aucun film trouvé.</div>
+              {% else %}
+                <div class="row g-3">
+                  {% for movie in movies %}
+                    <div class="col-6 col-md-4 col-lg-3">
+                      {% include 'components/_structure_media.html.twig' with { item: movie, kind: 'movie' } only %}
+                    </div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            {% endif %}
+
+          {% endif %}
         {% endif %}
+
       </div>
 
     </div>
