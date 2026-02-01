@@ -1,0 +1,71 @@
+{# templates/components/_structure_media.html.twig #}
+{# Reçoit :
+   - kind: 'book' | 'movie'
+   - item: array (format normalisé par GoogleBooksService / TmdbService)
+#}
+
+{% set isBook = (kind == 'book') %}
+
+{# ---------- Champs normalisés ---------- #}
+{% if isBook %}
+  {% set id = item.id %}
+  {% set title = item.title %}
+  {% set imageUrl = item.thumbnail %}
+  {% set authors = item.authors ?? [] %}
+  {% set authorLine = authors is not empty ? authors|join(', ') : 'Auteur : —' %}
+  {% set year = item.publishedDate ? item.publishedDate|slice(0, 4) : null %}
+  {% set metaLine = year ? (authorLine ~ ' • ' ~ year) : authorLine %}
+  {% set showPath = path('app_book_show', { id: id }) %}
+  {% set mediaLabel = 'Livre' %}
+{% else %}
+  {% set id = item.id %}
+  {% set title = item.title %}
+  {% set imageUrl = item.poster %}
+  {% set year = item.releaseDate ? item.releaseDate|slice(0, 4) : null %}
+  {% set metaLine = year ? ('Année : ' ~ year) : 'Année : —' %}
+  {% set showPath = path('app_movie_show', { id: id }) %}
+  {% set mediaLabel = 'Film' %}
+{% endif %}
+
+<div class="card h-100 border rounded-3 overflow-hidden">
+
+  {# Zone image cliquable #}
+  <a href="{{ showPath }}" class="text-decoration-none">
+    {% if imageUrl %}
+      <img src="{{ imageUrl }}" class="card-img-top" alt="{{ title }}">
+    {% else %}
+      <div class="d-flex align-items-center justify-content-center bg-light" style="height: 220px;">
+        <div class="text-center px-2">
+          <div class="fw-semibold text-muted">Aucune image</div>
+          <div class="small text-muted">({{ isBook ? 'couverture' : 'affiche' }})</div>
+        </div>
+      </div>
+    {% endif %}
+  </a>
+
+  <div class="card-body d-flex flex-column">
+
+    {# Titre cliquable #}
+    <a href="{{ showPath }}" class="text-decoration-none">
+      <div class="fw-semibold text-dark"
+           style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+        {{ title }}
+      </div>
+    </a>
+
+    {# Meta #}
+    <div class="small text-muted mt-1 mb-3"
+         style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+      {{ metaLine }}
+    </div>
+
+    {# Footer wireframe : label + CTA #}
+    <div class="mt-auto d-flex justify-content-between align-items-center">
+      <span class="badge text-bg-light border">{{ mediaLabel }}</span>
+      <a href="{{ showPath }}" class="btn btn-outline-primary btn-sm">
+        Voir la fiche
+      </a>
+    </div>
+
+  </div>
+</div>
