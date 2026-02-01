@@ -1,0 +1,55 @@
+:root {
+  --mt-primary: #0A3970;
+  --mt-secondary: #186ED3;
+  --mt-accent: #489DFF;
+  --mt-accent-light: #79B7FF;
+
+  --mt-star: #f5c518; /* jaune pour les étoiles (on s’en servira plus tard) */
+}
+
+/* HEADER */
+.mt-navbar {
+  background-color: var(--mt-primary);
+}
+
+.mt-navbar .navbar-brand,
+.mt-navbar .nav-link {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.mt-navbar .nav-link:hover,
+.mt-navbar .nav-link:focus {
+  color: #ffffff;
+}
+
+/* Burger (navbar-toggler) */
+.mt-navbar-toggler {
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.mt-navbar .navbar-toggler-icon {
+  filter: none; /* on laisse Bootstrap gérer l’icône en blanc via navbar-dark */
+}
+
+/* Ajustement bouton connexion sur mobile */
+@media (max-width: 991.98px) {
+  .mt-auth-btn {
+    margin-top: 0.5rem;
+  }
+}
+
+/* FOOTER */
+.mt-footer {
+  background-color: var(--mt-primary);
+}
+
+.mt-footer-link {
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+}
+
+.mt-footer-link:hover,
+.mt-footer-link:focus {
+  color: #ffffff;
+  text-decoration: underline;
+}
