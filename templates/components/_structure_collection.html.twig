@@ -1,0 +1,23 @@
+{% set url = kind == 'book'
+  ? path('app_book_show', {id: item.id})
+  : path('app_movie_show', {id: item.id})
+%}
+
+<a href="{{ url }}" class="text-decoration-none">
+  <div class="card h-100">
+    <div class="ratio ratio-2x3 bg-light">
+      {% if kind == 'book' and item.coverImage %}
+        <img src="{{ item.coverImage }}" class="card-img-top object-fit-cover" alt="">
+      {% elseif kind == 'movie' and item.poster %}
+        <img src="{{ item.poster }}" class="card-img-top object-fit-cover" alt="">
+      {% else %}
+        <div class="d-flex align-items-center justify-content-center text-muted small">
+          Image
+        </div>
+      {% endif %}
+    </div>
+    <div class="card-body p-2">
+      <div class="fw-semibold small text-truncate">{{ item.title }}</div>
+    </div>
+  </div>
+</a>
