@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ movie.title }} | MediaTech{% endblock %}
+
+{% block body %}
+<div class="bg-white border rounded-3 p-3">
+
+  <div class="row g-4">
+    <div class="col-12 col-md-4 col-lg-3">
+      {% if movie.poster %}
+        <img src="{{ movie.poster }}" class="img-fluid rounded-3 border" alt="{{ movie.title }}">
+      {% else %}
+        <div class="d-flex align-items-center justify-content-center bg-light border rounded-3" style="height: 320px;">
+          <span class="text-muted">Aucune affiche</span>
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="col-12 col-md-8 col-lg-9">
+      <h1 class="h4 mb-2">{{ movie.title }}</h1>
+
+      <div class="text-muted mb-3">
+        {% if movie.releaseDate %}{{ movie.releaseDate|slice(0,4) }}{% else %}Année : —{% endif %}
+      </div>
+
+      <div class="d-flex gap-2 mb-3">
+        <form method="post" action="{{ path('app_media_add_to_default', { kind: 'movie', id: movie.id }) }}">
+            <input type="hidden" name="_token" value="{{ csrf_token('add_media_movie_' ~ movie.id) }}">
+            <button class="btn btn-primary" type="submit">Ajouter à ma collection</button>
+        </form>
+
+        <a class="btn btn-outline-secondary" href="{{ path('app_catalog', { q: movie.title, type: 'movies' }) }}">Retour catalogue</a>
+      </div>
+
+      <h2 class="h6">Synopsis</h2>
+      <div class="text-muted">
+        {{ movie.overview ?? 'Aucun synopsis.' }}
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
