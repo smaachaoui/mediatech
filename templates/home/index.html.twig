@@ -1,20 +1,84 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello HomeController!{% endblock %}
+{% block title %}Accueil | MediaTech{% endblock %}
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
 
-<div class="example-wrapper">
-    <h1>Hello {{ 'HomeController' }}! ✅</h1>
+<div class="d-flex flex-column gap-3">
 
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code><a href="{{ '/home/seif/www/mediatech/src/Controller/HomeController.php'|file_link(0) }}">src/Controller/HomeController.php</a></code></li>
-        <li>Your template at <code><a href="{{ '/home/seif/www/mediatech/templates/home/index.html.twig'|file_link(0) }}">templates/home/index.html.twig</a></code></li>
-    </ul>
+  <section class="bg-white border rounded-3 p-3">
+    <div class="rounded-3 bg-light border d-flex align-items-center justify-content-center" style="height: 180px;">
+      <div class="text-center">
+        <div class="fw-semibold">Banner</div>
+        <div class="text-muted small">Zone de mise en avant</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-white border rounded-3 p-3">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h2 class="h6 mb-0">Derniers livres ajoutés</h2>
+      <a class="btn btn-sm btn-outline-secondary" href="{{ path('app_catalog', { type: 'books' }) }}">Catalogue</a>
+    </div>
+
+    {% if books is empty %}
+      {% include 'components/_state_empty.html.twig' with {
+        title: 'Aucun livre',
+        message: 'Impossible de charger le flux de livres pour le moment.'
+      } only %}
+    {% else %}
+      <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-outline-secondary btn-sm" type="button" onclick="homeScroll('home-books', -1)">&lsaquo;</button>
+
+        <div id="home-books" class="d-flex gap-3 overflow-auto flex-nowrap py-1" style="scroll-behavior:smooth;">
+          {% for book in books %}
+            <div style="min-width: 180px; max-width: 180px;">
+              {% include 'components/_structure_media.html.twig' with { item: book, kind: 'book' } only %}
+            </div>
+          {% endfor %}
+        </div>
+
+        <button class="btn btn-outline-secondary btn-sm" type="button" onclick="homeScroll('home-books', 1)">&rsaquo;</button>
+      </div>
+    {% endif %}
+  </section>
+
+  <section class="bg-white border rounded-3 p-3">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h2 class="h6 mb-0">Derniers films ajoutés</h2>
+      <a class="btn btn-sm btn-outline-secondary" href="{{ path('app_catalog', { type: 'movies' }) }}">Catalogue</a>
+    </div>
+
+    {% if movies is empty %}
+      {% include 'components/_state_empty.html.twig' with {
+        title: 'Aucun film',
+        message: 'Impossible de charger le flux de films pour le moment.'
+      } only %}
+    {% else %}
+      <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-outline-secondary btn-sm" type="button" onclick="homeScroll('home-movies', -1)">&lsaquo;</button>
+
+        <div id="home-movies" class="d-flex gap-3 overflow-auto flex-nowrap py-1" style="scroll-behavior:smooth;">
+          {% for movie in movies %}
+            <div style="min-width: 180px; max-width: 180px;">
+              {% include 'components/_structure_media.html.twig' with { item: movie, kind: 'movie' } only %}
+            </div>
+          {% endfor %}
+        </div>
+
+        <button class="btn btn-outline-secondary btn-sm" type="button" onclick="homeScroll('home-movies', 1)">&rsaquo;</button>
+      </div>
+    {% endif %}
+  </section>
+
 </div>
+
+<script>
+  function homeScroll(id, dir) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.scrollLeft += dir * 420;
+  }
+</script>
+
 {% endblock %}
