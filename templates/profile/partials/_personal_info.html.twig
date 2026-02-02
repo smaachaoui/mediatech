@@ -1,0 +1,92 @@
+{# =========================
+   PROFIL – INFORMATIONS PERSONNELLES
+   ========================= #}
+
+<div class="text-center mb-4">
+
+    {# Avatar #}
+    <div class="mb-3">
+        <div
+            class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center border"
+            style="width: 110px; height: 110px; font-size: 2.5rem;"
+        >
+            {{ user.pseudo|first|upper }}
+        </div>
+    </div>
+
+    {# Pseudo #}
+    <h2 class="h4 mb-1">{{ user.pseudo }}</h2>
+
+    <p class="text-muted mb-0">Profil utilisateur</p>
+</div>
+
+<hr class="my-4">
+
+{# Informations personnelles #}
+<div class="row g-3">
+
+    {# Email #}
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center border rounded-3 p-3">
+            <span class="text-muted">Email</span>
+            <span class="fw-semibold">{{ user.email }}</span>
+        </div>
+    </div>
+
+    {# Biographie #}
+    <div class="col-12">
+        <div class="border rounded-3 p-3">
+            <div class="text-muted mb-1">Biographie</div>
+
+            {% if user.biography %}
+                <div>{{ user.biography }}</div>
+            {% else %}
+                <div class="text-muted fst-italic">
+                    Aucune biographie renseignée.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {# Genres favoris #}
+    <div class="col-12">
+        <div class="border rounded-3 p-3">
+            <div class="text-muted mb-2">Genres favoris</div>
+
+            {% if user.favoriteGenres is defined and user.favoriteGenres|length > 0 %}
+                <div class="d-flex flex-wrap gap-2">
+                    {% for genre in user.favoriteGenres %}
+                        <span class="badge bg-secondary">{{ genre.name }}</span>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-muted fst-italic">
+                    Aucun genre favori sélectionné.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {# Date d'inscription #}
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center border rounded-3 p-3">
+            <span class="text-muted">Inscrit le</span>
+            <span class="fw-semibold">
+                {{ user.createdAt|date('d/m/Y') }}
+            </span>
+        </div>
+    </div>
+
+</div>
+
+<hr class="my-4">
+
+{# Boutons – inchangés #}
+<div class="d-flex flex-column flex-sm-row gap-2 justify-content-center">
+    <button class="btn btn-outline-primary" type="button" disabled>
+        Modifier le profil (à venir)
+    </button>
+    <button class="btn btn-outline-secondary" type="button" disabled>
+        Changer le mot de passe
+    </button>
+</div>
