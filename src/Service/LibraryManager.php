@@ -3,21 +3,32 @@
 namespace App\Service;
 
 use App\Entity\Book;
-use App\Entity\Movie;
 use App\Entity\Collection;
 use App\Entity\CollectionBook;
 use App\Entity\CollectionMovie;
+use App\Entity\Movie;
 use App\Entity\User;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 
 final class LibraryManager
 {
+    private const DEFAULT_COLLECTION_NAME = 'Non répertorié';
+    private const DEFAULT_COLLECTION_TYPE = 'system'; // <= 10 chars (champ length:10)
+
     public function __construct(
-        private EntityManagerInterface $em,
-        private GoogleBooksService $googleBooks,
-        private TmdbService $tmdb,
+        private readonly EntityManagerInterface $em,
+        private readonly GoogleBooksService $googleBooks,
+        private readonly TmdbService $tmdb,
     ) {}
+
+    /**
+     * Expose la collection système "Non répertorié" (créée si besoin).
+     */
+    public function getDefaultCollection(User $user): Collection
+    {
+        return $this->getOrCreateDefaultCollection($user);
+    }
 
     /**
      * Ajoute un média (API) dans la collection “Non répertorié” de l’utilisateur.
@@ -26,6 +37,16 @@ final class LibraryManager
      */
     public function addToDefaultCollection(User $user, string $kind, string $externalId): bool
     {
+        $kind = trim($kind);
+        $externalId = trim($externalId);
+
+        if ($kind !== 'book' && $kind !== 'movie') {
+            throw new \InvalidArgumentException('Unknown kind. Expected "book" or "movie".');
+        }
+        if ($externalId === '') {
+            throw new \InvalidArgumentException('External id cannot be empty.');
+        }
+
         $collection = $this->getOrCreateDefaultCollection($user);
 
         if ($kind === 'book') {
@@ -33,24 +54,25 @@ final class LibraryManager
             return $this->attachBook($collection, $book);
         }
 
-        if ($kind === 'movie') {
-            $movie = $this->getOrCreateMovieFromApi((int) $externalId);
-            return $this->attachMovie($collection, $movie);
-        }
-
-        throw new \InvalidArgumentException('Unknown kind.');
+        // kind === movie
+        $movie = $this->getOrCreateMovieFromApi((int) $externalId);
+        return $this->attachMovie($collection, $movie);
     }
 
+    /**
+     * Crée ou récupère la collection par défaut "Non répertorié".
+     *
+     * IMPORTANT : Collection::type est obligatoire dans ton entité,
+     * donc on le renseigne systématiquement.
+     */
     private function getOrCreateDefaultCollection(User $user): Collection
     {
-        // ⚠️ adapte les champs selon ton entité Collection
-        // Hypothèse la plus probable : Collection a (name, user/owner)
         $repo = $this->em->getRepository(Collection::class);
 
+        /** @var Collection|null $collection */
         $collection = $repo->findOneBy([
-            // change 'user' -> 'owner' si besoin
             'user' => $user,
-            'name' => 'Non répertorié',
+            'name' => self::DEFAULT_COLLECTION_NAME,
         ]);
 
         if ($collection instanceof Collection) {
@@ -58,14 +80,13 @@ final class LibraryManager
         }
 
         $collection = new Collection();
-        // change setUser -> setOwner si besoin
         $collection->setUser($user);
-        $collection->setName('Non répertorié');
+        $collection->setName(self::DEFAULT_COLLECTION_NAME);
+        $collection->setType(self::DEFAULT_COLLECTION_TYPE);
 
-        // optionnel si tu as un bool "isSystem"/"isDefault"
-        if (method_exists($collection, 'setIsDefault')) {
-            $collection->setIsDefault(true);
-        }
+        // Par cohérence, on garde la collection "inbox" privée et non publiée
+        $collection->setVisibility('private');
+        $collection->setIsPublished(false);
 
         $this->em->persist($collection);
         $this->em->flush();
@@ -86,10 +107,10 @@ final class LibraryManager
         $data = $this->googleBooks->getById($googleBooksId);
 
         $book = new Book();
-        $book->setGoogleBooksId($data['id']);
+        $book->setGoogleBooksId((string) ($data['id'] ?? $googleBooksId));
         $book->setTitle($data['title'] ?? 'Sans titre');
 
-        // Adapte selon tes champs réels en entité Book
+        // Champs optionnels (selon ton entité Book)
         if (method_exists($book, 'setAuthors')) {
             $book->setAuthors($data['authors'] ?? []);
         }
@@ -120,6 +141,10 @@ final class LibraryManager
 
     private function getOrCreateMovieFromApi(int $tmdbId): Movie
     {
+        if ($tmdbId <= 0) {
+            throw new \InvalidArgumentException('TMDB id must be a positive integer.');
+        }
+
         $repo = $this->em->getRepository(Movie::class);
 
         /** @var Movie|null $movie */
@@ -134,7 +159,7 @@ final class LibraryManager
         $movie->setTmdbId((int) ($data['id'] ?? $tmdbId));
         $movie->setTitle($data['title'] ?? 'Sans titre');
 
-        // Adapte selon tes champs réels en entité Movie
+        // Champs optionnels (selon ton entité Movie)
         if (method_exists($movie, 'setReleaseDate')) {
             $movie->setReleaseDate($data['releaseDate'] ?? null);
         }
@@ -151,9 +176,11 @@ final class LibraryManager
         return $movie;
     }
 
+    /**
+     * @return bool true si déjà présent, false sinon
+     */
     private function attachBook(Collection $collection, Book $book): bool
     {
-        // Retourne true si déjà présent
         $link = new CollectionBook();
         $link->setCollection($collection);
         $link->setBook($book);
@@ -163,11 +190,15 @@ final class LibraryManager
             $this->em->flush();
             return false;
         } catch (UniqueConstraintViolationException) {
-            $this->em->clear(); // évite un état EM bancal
+            // Ne pas faire clear() : ça détache tout le contexte Doctrine
+            $this->em->detach($link);
             return true;
         }
     }
 
+    /**
+     * @return bool true si déjà présent, false sinon
+     */
     private function attachMovie(Collection $collection, Movie $movie): bool
     {
         $link = new CollectionMovie();
@@ -179,7 +210,7 @@ final class LibraryManager
             $this->em->flush();
             return false;
         } catch (UniqueConstraintViolationException) {
-            $this->em->clear();
+            $this->em->detach($link);
             return true;
         }
     }
