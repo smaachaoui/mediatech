@@ -21,6 +21,18 @@ class CommentRepository extends ServiceEntityRepository
         parent::__construct($registry, Comment::class);
     }
 
+    public function findLatestByAuthor(\App\Entity\User $user, int $limit = 30): array
+    {
+        return $this->createQueryBuilder('com')
+            ->andWhere('com.user = :user')        // ⚠️ adapte si author
+            ->setParameter('user', $user)
+            ->orderBy('com.id', 'DESC')           // safe si pas de createdAt
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+
 //    /**
 //     * @return Comment[] Returns an array of Comment objects
 //     */

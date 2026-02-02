@@ -21,6 +21,17 @@ class CollectionRepository extends ServiceEntityRepository
         parent::__construct($registry, Collection::class);
     }
 
+    public function findForUser(\App\Entity\User $user): array
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.user = :user')          // ⚠️ adapte si ton champ = owner/createdBy
+            ->setParameter('user', $user)
+            ->orderBy('c.id', 'DESC')             // safe si pas de createdAt
+            ->getQuery()
+            ->getResult();
+    }
+
+
 //    /**
 //     * @return Collection[] Returns an array of Collection objects
 //     */
