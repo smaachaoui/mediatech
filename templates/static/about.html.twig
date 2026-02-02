@@ -1,0 +1,50 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}À propos | MediaTech{% endblock %}
+
+{% block body %}
+<section class="bg-white border rounded-3 p-4">
+
+  <h1 class="h4 mb-3">À propos</h1>
+
+  <p>
+    MediaTech est un projet que j’ai réalisé dans le cadre de ma formation de développeur web et web mobile.
+    L’objectif principal était de concevoir une application complète, depuis la conception jusqu’à la mise en
+    place des fonctionnalités, en respectant une architecture claire et maintenable.
+  </p>
+
+  <p>
+    L’application permet de rechercher des livres et des films à partir d’APIs externes, de consulter des fiches
+    détaillées et, à terme, de constituer des collections personnelles une fois connecté.
+    J’ai volontairement choisi de travailler avec des données réelles afin de me rapprocher d’un contexte
+    professionnel.
+  </p>
+
+  <h2 class="h6 mt-4">Pourquoi ce projet</h2>
+
+  <p>
+    J’ai choisi ce sujet car il me permettait de manipuler plusieurs concepts importants :
+    la communication avec des APIs, la gestion d’une base de données, l’authentification des utilisateurs
+    et la structuration d’une application Symfony.
+  </p>
+
+  <p>
+    Le projet MediaTech m’a également permis de travailler sur l’expérience utilisateur, en essayant de proposer
+    une interface simple, lisible et cohérente, tout en restant conforme aux bonnes pratiques du développement web.
+  </p>
+
+  <h2 class="h6 mt-4">Aspects techniques</h2>
+
+  <p>
+    L’application est développée avec le framework Symfony.
+    Elle utilise Twig pour le rendu des pages, Doctrine pour la gestion de la base de données,
+    et des APIs externes comme Google Books et The Movie Database pour l’affichage des contenus.
+  </p>
+
+  <p class="mb-0">
+    MediaTech est un projet évolutif, pensé comme une base solide sur laquelle de nouvelles fonctionnalités
+    pourront être ajoutées par la suite.
+  </p>
+
+</section>
+{% endblock %}

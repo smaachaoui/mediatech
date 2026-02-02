@@ -14,12 +14,6 @@ final class StaticPageController extends AbstractController
         return $this->render('static/about.html.twig');
     }
 
-    #[Route('/contact', name: 'app_contact', methods: ['GET'])]
-    public function contact(): Response
-    {
-        return $this->render('static/contact.html.twig');
-    }
-
     #[Route('/legal', name: 'app_legal', methods: ['GET'])]
     public function legal(): Response
     {
