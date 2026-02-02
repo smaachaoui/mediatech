@@ -1,0 +1,21 @@
+<div class="bg-white border rounded-3 p-3 position-sticky" style="top: 1rem;">
+    <div class="d-flex align-items-center gap-3 mb-3">
+        <div class="rounded-circle overflow-hidden border" style="width: 64px; height: 64px;">
+            {% set avatar = app.user.profilePicture ?? null %}
+            {% if avatar %}
+                <img src="{{ asset(avatar) }}" alt="Photo de profil" class="w-100 h-100" style="object-fit: cover;">
+            {% else %}
+                <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-light text-muted">
+                    {{ app.user.pseudo|slice(0, 1)|upper }}
+                </div>
+            {% endif %}
+        </div>
+
+        <div>
+            <div class="fw-semibold">{{ app.user.pseudo }}</div>
+            <div class="text-muted small">{{ app.user.email }}</div>
+        </div>
+    </div>
+
+    {% block dashboard_sidebar_nav %}{% endblock %}
+</div>

@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div class="row g-4">
+    <aside class="col-12 col-lg-3">
+        {% block dashboard_sidebar %}{% endblock %}
+    </aside>
+
+    <main class="col-12 col-lg-9">
+        {% block dashboard_content %}{% endblock %}
+    </main>
+</div>
+{% endblock %}

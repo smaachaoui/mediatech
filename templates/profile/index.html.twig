@@ -1,7 +1,21 @@
-{% extends 'base.html.twig' %}
+{% extends 'dashboard/_layout.html.twig' %}
 
-{% block title %}Mon profil{% endblock %}
+{% block title %}Mon profil | MediaTech{% endblock %}
 
-{% block body %}
-    <h1>Mon profil</h1>
+{% block dashboard_sidebar %}
+    {% include 'profile/partials/_sidebar.html.twig' with { section: section } %}
+{% endblock %}
+
+{% block dashboard_content %}
+    {% if section == 'info' %}
+        {% include 'profile/partials/_personal_info.html.twig' %}
+    {% elseif section == 'collections' %}
+        {% include 'profile/partials/_collections.html.twig' %}
+    {% elseif section == 'comments' %}
+        {% include 'profile/partials/_comments.html.twig' %}
+    {% elseif section == 'friends' %}
+        {% include 'profile/partials/_friends.html.twig' %}
+    {% elseif section == 'support' %}
+        {% include 'profile/partials/_support.html.twig' %}
+    {% endif %}
 {% endblock %}
