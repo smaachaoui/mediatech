@@ -31,6 +31,19 @@ class CollectionRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    public function findForUserExcluding(\App\Entity\User $user, int $excludedId): array
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.user = :user')
+            ->andWhere('c.id != :excludedId')
+            ->setParameter('user', $user)
+            ->setParameter('excludedId', $excludedId)
+            ->orderBy('c.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+
 
 //    /**
 //     * @return Collection[] Returns an array of Collection objects
