@@ -1,19 +1,66 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Register{% endblock %}
+{% block title %}Inscription{% endblock %}
 
 {% block body %}
-    <h1>Register</h1>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-sm-10 col-md-8 col-lg-5">
+            <div class="card shadow-sm">
+                <div class="card-body p-4 p-md-5">
+                    <h1 class="h3 mb-1 text-center">Créer un compte</h1>
+                    <p class="text-muted text-center mb-4">Tu es nouveau ici ? rejoins-nous !</p>
 
-    {{ form_errors(registrationForm) }}
+                    {# erreurs globales #}
+                    {% if form_errors(registrationForm) %}
+                        <div class="alert alert-danger">
+                            {{ form_errors(registrationForm) }}
+                        </div>
+                    {% endif %}
 
-    {{ form_start(registrationForm) }}
-        {{ form_row(registrationForm.email) }}
-        {{ form_row(registrationForm.plainPassword, {
-            label: 'Password'
-        }) }}
-        {{ form_row(registrationForm.agreeTerms) }}
+                    {{ form_start(registrationForm, { attr: { novalidate: 'novalidate' } }) }}
 
-        <button type="submit" class="btn">Register</button>
-    {{ form_end(registrationForm) }}
+                        <div class="mb-3">
+                            {{ form_row(registrationForm.pseudo, {
+                                label: 'Pseudo',
+                                attr: { class: 'form-control', placeholder: 'Ex : Aragorn33', autocomplete: 'nickname' }
+                            }) }}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_row(registrationForm.email, {
+                                label: 'Email',
+                                attr: { class: 'form-control', placeholder: 'exemple@mail.com', autocomplete: 'email' }
+                            }) }}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_row(registrationForm.plainPassword, {
+                                label: 'Mot de passe',
+                                attr: { class: 'form-control', autocomplete: 'new-password' }
+                            }) }}
+                        </div>
+
+                        <div class="form-check mb-3">
+                            {# form_row rend déjà label+input ; ici on force le rendu bootstrap check #}
+                            {{ form_widget(registrationForm.agreeTerms, { attr: { class: 'form-check-input' } }) }}
+                            {{ form_label(registrationForm.agreeTerms, "J'accepte les conditions d'utilisation", { label_attr: { class: 'form-check-label' } }) }}
+                            {{ form_errors(registrationForm.agreeTerms) }}
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">
+                            S'inscrire
+                        </button>
+
+                        <div class="text-center mt-3">
+                            <span class="text-muted">Déjà un compte ?</span>
+                            <a href="{{ path('app_login') }}">Se connecter</a>
+                        </div>
+
+                    {{ form_end(registrationForm) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
