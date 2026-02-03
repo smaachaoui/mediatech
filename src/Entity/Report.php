@@ -31,14 +31,18 @@ class Report
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $treatedAt = null;
 
-    #[ORM\ManyToOne(inversedBy: 'reportsMade')]
-    #[ORM\JoinColumn(nullable: false)]
+ 
+
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'reportsReceived')]
+    #[ORM\JoinColumn(name: 'reported_user_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
+    private ?User $reportedUser = null;
+
+
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'reportsMade')]
+    #[ORM\JoinColumn(name: 'reporter_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     private ?User $reporter = null;
 
-    #[ORM\ManyToOne(inversedBy: 'reportsReceived')]
-    #[ORM\JoinColumn(nullable: false)]
-    #[ORM\JoinColumn(name: 'reported_user_id', referencedColumnName: 'id', nullable: false)]
-    private ?User $reportedUser = null;
+
 
     public function __construct()
     {

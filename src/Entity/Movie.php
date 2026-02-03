@@ -37,7 +37,7 @@ class Movie
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $synopsis = null;
 
-    #[ORM\Column(nullable: true)]
+    #[ORM\Column(nullable: true, unique:true)]
     private ?int $tmdbId = null;
 
     /*

@@ -55,7 +55,7 @@ class Book
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $synopsis = null;
 
-    #[ORM\Column(length: 50, nullable: true)]
+    #[ORM\Column(length: 50, nullable: true, unique:true)]
     private ?string $googleBooksId = null;
 
     /*

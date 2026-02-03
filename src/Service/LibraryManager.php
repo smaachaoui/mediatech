@@ -14,7 +14,7 @@ use Doctrine\ORM\EntityManagerInterface;
 final class LibraryManager
 {
     private const DEFAULT_COLLECTION_NAME = 'Non répertorié';
-    private const DEFAULT_COLLECTION_TYPE = 'system'; // <= 10 chars (champ length:10)
+    private const WISHLIST_COLLECTION_NAME = 'Liste d\'envie';
 
     public function __construct(
         private readonly EntityManagerInterface $em,
@@ -22,57 +22,68 @@ final class LibraryManager
         private readonly TmdbService $tmdb,
     ) {}
 
-    /**
-     * Expose la collection système "Non répertorié" (créée si besoin).
-     */
     public function getDefaultCollection(User $user): Collection
     {
-        return $this->getOrCreateDefaultCollection($user);
+        return $this->getOrCreateSystemCollection($user, self::DEFAULT_COLLECTION_NAME);
+    }
+
+    public function getWishlistCollection(User $user): Collection
+    {
+        return $this->getOrCreateSystemCollection($user, self::WISHLIST_COLLECTION_NAME);
     }
 
     /**
-     * Ajoute un média (API) dans la collection “Non répertorié” de l’utilisateur.
-     *
      * @return bool true si déjà présent, false si nouvel ajout
      */
     public function addToDefaultCollection(User $user, string $kind, string $externalId): bool
     {
+        return $this->addToSystemCollection($user, $kind, $externalId, self::DEFAULT_COLLECTION_NAME);
+    }
+
+    /**
+     * @return bool true si déjà présent, false si nouvel ajout
+     */
+    public function addToWishlistCollection(User $user, string $kind, string $externalId): bool
+    {
+        return $this->addToSystemCollection($user, $kind, $externalId, self::WISHLIST_COLLECTION_NAME);
+    }
+
+    /**
+     * Je centralise l'ajout d'un média dans une collection système ("Non répertorié" ou "Liste d'envie").
+     *
+     * @return bool true si déjà présent, false si nouvel ajout
+     */
+    private function addToSystemCollection(User $user, string $kind, string $externalId, string $systemCollectionName): bool
+    {
         $kind = trim($kind);
         $externalId = trim($externalId);
 
-        if ($kind !== 'book' && $kind !== 'movie') {
+        if (!in_array($kind, ['book', 'movie'], true)) {
             throw new \InvalidArgumentException('Unknown kind. Expected "book" or "movie".');
         }
         if ($externalId === '') {
             throw new \InvalidArgumentException('External id cannot be empty.');
         }
 
-        $collection = $this->getOrCreateDefaultCollection($user);
+        $collection = $this->getOrCreateSystemCollection($user, $systemCollectionName);
 
         if ($kind === 'book') {
             $book = $this->getOrCreateBookFromApi($externalId);
             return $this->attachBook($collection, $book);
         }
 
-        // kind === movie
         $movie = $this->getOrCreateMovieFromApi((int) $externalId);
         return $this->attachMovie($collection, $movie);
     }
 
-    /**
-     * Crée ou récupère la collection par défaut "Non répertorié".
-     *
-     * IMPORTANT : Collection::type est obligatoire dans ton entité,
-     * donc on le renseigne systématiquement.
-     */
-    private function getOrCreateDefaultCollection(User $user): Collection
+    private function getOrCreateSystemCollection(User $user, string $name): Collection
     {
         $repo = $this->em->getRepository(Collection::class);
 
         /** @var Collection|null $collection */
         $collection = $repo->findOneBy([
             'user' => $user,
-            'name' => self::DEFAULT_COLLECTION_NAME,
+            'name' => $name,
         ]);
 
         if ($collection instanceof Collection) {
@@ -81,10 +92,9 @@ final class LibraryManager
 
         $collection = new Collection();
         $collection->setUser($user);
-        $collection->setName(self::DEFAULT_COLLECTION_NAME);
-        $collection->setType(self::DEFAULT_COLLECTION_TYPE);
-
-        // Par cohérence, on garde la collection "inbox" privée et non publiée
+        $collection->setName($name);
+        $collection->setScope(Collection::SCOPE_SYSTEM);
+        $collection->setMediaType(Collection::MEDIA_ALL);
         $collection->setVisibility('private');
         $collection->setIsPublished(false);
 
@@ -108,30 +118,19 @@ final class LibraryManager
 
         $book = new Book();
         $book->setGoogleBooksId((string) ($data['id'] ?? $googleBooksId));
-        $book->setTitle($data['title'] ?? 'Sans titre');
+        $book->setTitle((string) ($data['title'] ?? 'Sans titre'));
 
-        // Champs optionnels (selon ton entité Book)
-        if (method_exists($book, 'setAuthors')) {
-            $book->setAuthors($data['authors'] ?? []);
+        $authors = $data['authors'] ?? [];
+        if (is_array($authors) && !empty($authors)) {
+            $book->setAuthor(implode(', ', array_map('strval', $authors)));
         }
-        if (method_exists($book, 'setPublisher')) {
-            $book->setPublisher($data['publisher'] ?? null);
-        }
-        if (method_exists($book, 'setPublishedDate')) {
-            $book->setPublishedDate($data['publishedDate'] ?? null);
-        }
-        if (method_exists($book, 'setDescription')) {
-            $book->setDescription($data['description'] ?? null);
-        }
-        if (method_exists($book, 'setThumbnail')) {
-            $book->setThumbnail($data['thumbnail'] ?? null);
-        }
-        if (method_exists($book, 'setPageCount')) {
-            $book->setPageCount($data['pageCount'] ?? null);
-        }
-        if (method_exists($book, 'setIsbn')) {
-            $book->setIsbn($data['isbn'] ?? null);
-        }
+
+        $book->setPublisher(isset($data['publisher']) ? (string) $data['publisher'] : null);
+        $book->setPageCount(isset($data['pageCount']) ? (int) $data['pageCount'] : null);
+        $book->setIsbn(isset($data['isbn']) ? (string) $data['isbn'] : null);
+        $book->setCoverImage(isset($data['thumbnail']) ? (string) $data['thumbnail'] : null);
+        $book->setSynopsis(isset($data['description']) ? (string) $data['description'] : null);
+        $book->setPublicationDate($this->parseFlexibleDate($data['publishedDate'] ?? null));
 
         $this->em->persist($book);
         $this->em->flush();
@@ -157,18 +156,10 @@ final class LibraryManager
 
         $movie = new Movie();
         $movie->setTmdbId((int) ($data['id'] ?? $tmdbId));
-        $movie->setTitle($data['title'] ?? 'Sans titre');
-
-        // Champs optionnels (selon ton entité Movie)
-        if (method_exists($movie, 'setReleaseDate')) {
-            $movie->setReleaseDate($data['releaseDate'] ?? null);
-        }
-        if (method_exists($movie, 'setOverview')) {
-            $movie->setOverview($data['overview'] ?? null);
-        }
-        if (method_exists($movie, 'setPoster')) {
-            $movie->setPoster($data['poster'] ?? null);
-        }
+        $movie->setTitle((string) ($data['title'] ?? 'Sans titre'));
+        $movie->setSynopsis(isset($data['overview']) ? (string) $data['overview'] : null);
+        $movie->setPoster(isset($data['poster']) ? (string) $data['poster'] : null);
+        $movie->setReleaseDate($this->parseIsoDate($data['releaseDate'] ?? null));
 
         $this->em->persist($movie);
         $this->em->flush();
@@ -176,9 +167,37 @@ final class LibraryManager
         return $movie;
     }
 
-    /**
-     * @return bool true si déjà présent, false sinon
-     */
+    private function parseIsoDate(mixed $value): ?\DateTimeImmutable
+    {
+        if (!is_string($value) || trim($value) === '') {
+            return null;
+        }
+
+        $dt = \DateTimeImmutable::createFromFormat('Y-m-d', $value);
+        return $dt ?: null;
+    }
+
+    private function parseFlexibleDate(mixed $value): ?\DateTimeImmutable
+    {
+        if (!is_string($value) || trim($value) === '') {
+            return null;
+        }
+
+        $v = trim($value);
+
+        if (preg_match('/^\d{4}$/', $v)) {
+            return \DateTimeImmutable::createFromFormat('Y-m-d', $v . '-01-01') ?: null;
+        }
+        if (preg_match('/^\d{4}-\d{2}$/', $v)) {
+            return \DateTimeImmutable::createFromFormat('Y-m-d', $v . '-01') ?: null;
+        }
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $v)) {
+            return \DateTimeImmutable::createFromFormat('Y-m-d', $v) ?: null;
+        }
+
+        return null;
+    }
+
     private function attachBook(Collection $collection, Book $book): bool
     {
         $link = new CollectionBook();
@@ -190,15 +209,11 @@ final class LibraryManager
             $this->em->flush();
             return false;
         } catch (UniqueConstraintViolationException) {
-            // Ne pas faire clear() : ça détache tout le contexte Doctrine
             $this->em->detach($link);
             return true;
         }
     }
 
-    /**
-     * @return bool true si déjà présent, false sinon
-     */
     private function attachMovie(Collection $collection, Movie $movie): bool
     {
         $link = new CollectionMovie();
