@@ -75,12 +75,28 @@ final class PublicCollectionController extends AbstractController
 
         $ratingStats = $ratingRepository->getStatsForCollection($collection);
         $comments = $commentRepository->findLatestByCollection($collection, 20);
+        $userRatingValue = null;
+
+            $viewer = $this->getUser();
+            if ($viewer instanceof \App\Entity\User) {
+                $userRating = $ratingRepository->findOneBy([
+                    'collection' => $collection,
+                    'user' => $viewer,
+                ]);
+
+                if ($userRating) {
+                    $userRatingValue = $userRating->getValue();
+                }
+            }
+
 
         return $this->render('collection/show.html.twig', [
             'collection' => $collection,
             'ratingAvg' => $ratingStats['avg'],
             'ratingCount' => $ratingStats['count'],
             'comments' => $comments,
+            'userRatingValue' => $userRatingValue,
+
         ]);
     }
 }
