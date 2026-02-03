@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\Collection;
 use App\Entity\Comment;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -24,37 +25,27 @@ class CommentRepository extends ServiceEntityRepository
     public function findLatestByAuthor(\App\Entity\User $user, int $limit = 30): array
     {
         return $this->createQueryBuilder('com')
-            ->andWhere('com.user = :user')        // ⚠️ adapte si author
+            ->andWhere('com.user = :user')
             ->setParameter('user', $user)
-            ->orderBy('com.id', 'DESC')           // safe si pas de createdAt
+            ->orderBy('com.id', 'DESC')
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
     }
 
-
-//    /**
-//     * @return Comment[] Returns an array of Comment objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('c')
-//            ->andWhere('c.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('c.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
-
-//    public function findOneBySomeField($value): ?Comment
-//    {
-//        return $this->createQueryBuilder('c')
-//            ->andWhere('c.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+    /**
+     * Je retourne les derniers commentaires d'une collection.
+     *
+     * @return Comment[]
+     */
+    public function findLatestByCollection(Collection $collection, int $limit = 20): array
+    {
+        return $this->createQueryBuilder('com')
+            ->andWhere('com.collection = :collection')
+            ->setParameter('collection', $collection)
+            ->orderBy('com.id', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
 }

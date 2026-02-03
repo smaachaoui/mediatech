@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Entity\Collection;
 use App\Repository\CollectionRepository;
+use App\Repository\CommentRepository;
+use App\Repository\RatingRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -51,20 +53,34 @@ final class PublicCollectionController extends AbstractController
     }
 
     #[Route('/collections/{id}', name: 'app_collection_show', requirements: ['id' => '\d+'], methods: ['GET'])]
-    public function show(int $id, CollectionRepository $collectionRepository): Response
-    {
+    public function show(
+        int $id,
+        CollectionRepository $collectionRepository,
+        RatingRepository $ratingRepository,
+        CommentRepository $commentRepository
+    ): Response {
         $collection = $collectionRepository->find($id);
 
         if (!$collection) {
             throw $this->createNotFoundException('Collection introuvable.');
         }
 
-        if (!$collection->isPublished() || $collection->getVisibility() !== 'public' || $collection->getScope() !== Collection::SCOPE_USER) {
+        if (
+            !$collection->isPublished()
+            || $collection->getVisibility() !== 'public'
+            || $collection->getScope() !== Collection::SCOPE_USER
+        ) {
             throw $this->createNotFoundException('Collection introuvable.');
         }
 
+        $ratingStats = $ratingRepository->getStatsForCollection($collection);
+        $comments = $commentRepository->findLatestByCollection($collection, 20);
+
         return $this->render('collection/show.html.twig', [
             'collection' => $collection,
+            'ratingAvg' => $ratingStats['avg'],
+            'ratingCount' => $ratingStats['count'],
+            'comments' => $comments,
         ]);
     }
 }

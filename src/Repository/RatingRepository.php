@@ -2,18 +2,11 @@
 
 namespace App\Repository;
 
+use App\Entity\Collection;
 use App\Entity\Rating;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-/**
- * @extends ServiceEntityRepository<Rating>
- *
- * @method Rating|null find($id, $lockMode = null, $lockVersion = null)
- * @method Rating|null findOneBy(array $criteria, array $orderBy = null)
- * @method Rating[]    findAll()
- * @method Rating[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
- */
 class RatingRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -21,28 +14,23 @@ class RatingRepository extends ServiceEntityRepository
         parent::__construct($registry, Rating::class);
     }
 
-//    /**
-//     * @return Rating[] Returns an array of Rating objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('r')
-//            ->andWhere('r.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('r.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
+    /**
+     * Je retourne la moyenne et le nombre de notes pour une collection.
+     *
+     * @return array{avg: ?float, count: int}
+     */
+    public function getStatsForCollection(Collection $collection): array
+    {
+        $result = $this->createQueryBuilder('r')
+            ->select('AVG(r.value) AS avgRating, COUNT(r.id) AS totalRatings')
+            ->andWhere('r.collection = :collection')
+            ->setParameter('collection', $collection)
+            ->getQuery()
+            ->getOneOrNullResult();
 
-//    public function findOneBySomeField($value): ?Rating
-//    {
-//        return $this->createQueryBuilder('r')
-//            ->andWhere('r.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+        return [
+            'avg' => $result['avgRating'] !== null ? (float) $result['avgRating'] : null,
+            'count' => (int) ($result['totalRatings'] ?? 0),
+        ];
+    }
 }
