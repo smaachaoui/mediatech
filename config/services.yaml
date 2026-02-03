@@ -1,4 +1,6 @@
 services:
+    Symfony\Component\RateLimiter\RateLimiterFactory $collectionCommentLimiter: '@limiter.collection_comment'
+
     _defaults:
         autowire: true
         autoconfigure: true

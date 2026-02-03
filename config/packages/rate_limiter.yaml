@@ -1,0 +1,6 @@
+framework:
+  rate_limiter:
+    collection_comment:
+      policy: sliding_window
+      limit: 8
+      interval: '1 minute'
