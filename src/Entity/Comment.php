@@ -25,8 +25,20 @@ class Comment
     private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\ManyToOne(inversedBy: 'comments')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true)]
     private ?User $user = null;
+
+    #[ORM\Column(length: 60, nullable: true)]
+    private ?string $guestName = null;
+
+    #[ORM\Column(length: 180, nullable: true)]
+    private ?string $guestEmail = null;
+
+    #[ORM\Column(length: 45, nullable: true)]
+    private ?string $ipAddress = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $userAgent = null;
 
     #[ORM\ManyToOne(inversedBy: 'comments')]
     #[ORM\JoinColumn(nullable: false)]
@@ -86,9 +98,57 @@ class Comment
         return $this->user;
     }
 
-    public function setUser(User $user): static
+    public function setUser(?User $user): static
     {
         $this->user = $user;
+
+        return $this;
+    }
+
+    public function getGuestName(): ?string
+    {
+        return $this->guestName;
+    }
+
+    public function setGuestName(?string $guestName): static
+    {
+        $this->guestName = $guestName;
+
+        return $this;
+    }
+
+    public function getGuestEmail(): ?string
+    {
+        return $this->guestEmail;
+    }
+
+    public function setGuestEmail(?string $guestEmail): static
+    {
+        $this->guestEmail = $guestEmail;
+
+        return $this;
+    }
+
+    public function getIpAddress(): ?string
+    {
+        return $this->ipAddress;
+    }
+
+    public function setIpAddress(?string $ipAddress): static
+    {
+        $this->ipAddress = $ipAddress;
+
+        return $this;
+    }
+
+    public function getUserAgent(): ?string
+    {
+        return $this->userAgent;
+    }
+
+    public function setUserAgent(?string $userAgent): static
+    {
+        $this->userAgent = $userAgent;
 
         return $this;
     }
@@ -103,5 +163,16 @@ class Comment
         $this->collection = $collection;
 
         return $this;
+    }
+
+    /**
+     * Je considère qu'un commentaire invité est valide si user est null
+     * et que guestName + guestEmail sont renseignés.
+     */
+    public function isGuestComment(): bool
+    {
+        return $this->user === null
+            && $this->guestName !== null && trim($this->guestName) !== ''
+            && $this->guestEmail !== null && trim($this->guestEmail) !== '';
     }
 }
