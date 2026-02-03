@@ -1,0 +1,11 @@
+{# templates/components/_ui_badge_visibility.html.twig #}
+{% set visibility = collection.visibility ?? 'private' %}
+{% set isPublished = collection.isPublished ?? false %}
+
+{% if isPublished and visibility == 'public' %}
+  <span class="badge text-bg-success">Publique</span>
+{% elseif isPublished %}
+  <span class="badge text-bg-warning">Publiée</span>
+{% else %}
+  <span class="badge text-bg-secondary">Privée</span>
+{% endif %}

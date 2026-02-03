@@ -2,7 +2,11 @@
 
 <ul class="nav nav-tabs" role="tablist">
   <li class="nav-item" role="presentation">
-    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-unlisted" type="button" role="tab">
+    <button class="nav-link active"
+            data-bs-toggle="tab"
+            data-bs-target="#tab-unlisted"
+            type="button"
+            role="tab">
       Non répertorié
       <span class="badge text-bg-secondary ms-1">
         {{ (unlistedBookLinks|default([])|length) + (unlistedMovieLinks|default([])|length) }}
@@ -11,20 +15,39 @@
   </li>
 
   <li class="nav-item" role="presentation">
-    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-collections" type="button" role="tab">
+    <button class="nav-link"
+            data-bs-toggle="tab"
+            data-bs-target="#tab-collections"
+            type="button"
+            role="tab">
       Collections
       <span class="badge text-bg-secondary ms-1">{{ collections|default([])|length }}</span>
     </button>
   </li>
+
+
+    <li class="nav-item" role="presentation">
+      <button class="nav-link"
+              data-bs-toggle="tab"
+              data-bs-target="#tab-wishlist"
+              type="button"
+              role="tab">
+        Liste d'envie
+        <span class="badge text-bg-secondary ms-1">
+          {{ (wishlistBookLinks|default([])|length) + (wishlistMovieLinks|default([])|length) }}
+        </span>
+      </button>
+    </li>
 </ul>
+
 
 <div class="tab-content pt-3">
 
-  {# ---------------- NON RÉPERTORIÉ ---------------- #}
+  {# ===================== NON RÉPERTORIÉ ===================== #}
   <div class="tab-pane fade show active" id="tab-unlisted" role="tabpanel">
 
     {% if (unlistedBookLinks|default([]) is empty) and (unlistedMovieLinks|default([]) is empty) %}
-      <div class="alert alert-success mb-0">Rien dans “Non répertorié” 🎉</div>
+      <div class="alert alert-success mb-0">Vous n'avez encore rien dans “Non répertorié”</div>
     {% else %}
       <div class="alert alert-info small">
         Pour ranger un titre : choisis une collection puis clique sur “Déplacer”.
@@ -90,37 +113,398 @@
     {% endif %}
   </div>
 
-  {# ---------------- COLLECTIONS ---------------- #}
-  <div class="tab-pane fade" id="tab-collections" role="tabpanel">
+  {# ===================== COLLECTIONS ===================== #}
+<div class="tab-pane fade" id="tab-collections" role="tabpanel">
 
-    <div class="card border-0 shadow-sm mb-3">
-      <div class="card-body">
-        <div class="fw-semibold mb-1">Créer une collection</div>
-
-        <form method="post" action="{{ path('app_profile_create_collection') }}" class="d-flex flex-column flex-sm-row gap-2">
-          <input type="hidden" name="_token" value="{{ csrf_token('create_collection') }}">
-          <input class="form-control form-control-sm" name="name" type="text" placeholder="Nom de la collection" required>
-          <button class="btn btn-primary btn-sm" type="submit">Créer</button>
-        </form>
-
-        <div class="text-muted small mt-2">
-          Ensuite, retourne dans “Non répertorié” pour déplacer tes titres.
-        </div>
-      </div>
+  <div class="d-flex flex-column flex-sm-row gap-2 justify-content-between align-items-sm-center mb-3">
+    <div class="text-muted small">
+      Crée des collections et range tes titres depuis “Non répertorié”.
     </div>
 
-    {% if collections|default([]) is empty %}
-      <div class="alert alert-info mb-0">Aucune collection pour le moment.</div>
-    {% else %}
-      <div class="list-group">
-        {% for c in collections %}
-          <div class="list-group-item d-flex justify-content-between align-items-center">
-            <div class="fw-semibold">{{ c.name }}</div>
-            <span class="badge text-bg-secondary">{{ c.visibility }}</span>
-          </div>
-        {% endfor %}
-      </div>
-    {% endif %}
+    <button class="btn btn-primary btn-sm"
+            type="button"
+            data-bs-toggle="modal"
+            data-bs-target="#modalCreateCollection">
+      Créer une collection
+    </button>
   </div>
+
+  {# MODAL : CRÉER #}
+  {% embed 'components/_modal.html.twig' with {
+    id: 'modalCreateCollection',
+    title: 'Nouvelle collection',
+    action: path('app_profile_create_collection'),
+    csrf_id: 'create_collection',
+    submit_label: 'Créer',
+    submit_class: 'btn-primary'
+  } %}
+    {% block body %}
+      <div class="mb-3">
+        <label class="form-label">Nom</label>
+        <input class="form-control" name="name" type="text" required maxlength="150"
+               placeholder="Ex : Mes films préférés">
+      </div>
+
+      <div class="mb-0">
+        <label class="form-label">Description</label>
+        <textarea class="form-control" name="description" rows="4" maxlength="2000"
+                  placeholder="Décris rapidement cette collection (optionnel)"></textarea>
+      </div>
+
+        <div class="mb-3">
+            <label class="form-label">Type de collection</label>
+            <select class="form-select" name="mediaType" required>
+                <option value="" selected disabled>Choisir…</option>
+                <option value="book">Livres</option>
+                <option value="movie">Films</option>
+            </select>
+        </div>
+
+    {% endblock %}
+  {% endembed %}
+
+  {% if collections|default([]) is empty %}
+    <div class="alert alert-info mb-0">Aucune collection pour le moment.</div>
+  {% else %}
+    <div class="accordion" id="accordionCollections">
+      {% for c in collections %}
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="headingCollection{{ c.id }}">
+            <button class="accordion-button collapsed"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#collapseCollection{{ c.id }}"
+                    aria-expanded="false"
+                    aria-controls="collapseCollection{{ c.id }}">
+              <div class="d-flex flex-column">
+                <span class="fw-semibold">{{ c.name }}</span>
+                {% if c.description %}
+                  <span class="text-muted small">{{ c.description }}</span>
+                {% endif %}
+                <span class="small text-muted mt-1">
+                  Visibilité : {% include 'components/_ui_badge_visibility.html.twig' with { collection: c } %}
+                  ·
+                  Livres : {{ c.collectionBooks|length }}
+                  ·
+                  Films : {{ c.collectionMovies|length }}
+                  .
+                  {% if c.publishedAt %}
+                    · Publiée le {{ c.publishedAt|date('d/m/Y') }}
+                  {% endif %}
+                </span>
+              </div>
+            </button>
+          </h2>
+
+          <div id="collapseCollection{{ c.id }}"
+               class="accordion-collapse collapse"
+               aria-labelledby="headingCollection{{ c.id }}"
+               data-bs-parent="#accordionCollections">
+            <div class="accordion-body">
+
+              <div class="d-flex flex-column flex-md-row gap-2 align-items-md-center justify-content-between mb-3">
+                <div class="text-muted small">
+                  Gère ta collection : modifie le nom/description ou retire des éléments.
+                </div>
+
+                <div class="d-flex gap-2">
+
+                  <form method="post"
+                        action="{{ path('app_profile_toggle_publish_collection', { id: c.id }) }}"
+                        onsubmit="return confirm('{{ c.isPublished ? 'Dépublier cette collection ?' : 'Publier cette collection et l’afficher dans Nos collections ?' }}');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('toggle_publish_' ~ c.id) }}">
+
+                    {% if c.isPublished %}
+                      <button class="btn btn-outline-warning btn-sm" type="submit">Dépublier</button>
+                    {% else %}
+                      <button class="btn btn-outline-success btn-sm" type="submit">Publier</button>
+                    {% endif %}
+                  </form>
+
+                  <button class="btn btn-outline-secondary btn-sm"
+                          type="button"
+                          data-bs-toggle="modal"
+                          data-bs-target="#modalEditCollection{{ c.id }}">
+                    Modifier
+                  </button>
+
+                  <button class="btn btn-outline-danger btn-sm"
+                          type="button"
+                          data-bs-toggle="modal"
+                          data-bs-target="#modalDeleteCollection{{ c.id }}">
+                    Supprimer
+                  </button>
+
+                </div>
+
+              </div>
+
+              {# --------- LISTE DES LIVRES --------- #}
+              <h3 class="h6 mb-2">Livres</h3>
+              {% if c.collectionBooks is empty %}
+                <div class="text-muted small mb-3">Aucun livre dans cette collection.</div>
+              {% else %}
+                <div class="list-group mb-3">
+                  {% for link in c.collectionBooks %}
+                    <div class="list-group-item">
+                      <div class="d-flex flex-column flex-md-row gap-2 align-items-md-center justify-content-between">
+                        <div>
+                          <div class="fw-semibold">{{ link.book.title }}</div>
+                          <div class="text-muted small">
+                            Ajouté le {{ link.addedAt|date('d/m/Y') }}
+                          </div>
+                        </div>
+
+                        <form method="post"
+                              action="{{ path('app_profile_remove_item') }}"
+                              class="d-flex gap-2"
+                              onsubmit="return confirm('Retirer ce livre de la collection ?');">
+                          <input type="hidden" name="_token" value="{{ csrf_token('remove_item') }}">
+                          <input type="hidden" name="type" value="book">
+                          <input type="hidden" name="linkId" value="{{ link.id }}">
+                          <button class="btn btn-outline-danger btn-sm" type="submit">
+                            Retirer
+                          </button>
+                        </form>
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+
+              {# --------- LISTE DES FILMS --------- #}
+              <h3 class="h6 mb-2">Films</h3>
+              {% if c.collectionMovies is empty %}
+                <div class="text-muted small">Aucun film dans cette collection.</div>
+              {% else %}
+                <div class="list-group">
+                  {% for link in c.collectionMovies %}
+                    <div class="list-group-item">
+                      <div class="d-flex flex-column flex-md-row gap-2 align-items-md-center justify-content-between">
+                        <div>
+                          <div class="fw-semibold">{{ link.movie.title }}</div>
+                          <div class="text-muted small">
+                            Ajouté le {{ link.addedAt|date('d/m/Y') }}
+                          </div>
+                        </div>
+
+                        <form method="post"
+                              action="{{ path('app_profile_remove_item') }}"
+                              class="d-flex gap-2"
+                              onsubmit="return confirm('Retirer ce film de la collection ?');">
+                          <input type="hidden" name="_token" value="{{ csrf_token('remove_item') }}">
+                          <input type="hidden" name="type" value="movie">
+                          <input type="hidden" name="linkId" value="{{ link.id }}">
+                          <button class="btn btn-outline-danger btn-sm" type="submit">
+                            Retirer
+                          </button>
+                        </form>
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+
+            </div>
+          </div>
+        </div>
+
+        {# MODAL : MODIFIER #}
+        {% embed 'components/_modal.html.twig' with {
+          id: 'modalEditCollection' ~ c.id,
+          title: 'Modifier la collection',
+          action: path('app_profile_edit_collection', { id: c.id }),
+          csrf_id: 'edit_collection_' ~ c.id,
+          submit_label: 'Enregistrer',
+          submit_class: 'btn-primary'
+        } %}
+          {% block body %}
+            <div class="mb-3">
+              <label class="form-label">Nom</label>
+              <input class="form-control" name="name" type="text" required maxlength="150"
+                     value="{{ c.name }}">
+            </div>
+
+            {% set coverChoices = [] %}
+              {% set seen = {} %}
+
+              {% for link in c.collectionBooks %}
+                {% if link.book and link.book.coverImage %}
+                  {% set url = link.book.coverImage %}
+                  {% if seen[url] is not defined %}
+                    {% set coverChoices = coverChoices|merge([url]) %}
+                    {% set seen = seen|merge({ (url): true }) %}
+                  {% endif %}
+                {% endif %}
+              {% endfor %}
+
+              {% for link in c.collectionMovies %}
+                {% if link.movie and link.movie.poster %}
+                  {% set url = link.movie.poster %}
+                  {% if seen[url] is not defined %}
+                    {% set coverChoices = coverChoices|merge([url]) %}
+                    {% set seen = seen|merge({ (url): true }) %}
+                  {% endif %}
+                {% endif %}
+              {% endfor %}
+
+
+            {% if coverChoices is not empty %}
+              <div class="mb-3">
+                <label class="form-label">Couverture</label>
+
+                <div class="d-flex flex-wrap gap-2">
+                  <label class="border rounded p-2" style="cursor:pointer;">
+                    <input type="radio" name="coverImage" value="" {{ c.coverImage is empty ? 'checked' : '' }}>
+                    <span class="small text-muted">Auto</span>
+                  </label>
+
+                  {% for url in coverChoices %}
+                    <label class="border rounded p-2" style="cursor:pointer;">
+                      <input type="radio" name="coverImage" value="{{ url }}" {{ c.coverImage == url ? 'checked' : '' }}>
+                      <img src="{{ url }}" alt="" style="height:70px;width:auto;display:block;">
+                    </label>
+                  {% endfor %}
+                </div>
+
+              </div>
+            {% endif %}
+
+
+            <div class="mb-3">
+              <label class="form-label">Genre</label>
+              <input type="text" class="form-control" name="genre" value="{{ c.genre ?? '' }}" placeholder="Fantasy, Action, Romance...">
+            </div>
+
+
+            <div class="mb-0">
+              <label class="form-label">Description</label>
+              <textarea class="form-control" name="description" rows="4" maxlength="2000">{{ c.description }}</textarea>
+            </div>
+          {% endblock %}
+        {% endembed %}
+
+        {# MODAL : SUPPRIMER #}
+        {% embed 'components/_modal.html.twig' with {
+          id: 'modalDeleteCollection' ~ c.id,
+          title: 'Supprimer la collection',
+          action: path('app_profile_delete_collection', { id: c.id }),
+          csrf_id: 'delete_collection_' ~ c.id,
+          submit_label: 'Supprimer',
+          submit_class: 'btn-danger'
+        } %}
+          {% block body %}
+            <p class="mb-0">
+              Supprimer <strong>{{ c.name }}</strong> ?<br>
+              Les éléments qu’elle contient seront retirés de cette collection.
+            </p>
+            <p class="small text-muted mt-2 mb-0">
+              Cette action est irréversible.
+            </p>
+          {% endblock %}
+        {% endembed %}
+
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
+
+{# ===================== LISTE D'ENVIE ===================== #}
+<div class="tab-pane fade" id="tab-wishlist" role="tabpanel">
+
+  {% if (wishlistBookLinks|default([]) is empty) and (wishlistMovieLinks|default([]) is empty) %}
+    <div class="alert alert-info mb-0">Votre liste d’envie est vide.</div>
+  {% else %}
+    <div class="alert alert-info small">
+      Je peux retirer un élément, ou le déplacer vers “Non répertorié” ou une collection existante.
+    </div>
+
+    <div class="list-group">
+
+      {# LIVRES #}
+      {% for link in wishlistBookLinks|default([]) %}
+        <div class="list-group-item">
+          <div class="d-flex flex-column flex-md-row gap-2 align-items-md-center justify-content-between">
+            <div>
+              <div class="fw-semibold">{{ link.book.title }}</div>
+              <div class="text-muted small">Livre · ajouté le {{ link.addedAt|date('d/m/Y') }}</div>
+            </div>
+
+            <div class="d-flex flex-column flex-md-row gap-2">
+
+              <form method="post" action="{{ path('app_profile_wishlist_move_item') }}" class="d-flex gap-2">
+                <input type="hidden" name="_token" value="{{ csrf_token('wishlist_move_item') }}">
+                <input type="hidden" name="type" value="book">
+                <input type="hidden" name="linkId" value="{{ link.id }}">
+
+                <select class="form-select form-select-sm" name="collectionId" required>
+                  <option value="" selected disabled>Déplacer vers…</option>
+                  <option value="{{ unlistedCollection.id }}">Non répertorié</option>
+                  {% for c in collections|default([]) %}
+                    <option value="{{ c.id }}">{{ c.name }}</option>
+                  {% endfor %}
+                </select>
+
+                <button class="btn btn-primary btn-sm" type="submit">Déplacer</button>
+              </form>
+
+              <form method="post" action="{{ path('app_profile_wishlist_remove_item') }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('wishlist_remove_item') }}">
+                <input type="hidden" name="type" value="book">
+                <input type="hidden" name="linkId" value="{{ link.id }}">
+                <button class="btn btn-outline-danger btn-sm" type="submit">Retirer</button>
+              </form>
+
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+
+      {# FILMS #}
+      {% for link in wishlistMovieLinks|default([]) %}
+        <div class="list-group-item">
+          <div class="d-flex flex-column flex-md-row gap-2 align-items-md-center justify-content-between">
+            <div>
+              <div class="fw-semibold">{{ link.movie.title }}</div>
+              <div class="text-muted small">Film · ajouté le {{ link.addedAt|date('d/m/Y') }}</div>
+            </div>
+
+            <div class="d-flex flex-column flex-md-row gap-2">
+
+              <form method="post" action="{{ path('app_profile_wishlist_move_item') }}" class="d-flex gap-2">
+                <input type="hidden" name="_token" value="{{ csrf_token('wishlist_move_item') }}">
+                <input type="hidden" name="type" value="movie">
+                <input type="hidden" name="linkId" value="{{ link.id }}">
+
+                <select class="form-select form-select-sm" name="collectionId" required>
+                  <option value="" selected disabled>Déplacer vers…</option>
+                  <option value="{{ unlistedCollection.id }}">Non répertorié</option>
+
+                  {% for c in collections %}
+                    <option value="{{ c.id }}">{{ c.name }}</option>
+                  {% endfor %}
+                </select>
+
+
+                <button class="btn btn-primary btn-sm" type="submit">Déplacer</button>
+              </form>
+
+              <form method="post" action="{{ path('app_profile_wishlist_remove_item') }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('wishlist_remove_item') }}">
+                <input type="hidden" name="type" value="movie">
+                <input type="hidden" name="linkId" value="{{ link.id }}">
+                <button class="btn btn-outline-danger btn-sm" type="submit">Retirer</button>
+              </form>
+
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+
+    </div>
+  {% endif %}
+</div>
+
+
 
 </div>

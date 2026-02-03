@@ -1,0 +1,96 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nos collections | MediaTech{% endblock %}
+
+{% block body %}
+
+  <section class="mb-4">
+    <h1 class="h3 mb-0">Découvrez nos collections</h1>
+  </section>
+
+  <div class="row g-4">
+
+    <aside class="col-12 col-lg-3">
+      <div class="card border rounded-3">
+        <div class="card-body">
+
+          <div class="fw-semibold mb-3">Filtrer</div>
+
+          <form method="get" action="{{ path('app_collections_public') }}">
+            <div class="mb-3">
+              <label class="form-label">Type</label>
+              <select class="form-select" name="type">
+                <option value="all" {{ filters.type == 'all' ? 'selected' : '' }}>Tout</option>
+                <option value="book" {{ filters.type == 'book' ? 'selected' : '' }}>Livres</option>
+                <option value="movie" {{ filters.type == 'movie' ? 'selected' : '' }}>Films</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Trier par</label>
+              <select class="form-select" name="sort">
+                <option value="new" {{ filters.sort == 'new' ? 'selected' : '' }}>Plus récentes</option>
+                <option value="old" {{ filters.sort == 'old' ? 'selected' : '' }}>Plus anciennes</option>
+                <option value="alpha" {{ filters.sort == 'alpha' ? 'selected' : '' }}>A à Z</option>
+              </select>
+            </div>
+
+            <input type="hidden" name="page" value="1">
+
+            <div class="d-grid gap-2">
+              <button type="submit" class="btn btn-dark">Appliquer</button>
+              <a href="{{ path('app_collections_public') }}" class="btn btn-outline-secondary">Réinitialiser</a>
+            </div>
+          </form>
+
+        </div>
+      </div>
+    </aside>
+
+    <section class="col-12 col-lg-9">
+
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="text-muted small">
+          {{ total }} collection{{ total > 1 ? 's' : '' }}
+        </div>
+      </div>
+
+      {% if collections is not empty %}
+        <div class="row g-3">
+          {% for collection in collections %}
+            <div class="col-12 col-md-6 col-xl-4">
+              {% include 'components/_structure_collection.html.twig' with {
+                collection: collection,
+                context: 'public',
+                showOwner: true,
+                showActions: false,
+                showVisibilityBadge: true
+              } %}
+            </div>
+          {% endfor %}
+        </div>
+
+        <div class="mt-4">
+          {% include 'components/_nav_pagination.html.twig' with {
+            route: 'app_collections_public',
+            page: page,
+            totalPages: totalPages,
+            query: {
+              type: filters.type,
+              sort: filters.sort
+            }
+          } %}
+        </div>
+
+      {% else %}
+        {% include 'components/_state_empty.html.twig' with {
+          title: "Aucune collection trouvée",
+          message: "Essaie de modifier les filtres pour élargir les résultats."
+        } %}
+      {% endif %}
+
+    </section>
+
+  </div>
+
+{% endblock %}

@@ -1,23 +1,162 @@
-{% set url = kind == 'book'
-  ? path('app_book_show', {id: item.id})
-  : path('app_movie_show', {id: item.id})
-%}
+{# templates/components/_structure_collection.html.twig #}
+{# Je reçois :
+   - collection: App\Entity\Collection
+   - context: 'public'|'profile' (optionnel)
+   - showOwner: bool (optionnel)
+   - showActions: bool (optionnel)
+   - showVisibilityBadge: bool (optionnel)
+#}
 
-<a href="{{ url }}" class="text-decoration-none">
-  <div class="card h-100">
-    <div class="ratio ratio-2x3 bg-light">
-      {% if kind == 'book' and item.coverImage %}
-        <img src="{{ item.coverImage }}" class="card-img-top object-fit-cover" alt="">
-      {% elseif kind == 'movie' and item.poster %}
-        <img src="{{ item.poster }}" class="card-img-top object-fit-cover" alt="">
+{% set context = context ?? 'public' %}
+{% set showOwner = showOwner ?? (context == 'public') %}
+{% set showActions = showActions ?? (context == 'profile') %}
+{% set showVisibilityBadge = showVisibilityBadge ?? true %}
+
+{% set mediaType = collection.mediaType ?? 'all' %}
+{% set showPath = path('app_collection_show', { id: collection.id }) %}
+
+{% set typeLabel = 'Mixte' %}
+{% if mediaType == 'book' %}
+  {% set typeLabel = 'Livres' %}
+{% elseif mediaType == 'movie' %}
+  {% set typeLabel = 'Films' %}
+{% endif %}
+
+{% set coverUrl = null %}
+
+{# Je priorise la cover choisie par l'utilisateur #}
+{% if collection.coverImage %}
+  {% set coverUrl = collection.coverImage %}
+{% endif %}
+
+{# Sinon je prends automatiquement la cover du premier média disponible #}
+{% if coverUrl is null %}
+  {% if mediaType == 'book' %}
+    {% set firstLink = collection.collectionBooks|first %}
+    {% if firstLink and firstLink.book and firstLink.book.coverImage %}
+      {% set coverUrl = firstLink.book.coverImage %}
+    {% endif %}
+  {% elseif mediaType == 'movie' %}
+    {% set firstLink = collection.collectionMovies|first %}
+    {% if firstLink and firstLink.movie and firstLink.movie.poster %}
+      {% set coverUrl = firstLink.movie.poster %}
+    {% endif %}
+  {% else %}
+    {% set firstBookLink = collection.collectionBooks|first %}
+    {% if firstBookLink and firstBookLink.book and firstBookLink.book.coverImage %}
+      {% set coverUrl = firstBookLink.book.coverImage %}
+    {% else %}
+      {% set firstMovieLink = collection.collectionMovies|first %}
+      {% if firstMovieLink and firstMovieLink.movie and firstMovieLink.movie.poster %}
+        {% set coverUrl = firstMovieLink.movie.poster %}
+      {% endif %}
+    {% endif %}
+  {% endif %}
+{% endif %}
+
+{% set resolvedCoverUrl = null %}
+{% if coverUrl %}
+  {% if coverUrl starts with 'http' %}
+    {% set resolvedCoverUrl = coverUrl %}
+  {% else %}
+    {% set resolvedCoverUrl = 'https://image.tmdb.org/t/p/w500' ~ coverUrl %}
+  {% endif %}
+{% endif %}
+
+
+{% set itemsCount = (collection.collectionBooks|length) + (collection.collectionMovies|length) %}
+
+{% set ratingCount = collection.ratings is defined ? (collection.ratings|length) : 0 %}
+{% set ratingAvg = null %}
+{% if ratingCount > 0 %}
+  {% set sum = 0 %}
+  {% for r in collection.ratings %}
+    {% set sum = sum + (r.value ?? 0) %}
+  {% endfor %}
+  {% set ratingAvg = (sum / ratingCount) %}
+{% endif %}
+
+<div class="card h-100 border rounded-3 overflow-hidden">
+
+  <a href="{{ showPath }}" class="text-decoration-none">
+    <div class="ratio-2x3 bg-light">
+      {% if resolvedCoverUrl %}
+        <img src="{{ resolvedCoverUrl }}" class="w-100 h-100 object-fit-cover" alt="">
       {% else %}
         <div class="d-flex align-items-center justify-content-center text-muted small">
-          Image
+          Aucune image
         </div>
       {% endif %}
     </div>
-    <div class="card-body p-2">
-      <div class="fw-semibold small text-truncate">{{ item.title }}</div>
+
+  </a>
+
+  <div class="card-body d-flex flex-column">
+
+    <div class="d-flex justify-content-between align-items-start gap-2">
+      <a href="{{ showPath }}" class="text-decoration-none">
+        <div class="fw-semibold text-dark"
+             style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+          {{ collection.name }}
+        </div>
+      </a>
+
+      {% if showVisibilityBadge %}
+        {% include 'components/_ui_badge_visibility.html.twig' with { collection: collection } %}
+      {% endif %}
     </div>
+
+    {% if showOwner and collection.user %}
+      <div class="small text-muted mt-1">
+        Par {{ collection.user.pseudo ?? collection.user.email }}
+      </div>
+    {% endif %}
+
+    {% if collection.description %}
+      <div class="small text-muted mt-2"
+           style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">
+        {{ collection.description }}
+      </div>
+    {% else %}
+      <div class="small text-muted mt-2">
+        Description : —
+      </div>
+    {% endif %}
+
+    {% if collection.genre %}
+      <div class="small text-muted mt-2">Genre : {{ collection.genre }}</div>
+    {% endif %}
+
+    <div class="small text-muted mt-3">
+      Type : {{ typeLabel }}
+      <span class="mx-1">•</span>
+      Contenus : {{ itemsCount }}
+    </div>
+
+    <div class="small text-muted mt-1">
+      {% if ratingAvg is not null %}
+        Note : {{ ratingAvg|number_format(1, '.', ' ') }}/5
+        <span class="mx-1">•</span>
+        Avis : {{ ratingCount }}
+      {% else %}
+        Note : —
+        <span class="mx-1">•</span>
+        Avis : 0
+      {% endif %}
+    </div>
+
+    <div class="mt-auto d-flex justify-content-between align-items-center pt-3">
+      <span class="badge text-bg-light border">{{ typeLabel }}</span>
+      <a href="{{ showPath }}" class="btn btn-outline-primary btn-sm">
+        Voir la collection
+      </a>
+    </div>
+
+    {% if showActions %}
+      <div class="pt-2 d-flex gap-2">
+        {# Je laisse volontairement ces actions neutres pour l’instant, on les branchera sur tes routes profile #}
+      </div>
+    {% endif %}
+
   </div>
-</a>
+</div>

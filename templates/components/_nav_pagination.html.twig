@@ -1,0 +1,28 @@
+{# templates/components/_nav_pagination.html.twig #}
+{% set route = route ?? 'app_collections_public' %}
+{% set page = page ?? 1 %}
+{% set totalPages = totalPages ?? 1 %}
+{% set query = query ?? {} %}
+
+{% set hasPrev = page > 1 %}
+{% set hasNext = page < totalPages %}
+
+<nav aria-label="Pagination">
+  <ul class="pagination justify-content-center mb-0">
+
+    <li class="page-item {{ not hasPrev ? 'disabled' : '' }}">
+      <a class="page-link" href="{{ hasPrev ? path(route, query|merge({ page: page - 1 })) : '#' }}">Précédent</a>
+    </li>
+
+    <li class="page-item disabled">
+      <span class="page-link">
+        Page {{ page }} / {{ totalPages }}
+      </span>
+    </li>
+
+    <li class="page-item {{ not hasNext ? 'disabled' : '' }}">
+      <a class="page-link" href="{{ hasNext ? path(route, query|merge({ page: page + 1 })) : '#' }}">Suivant</a>
+    </li>
+
+  </ul>
+</nav>

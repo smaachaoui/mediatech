@@ -53,3 +53,8 @@
   color: #ffffff;
   text-decoration: underline;
 }
+
+.ratio-2x3 {
+  --bs-aspect-ratio: 150%;
+}
+

@@ -23,7 +23,7 @@
           <input
             type="search"
             name="q"
-            value="{{ q }}"
+            value="{{ q|default('') }}"
             class="form-control"
             placeholder="Titre, auteur, réalisateur..."
           >
@@ -31,7 +31,7 @@
       </div>
 
       {# On conserve le filtre type depuis la recherche #}
-      <input type="hidden" name="type" value="{{ type }}">
+      <input type="hidden" name="type" value="{{ type|default('all') }}">
 
       <div class="col-12 col-md-auto">
         <button class="btn btn-primary w-100" type="submit">Rechercher</button>
@@ -44,7 +44,6 @@
      (aside filtres + résultats)
      ======================= #}
   <section class="bg-white border rounded-3 p-3">
-
     <div class="row g-4">
 
       {# ASIDE filtres (wireframe) #}
@@ -56,9 +55,9 @@
             <div class="mb-3">
               <label class="form-label">Type</label>
               <select class="form-select" name="type">
-                <option value="all"    {{ type == 'all' ? 'selected' : '' }}>Tout</option>
-                <option value="books"  {{ type == 'books' ? 'selected' : '' }}>Livres</option>
-                <option value="movies" {{ type == 'movies' ? 'selected' : '' }}>Films</option>
+                <option value="all"    {{ (type|default('all')) == 'all' ? 'selected' : '' }}>Tout</option>
+                <option value="books"  {{ (type|default('all')) == 'books' ? 'selected' : '' }}>Livres</option>
+                <option value="movies" {{ (type|default('all')) == 'movies' ? 'selected' : '' }}>Films</option>
               </select>
             </div>
 
@@ -73,7 +72,7 @@
             </div>
 
             {# On conserve la recherche si présente #}
-            {% if q %}
+            {% if q is defined and q %}
               <input type="hidden" name="q" value="{{ q }}">
             {% endif %}
 
@@ -88,20 +87,65 @@
       {# ZONE résultats #}
       <div class="col-12 col-lg-9">
 
-        {# Normalisation : on dérive books/movies depuis results #}
-        {% set books = results.books ?? [] %}
-        {% set movies = results.movies ?? [] %}
+        {# ✅ On utilise DIRECTEMENT les variables envoyées par le controller #}
+        {% set books = books|default([]) %}
+        {% set movies = movies|default([]) %}
         {% set hasAny = (books|length) + (movies|length) > 0 %}
 
-        {# Si aucune recherche saisie, on affiche un état neutre #}
-        {% if not q %}
-          {% include 'components/_state_empty.html.twig' with {
-            title: 'Recherchez un média',
-            message: 'Saisissez un titre (livre ou film) puis lancez la recherche.'
-          } %}
+        {# =======================
+           CAS 1 : pas de recherche => "catalogue vivant"
+           ======================= #}
+        {% if q is not defined or not q %}
+          {% if not hasAny %}
+            {% include 'components/_state_empty.html.twig' with {
+              title: 'Catalogue',
+              message: 'Aucun élément à afficher pour le moment.'
+            } %}
+          {% else %}
+
+            {% if type|default('all') in ['all','books'] %}
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h3 class="h6 mb-0">Livres</h3>
+              </div>
+
+              {% if books is empty %}
+                <div class="text-muted small mb-4">Aucun livre disponible.</div>
+              {% else %}
+                <div class="row g-3 mb-4">
+                  {% for book in books %}
+                    <div class="col-6 col-md-4 col-lg-3">
+                      {% include 'components/_structure_media.html.twig' with { item: book, kind: 'book' } only %}
+                    </div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            {% endif %}
+
+            {% if type|default('all') in ['all','movies'] %}
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h3 class="h6 mb-0">Films</h3>
+              </div>
+
+              {% if movies is empty %}
+                <div class="text-muted small">Aucun film disponible.</div>
+              {% else %}
+                <div class="row g-3">
+                  {% for movie in movies %}
+                    <div class="col-6 col-md-4 col-lg-3">
+                      {% include 'components/_structure_media.html.twig' with { item: movie, kind: 'movie' } only %}
+                    </div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            {% endif %}
+
+          {% endif %}
+
+        {# =======================
+           CAS 2 : recherche saisie => résultats
+           ======================= #}
         {% else %}
 
-          {# Si recherche mais aucun résultat #}
           {% if not hasAny %}
             {% include 'components/_state_empty.html.twig' with {
               title: 'Aucun résultat',
@@ -109,9 +153,7 @@
             } %}
           {% else %}
 
-            {# Si "all", deux blocs. Si "books" ou "movies", un seul bloc. #}
-
-            {% if type in ['all','books'] %}
+            {% if type|default('all') in ['all','books'] %}
               <div class="d-flex justify-content-between align-items-center mb-2">
                 <h3 class="h6 mb-0">Livres</h3>
               </div>
@@ -129,7 +171,7 @@
               {% endif %}
             {% endif %}
 
-            {% if type in ['all','movies'] %}
+            {% if type|default('all') in ['all','movies'] %}
               <div class="d-flex justify-content-between align-items-center mb-2">
                 <h3 class="h6 mb-0">Films</h3>
               </div>
@@ -151,7 +193,6 @@
         {% endif %}
 
       </div>
-
     </div>
   </section>
 

@@ -1,0 +1,10 @@
+{# templates/components/_state_empty.html.twig #}
+{% set title = title ?? 'Aucun résultat' %}
+{% set message = message ?? 'Je n’ai trouvé aucun élément à afficher.' %}
+
+<div class="card border rounded-3">
+  <div class="card-body">
+    <div class="fw-semibold mb-1">{{ title }}</div>
+    <div class="text-muted">{{ message }}</div>
+  </div>
+</div>
