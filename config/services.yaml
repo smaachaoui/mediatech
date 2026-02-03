@@ -5,6 +5,7 @@ services:
         bind:
             $tmdbApiKey: '%env(TMDB_API_KEY)%'
             $googleBooksApiKey: '%env(GOOGLE_BOOKS_API_KEY)%'
+            $cache: '@cache.app'
 
     App\:
         resource: '../src/'

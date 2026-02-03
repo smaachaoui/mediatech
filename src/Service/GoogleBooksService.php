@@ -2,86 +2,180 @@
 
 namespace App\Service;
 
+use Psr\Cache\CacheItemPoolInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final class GoogleBooksService
 {
+    private const BASE_URL = 'https://www.googleapis.com/books/v1/volumes';
+
+    // TTLs (en secondes)
+    private const TTL_SEARCH = 1800;  // 30 min
+    private const TTL_NEWEST = 21600; // 6 h
+    private const TTL_BY_ID  = 86400; // 24 h
+
     public function __construct(
-        private HttpClientInterface $http,
-        private string $googleBooksApiKey,
+        private readonly HttpClientInterface $http,
+        private readonly string $googleBooksApiKey,
+        private readonly CacheItemPoolInterface $cache,
     ) {}
 
     /**
-     * Je recherche des livres via Google Books.
+     * Recherche de livres via Google Books.
      *
      * @return array<int, array<string, mixed>>
      */
     public function search(string $query, int $limit = 12): array
     {
-        return $this->fetchList([
-            'q' => $query,
-            'maxResults' => $limit,
-        ]);
+        $query = trim($query);
+        $limit = max(1, min($limit, 40)); // Google maxResults <= 40
+
+        if ($query === '') {
+            return [];
+        }
+
+        $cacheKey = 'gbooks.search.' . md5($query . '|' . $limit);
+
+        $item = $this->cache->getItem($cacheKey);
+        if ($item->isHit()) {
+            $cached = $item->get();
+            return is_array($cached) ? $cached : [];
+        }
+
+        try {
+            $data = $this->fetchList([
+                'q' => $query,
+                'printType' => 'books',
+                'maxResults' => $limit,
+            ]);
+        } catch (TransportExceptionInterface|\RuntimeException) {
+            $data = [];
+        }
+
+        $item->set($data);
+        $item->expiresAfter(self::TTL_SEARCH);
+        $this->cache->save($item);
+
+        return $data;
     }
 
     /**
-     * Je récupère un flux de livres récents via Google Books.
-     *
-     * Je tente d'abord une requête en français. Si je n'ai aucun résultat, je fais un fallback sans restriction.
+     * Flux "newest" par sujet. On tente FR, puis fallback sans restriction.
      *
      * @return array<int, array<string, mixed>>
      */
     public function newest(string $subject = 'fiction', int $limit = 12): array
     {
-        $primary = $this->fetchList([
-            'q' => sprintf('subject:%s', $subject),
-            'orderBy' => 'newest',
-            'printType' => 'books',
-            'langRestrict' => 'fr',
-            'maxResults' => $limit,
-        ]);
+        $subject = trim($subject) !== '' ? trim($subject) : 'fiction';
+        $limit = max(1, min($limit, 40));
 
-        if (!empty($primary)) {
-            return $primary;
+        $cacheKey = 'gbooks.newest.' . md5($subject . '|' . $limit);
+
+        $item = $this->cache->getItem($cacheKey);
+        if ($item->isHit()) {
+            $cached = $item->get();
+            return is_array($cached) ? $cached : [];
         }
 
-        return $this->fetchList([
-            'q' => sprintf('subject:%s', $subject),
-            'orderBy' => 'newest',
-            'printType' => 'books',
-            'maxResults' => $limit,
-        ]);
+        try {
+            $primary = $this->fetchList([
+                'q' => sprintf('subject:%s', $subject),
+                'orderBy' => 'newest',
+                'printType' => 'books',
+                'langRestrict' => 'fr',
+                'maxResults' => $limit,
+            ]);
+
+            if (!empty($primary)) {
+                $item->set($primary);
+                $item->expiresAfter(self::TTL_NEWEST);
+                $this->cache->save($item);
+
+                return $primary;
+            }
+
+            $fallback = $this->fetchList([
+                'q' => sprintf('subject:%s', $subject),
+                'orderBy' => 'newest',
+                'printType' => 'books',
+                'maxResults' => $limit,
+            ]);
+
+            $item->set($fallback);
+            $item->expiresAfter(self::TTL_NEWEST);
+            $this->cache->save($item);
+
+            return $fallback;
+        } catch (TransportExceptionInterface|\RuntimeException) {
+            // Si erreur réseau/quota : renvoyer vide (le controller décidera du message)
+            $item->set([]);
+            $item->expiresAfter(300); // 5 min (évite de spammer l’API en boucle)
+            $this->cache->save($item);
+
+            return [];
+        }
     }
 
     /**
-     * Je récupère les détails d'un livre via son ID Google Books.
+     * Détails d'un livre via son ID Google Books.
      *
      * @return array<string, mixed>
      */
     public function getById(string $googleBooksId): array
     {
-        $url = sprintf('https://www.googleapis.com/books/v1/volumes/%s', urlencode($googleBooksId));
-        $res = $this->http->request('GET', $url, [
-            'query' => [
-                'key' => $this->googleBooksApiKey,
-            ],
-        ]);
-
-        $row = $res->toArray(false);
-
-        if (isset($row['error'])) {
-            $message = (string) ($row['error']['message'] ?? 'Google Books error');
-            throw new \RuntimeException($message);
+        $googleBooksId = trim($googleBooksId);
+        if ($googleBooksId === '') {
+            throw new \InvalidArgumentException('Google Books ID invalide.');
         }
 
-        $info = $row['volumeInfo'] ?? [];
+        $cacheKey = 'gbooks.by_id.' . md5($googleBooksId);
 
-        return $this->mapItem($row, $info, $googleBooksId);
+        $item = $this->cache->getItem($cacheKey);
+        if ($item->isHit()) {
+            $cached = $item->get();
+            return is_array($cached) ? $cached : [];
+        }
+
+        $url = sprintf('%s/%s', self::BASE_URL, urlencode($googleBooksId));
+
+        try {
+            $res = $this->http->request('GET', $url, [
+                'query' => [
+                    'key' => $this->googleBooksApiKey,
+                ],
+                // robustesse réseau
+                'timeout' => 5.0,
+                'max_duration' => 8.0,
+            ]);
+
+            $row = $res->toArray(false);
+
+            if (isset($row['error'])) {
+                $message = (string) ($row['error']['message'] ?? 'Google Books error');
+                throw new \RuntimeException($message);
+            }
+
+            $info = is_array($row['volumeInfo'] ?? null) ? $row['volumeInfo'] : [];
+
+            $mapped = $this->mapItem($row, $info, $googleBooksId);
+
+            $item->set($mapped);
+            $item->expiresAfter(self::TTL_BY_ID);
+            $this->cache->save($item);
+
+            return $mapped;
+        } catch (TransportExceptionInterface|\RuntimeException $e) {
+            // Pas de cache long terme sur erreur, mais évite de marteler l’API
+            $item->set([]);
+            $item->expiresAfter(300);
+            $this->cache->save($item);
+
+            throw $e;
+        }
     }
 
     /**
-     * Je récupère une liste de volumes et je les mappe dans un format homogène.
-     *
      * @param array<string, mixed> $query
      * @return array<int, array<string, mixed>>
      */
@@ -89,8 +183,10 @@ final class GoogleBooksService
     {
         $query['key'] = $this->googleBooksApiKey;
 
-        $res = $this->http->request('GET', 'https://www.googleapis.com/books/v1/volumes', [
+        $res = $this->http->request('GET', self::BASE_URL, [
             'query' => $query,
+            'timeout' => 5.0,
+            'max_duration' => 8.0,
         ]);
 
         $data = $res->toArray(false);
@@ -101,15 +197,28 @@ final class GoogleBooksService
         }
 
         $items = $data['items'] ?? [];
+        if (!is_array($items)) {
+            return [];
+        }
 
-        return array_map(function (array $row): array {
+        $mapped = [];
+
+        foreach ($items as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
             $info = $row['volumeInfo'] ?? [];
-            return $this->mapItem($row, $info);
-        }, $items);
+            if (!is_array($info)) {
+                $info = [];
+            }
+            $mapped[] = $this->mapItem($row, $info);
+        }
+
+        return $mapped;
     }
 
     /**
-     * Je mappe un item Google Books vers un format stable utilisé par les templates.
+     * Mappe un item Google Books vers un format stable utilisé par les templates.
      *
      * @param array<string, mixed> $row
      * @param array<string, mixed> $info
@@ -117,38 +226,62 @@ final class GoogleBooksService
      */
     private function mapItem(array $row, array $info, ?string $fallbackId = null): array
     {
-        $thumbnail = $info['imageLinks']['thumbnail'] ?? null;
-        if (is_string($thumbnail)) {
-            $thumbnail = str_replace('http://', 'https://', $thumbnail);
+        $thumbnail = null;
+
+        if (isset($info['imageLinks']) && is_array($info['imageLinks'])) {
+            $thumb = $info['imageLinks']['thumbnail'] ?? null;
+            if (is_string($thumb) && $thumb !== '') {
+                // Force https
+                $thumbnail = str_replace('http://', 'https://', $thumb);
+            }
+        }
+
+        $authors = $info['authors'] ?? [];
+        if (!is_array($authors)) {
+            $authors = [];
         }
 
         return [
-            'id' => $row['id'] ?? $fallbackId,
-            'title' => $info['title'] ?? 'Sans titre',
-            'authors' => $info['authors'] ?? [],
-            'publisher' => $info['publisher'] ?? null,
-            'publishedDate' => $info['publishedDate'] ?? null,
-            'description' => $info['description'] ?? null,
+            'id' => (string) ($row['id'] ?? $fallbackId ?? ''),
+            'title' => (string) ($info['title'] ?? 'Sans titre'),
+            'authors' => $authors,
+            'publisher' => isset($info['publisher']) ? (string) $info['publisher'] : null,
+            'publishedDate' => isset($info['publishedDate']) ? (string) $info['publishedDate'] : null,
+            'description' => isset($info['description']) ? (string) $info['description'] : null,
             'thumbnail' => $thumbnail,
-            'pageCount' => $info['pageCount'] ?? null,
+            'pageCount' => isset($info['pageCount']) ? (int) $info['pageCount'] : null,
             'isbn' => self::extractIsbn($info['industryIdentifiers'] ?? []),
         ];
     }
 
     /**
-     * @param array<int, array<string, string>> $ids
+     * @param mixed $ids
      */
-    private static function extractIsbn(array $ids): ?string
+    private static function extractIsbn(mixed $ids): ?string
     {
+        if (!is_array($ids)) {
+            return null;
+        }
+
+        // Recherche ISBN_13
         foreach ($ids as $id) {
+            if (!is_array($id)) {
+                continue;
+            }
             if (($id['type'] ?? '') === 'ISBN_13') {
-                return $id['identifier'] ?? null;
+                $val = $id['identifier'] ?? null;
+                return is_string($val) ? $val : null;
             }
         }
 
+        // Fallback ISBN_10
         foreach ($ids as $id) {
+            if (!is_array($id)) {
+                continue;
+            }
             if (($id['type'] ?? '') === 'ISBN_10') {
-                return $id['identifier'] ?? null;
+                $val = $id['identifier'] ?? null;
+                return is_string($val) ? $val : null;
             }
         }
 
