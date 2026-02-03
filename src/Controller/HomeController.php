@@ -19,16 +19,26 @@ final class HomeController extends AbstractController
         $books = [];
         $movies = [];
 
+        // Livres
         try {
-            $books = $googleBooks->search('bestseller', 12);
+            // Requête plus stable qu’un simple "bestseller"
+            $books = $googleBooks->newest('fiction', 12);
+
+            // Fallback si l'API renvoie 200 mais sans items exploitables
+            if (empty($books)) {
+                $books = $googleBooks->search('subject:fiction', 12);
+            }
         } catch (\Throwable) {
             $this->addFlash('danger', 'Impossible de charger des livres pour le moment.');
+            $books = [];
         }
 
+        // Films
         try {
             $movies = $tmdb->nowPlaying(12);
         } catch (\Throwable) {
             $this->addFlash('danger', 'Impossible de charger des films pour le moment.');
+            $movies = [];
         }
 
         return $this->render('home/index.html.twig', [
