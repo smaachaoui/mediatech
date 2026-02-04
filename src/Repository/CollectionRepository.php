@@ -7,30 +7,30 @@ use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-/**
- * @extends ServiceEntityRepository<Collection>
- *
- * @method Collection|null find($id, $lockMode = null, $lockVersion = null)
- * @method Collection|null findOneBy(array $criteria, array $orderBy = null)
- * @method Collection[]    findAll()
- * @method Collection[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
- */
-class CollectionRepository extends ServiceEntityRepository
-{
-    public function __construct(ManagerRegistry $registry)
+    /**
+     * @extends ServiceEntityRepository<Collection>
+     *
+     * @method Collection|null find($id, $lockMode = null, $lockVersion = null)
+     * @method Collection|null findOneBy(array $criteria, array $orderBy = null)
+     * @method Collection[]    findAll()
+     * @method Collection[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+     */
+    class CollectionRepository extends ServiceEntityRepository
     {
-        parent::__construct($registry, Collection::class);
-    }
+        public function __construct(ManagerRegistry $registry)
+        {
+            parent::__construct($registry, Collection::class);
+        }
 
-    public function findForUser(\App\Entity\User $user): array
-    {
-        return $this->createQueryBuilder('c')
-            ->andWhere('c.user = :user')          // ⚠️ adapte si ton champ = owner/createdBy
-            ->setParameter('user', $user)
-            ->orderBy('c.id', 'DESC')             // safe si pas de createdAt
-            ->getQuery()
-            ->getResult();
-    }
+        public function findForUser(\App\Entity\User $user): array
+        {
+            return $this->createQueryBuilder('c')
+                ->andWhere('c.user = :user')          // ⚠️ adapte si ton champ = owner/createdBy
+                ->setParameter('user', $user)
+                ->orderBy('c.id', 'DESC')             // safe si pas de createdAt
+                ->getQuery()
+                ->getResult();
+        }
 
     public function findForUserExcluding(User $user, int $excludedCollectionId): array
     {
@@ -94,31 +94,69 @@ class CollectionRepository extends ServiceEntityRepository
         ];
     }
 
+    /**
+     * Je retourne une pagination simple des collections utilisateur (admin).
+     *
+     * @return array{items: Collection[], total: int}
+     */
+    public function findUserCollectionsPaginated(?bool $published, int $page, int $limit): array
+    {
+        $qb = $this->createQueryBuilder('c')
+            ->andWhere('c.scope = :scope')
+            ->setParameter('scope', Collection::SCOPE_USER);
+
+        if ($published !== null) {
+            $qb->andWhere('c.isPublished = :published')
+                ->setParameter('published', $published);
+        }
+
+        $qb->orderBy('c.createdAt', 'DESC')
+        ->addOrderBy('c.id', 'DESC');
+
+        $countQb = clone $qb;
+        $total = (int) $countQb
+            ->select('COUNT(c.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        $items = $qb
+            ->setFirstResult(($page - 1) * $limit)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+
+        return [
+            'items' => $items,
+            'total' => $total,
+        ];
+    }
 
 
 
-//    /**
-//     * @return Collection[] Returns an array of Collection objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('c')
-//            ->andWhere('c.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('c.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
 
-//    public function findOneBySomeField($value): ?Collection
-//    {
-//        return $this->createQueryBuilder('c')
-//            ->andWhere('c.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+
+    //    /**
+    //     * @return Collection[] Returns an array of Collection objects
+    //     */
+    //    public function findByExampleField($value): array
+    //    {
+    //        return $this->createQueryBuilder('c')
+    //            ->andWhere('c.exampleField = :val')
+    //            ->setParameter('val', $value)
+    //            ->orderBy('c.id', 'ASC')
+    //            ->setMaxResults(10)
+    //            ->getQuery()
+    //            ->getResult()
+    //        ;
+    //    }
+
+    //    public function findOneBySomeField($value): ?Collection
+    //    {
+    //        return $this->createQueryBuilder('c')
+    //            ->andWhere('c.exampleField = :val')
+    //            ->setParameter('val', $value)
+    //            ->getQuery()
+    //            ->getOneOrNullResult()
+    //        ;
+    //    }
 }
