@@ -331,6 +331,104 @@
         </div>
     </div>
 
+          <div class="card border rounded-3 mb-4">
+        <div class="card-body">
+          <div class="fw-semibold mb-3 text-uppercase small">Commentaires</div>
+
+          <form method="post" action="{{ path('app_collection_comment', { id: collection.id }) }}" class="mb-4">
+            <input type="hidden" name="_token" value="{{ csrf_token('comment_collection_' ~ collection.id) }}">
+
+            <input type="text" name="website" value="" autocomplete="off" tabindex="-1"
+                   style="position:absolute; left:-9999px; width:1px; height:1px; opacity:0;">
+
+            {% if app.user %}
+              {% if collection.user and app.user.id == collection.user.id %}
+                <div class="text-muted small">
+                  Vous ne pouvez pas commenter votre propre collection.
+                </div>
+              {% else %}
+                <div class="mb-2">
+                  <label for="comment_content" class="form-label small text-muted">Ajouter un commentaire</label>
+                  <textarea
+                    id="comment_content"
+                    name="comment_content"
+                    class="form-control"
+                    rows="3"
+                    maxlength="1000"
+                    placeholder="Votre message..."
+                    required
+                  ></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-outline-primary btn-sm">
+                  Publier
+                </button>
+              {% endif %}
+            {% else %}
+              <div class="row g-2 mb-2">
+                <div class="col-12 col-md-4">
+                  <label class="form-label small text-muted" for="guest_name">Nom</label>
+                  <input id="guest_name" name="guest_name" class="form-control" maxlength="60" required>
+                </div>
+
+                <div class="col-12 col-md-4">
+                  <label class="form-label small text-muted" for="guest_email">Email</label>
+                  <input id="guest_email" name="guest_email" type="email" class="form-control" maxlength="180" required>
+                </div>
+
+                <div class="col-12 mt-2">
+                  <label class="form-label small text-muted" for="comment_content">Commentaire</label>
+                  <textarea
+                    id="comment_content"
+                    name="comment_content"
+                    class="form-control"
+                    rows="3"
+                    maxlength="1000"
+                    placeholder="Votre message..."
+                    required
+                  ></textarea>
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-outline-primary btn-sm">
+                Publier
+              </button>
+            {% endif %}
+          </form>
+
+          {% if comments is not empty %}
+            <div class="d-flex flex-column gap-3">
+              {% for comment in comments %}
+                <div class="border rounded-3 p-3">
+                  <div class="d-flex justify-content-between align-items-start gap-2">
+                    <div class="fw-semibold">
+                      {% if comment.user %}
+                        {{ comment.user.pseudo ?? comment.user.email }}
+                      {% else %}
+                        {{ comment.guestName ?? 'Invité' }}
+                      {% endif %}
+                    </div>
+
+                    <div class="text-muted small">
+                      {% if comment.createdAt %}
+                        {{ comment.createdAt|date('d/m/Y H:i') }}
+                      {% else %}
+                        —
+                      {% endif %}
+                    </div>
+                  </div>
+
+                  <div class="text-muted mt-2">
+                    {{ comment.content }}
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="text-muted">Aucun commentaire pour le moment.</div>
+          {% endif %}
+        </div>
+      </div>
 
 
     </div>
