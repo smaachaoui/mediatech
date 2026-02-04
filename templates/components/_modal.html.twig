@@ -1,7 +1,7 @@
 {# templates/components/_modal.html.twig
 
    Ce composant supporte deux modes d'utilisation :
-   
+
    MODE 1 - Avec embed et blocs (pour les formulaires complexes) :
    {% embed 'components/_modal.html.twig' with {
      id: 'myModal',
@@ -15,13 +15,15 @@
        <p>Mon contenu ici</p>
      {% endblock %}
    {% endembed %}
-   
+
    MODE 2 - Avec include et variables (pour les confirmations simples) :
    {% include 'components/_modal.html.twig' with {
      id: 'myModal',
      title: 'Mon titre',
      body: '<p>Mon contenu HTML</p>',
-     footer: '<form>...</form>'
+     footer: '<form>...</form>',
+     allow_raw_body: true,
+     allow_raw_footer: true
    } %}
 #}
 
@@ -58,15 +60,27 @@
 
       {# MODE 2 : Utilisation avec include et variables body/footer #}
       {% else %}
+        {% set allowRawBody = allow_raw_body|default(false) %}
+        {% set allowRawFooter = allow_raw_footer|default(false) %}
+
         <div class="modal-body">
-          {{ body|default('')|raw }}
+          {% if allowRawBody %}
+            {{ body|default('')|raw }}
+          {% else %}
+            {{ body|default('')|e|nl2br }}
+          {% endif %}
         </div>
 
         <div class="modal-footer">
           <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
             Annuler
           </button>
-          {{ footer|default('')|raw }}
+
+          {% if allowRawFooter %}
+            {{ footer|default('')|raw }}
+          {% else %}
+            {{ footer|default('')|e|nl2br }}
+          {% endif %}
         </div>
       {% endif %}
 
