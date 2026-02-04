@@ -5,9 +5,12 @@ namespace App\Entity;
 use App\Repository\CommentRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: CommentRepository::class)]
 #[ORM\Table(name: 'comment')]
+#[Assert\Callback('validateAuthor')]
 class Comment
 {
     #[ORM\Id]
@@ -16,9 +19,17 @@ class Comment
     private ?int $id = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Assert\NotBlank(message: "Le contenu du commentaire est requis.")]
+    #[Assert\Length(
+        min: 3,
+        max: 2000,
+        minMessage: "Le commentaire doit contenir au moins {{ limit }} caractères.",
+        maxMessage: "Le commentaire ne peut pas dépasser {{ limit }} caractères."
+    )]
     private ?string $content = null;
 
     #[ORM\Column]
+    #[Assert\NotNull]
     private \DateTimeImmutable $createdAt;
 
     #[ORM\Column(nullable: true)]
@@ -29,19 +40,38 @@ class Comment
     private ?User $user = null;
 
     #[ORM\Column(length: 60, nullable: true)]
+    #[Assert\Length(
+        max: 60,
+        maxMessage: "Le nom ne peut pas dépasser {{ limit }} caractères."
+    )]
     private ?string $guestName = null;
 
     #[ORM\Column(length: 180, nullable: true)]
+    #[Assert\Email(message: "L'adresse email n'est pas valide.")]
+    #[Assert\Length(
+        max: 180,
+        maxMessage: "L'email ne peut pas dépasser {{ limit }} caractères."
+    )]
     private ?string $guestEmail = null;
 
     #[ORM\Column(length: 45, nullable: true)]
+    #[Assert\Ip(message: "L'adresse IP n'est pas valide.")]
+    #[Assert\Length(
+        max: 45,
+        maxMessage: "L'adresse IP ne peut pas dépasser {{ limit }} caractères."
+    )]
     private ?string $ipAddress = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(
+        max: 255,
+        maxMessage: "Le user-agent ne peut pas dépasser {{ limit }} caractères."
+    )]
     private ?string $userAgent = null;
 
     #[ORM\ManyToOne(inversedBy: 'comments')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Assert\NotNull(message: "La collection associée est obligatoire.")]
     private ?Collection $collection = null;
 
     public function __construct()
@@ -174,5 +204,28 @@ class Comment
         return $this->user === null
             && $this->guestName !== null && trim($this->guestName) !== ''
             && $this->guestEmail !== null && trim($this->guestEmail) !== '';
+    }
+
+    public function validateAuthor(ExecutionContextInterface $context): void
+    {
+        $hasUser = $this->user !== null;
+        $hasGuestName = $this->guestName !== null && trim($this->guestName) !== '';
+        $hasGuestEmail = $this->guestEmail !== null && trim($this->guestEmail) !== '';
+
+        if ($hasUser) {
+            return;
+        }
+
+        if (!$hasGuestName) {
+            $context->buildViolation("Le nom est obligatoire pour un commentaire invité.")
+                ->atPath('guestName')
+                ->addViolation();
+        }
+
+        if (!$hasGuestEmail) {
+            $context->buildViolation("L'email est obligatoire pour un commentaire invité.")
+                ->atPath('guestEmail')
+                ->addViolation();
+        }
     }
 }
