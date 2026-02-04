@@ -1,99 +1,80 @@
-<div class="d-flex justify-content-between align-items-start gap-3 mb-3">
-  <div>
-    <h1 class="h3 mb-1">Informations personnelles</h1>
-    <div class="text-muted">Gérez vos informations de profil.</div>
-  </div>
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="h3 mb-0">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="me-2" viewBox="0 0 16 16">
+      <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10s-3.516.68-4.168 1.332c-.678.678-.83 1.418-.832 1.664z"/>
+    </svg>
+    Informations personnelles
+  </h1>
 </div>
 
-<div class="row g-4">
+<div class="card border-0 shadow-sm">
+  <div class="card-body p-4">
 
-  <div class="col-12 col-lg-4">
-    <div class="card border rounded-3">
-      <div class="card-body text-center">
-
-        <div class="mb-3">
-          <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center border overflow-hidden"
-               style="width: 120px; height: 120px; font-size: 3rem;">
-            {% if user.profilePicture %}
-              <img src="{{ asset(user.profilePicture) }}" 
-                   alt="Photo de profil" 
-                   class="w-100 h-100"
-                   style="object-fit: cover;">
-            {% else %}
-              <span class="text-muted">{{ user.pseudo|first|upper }}</span>
-            {% endif %}
-          </div>
+    <div class="text-center mb-4">
+      {% if user.profilePicture %}
+        <img src="{{ asset(user.profilePicture) }}" 
+             alt="{{ user.pseudo }}" 
+             class="rounded-circle mb-3"
+             width="120" height="120"
+             style="object-fit: cover;">
+      {% else %}
+        <div class="rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center mx-auto mb-3" 
+             style="width: 120px; height: 120px;">
+          <span class="text-primary" style="font-size: 3rem;">{{ user.pseudo|first|upper }}</span>
         </div>
-
-        <h2 class="h5 mb-1">{{ user.pseudo }}</h2>
-        <div class="text-muted small mb-3">{{ user.email }}</div>
-
-        <div class="text-muted small">
-          Membre depuis le {{ user.createdAt|date('d/m/Y') }}
-        </div>
-
-      </div>
+      {% endif %}
+      <h4 class="mb-0">{{ user.pseudo }}</h4>
     </div>
-  </div>
 
-  <div class="col-12 col-lg-8">
-    <div class="card border rounded-3">
-      <div class="card-body">
-
-        <div class="mb-4">
-          <div class="text-muted small mb-1">Pseudo</div>
-          <div class="fw-semibold">{{ user.pseudo }}</div>
-        </div>
-
-        <div class="mb-4">
-          <div class="text-muted small mb-1">Email</div>
-          <div>{{ user.email }}</div>
-        </div>
-
-        <div class="mb-4">
-          <div class="text-muted small mb-1">Biographie</div>
-          {% if user.biography %}
-            <div>{{ user.biography }}</div>
-          {% else %}
-            <div class="text-muted fst-italic">Aucune biographie renseignée.</div>
-          {% endif %}
-        </div>
-
-        <hr class="my-4">
-
-        <div class="d-flex flex-wrap gap-2">
-          <button type="button" 
-                  class="btn btn-primary"
-                  data-bs-toggle="modal" 
-                  data-bs-target="#editProfileModal">
-            Modifier le profil
-          </button>
-
-          <a href="{{ path('app_forgot_password_request') }}" class="btn btn-outline-secondary">
-            Changer le mot de passe
-          </a>
-
-          {% if user.profilePicture %}
-            <button type="button" 
-                    class="btn btn-outline-danger"
-                    data-bs-toggle="modal" 
-                    data-bs-target="#removePictureModal">
-              Supprimer la photo
-            </button>
-          {% endif %}
-        </div>
-
-      </div>
+    <div class="mb-3">
+      <small class="text-muted d-block">Email</small>
+      <span>{{ user.email }}</span>
     </div>
-  </div>
 
+    <div class="mb-3">
+      <small class="text-muted d-block">Biographie</small>
+      {% if user.biography %}
+        <span>{{ user.biography }}</span>
+      {% else %}
+        <span class="fst-italic text-muted">Aucune biographie renseignée.</span>
+      {% endif %}
+    </div>
+
+    <div class="mb-4">
+      <small class="text-muted d-block">Membre depuis</small>
+      <span>{{ user.createdAt|date('d/m/Y') }}</span>
+    </div>
+
+    <div class="d-flex flex-wrap gap-2 justify-content-end">
+      <button type="button" 
+              class="btn btn-primary"
+              data-bs-toggle="modal" 
+              data-bs-target="#editProfileModal">
+        Modifier le profil
+      </button>
+
+      <a href="{{ path('app_forgot_password_request') }}" class="btn btn-outline-secondary">
+        Changer le mot de passe
+      </a>
+
+      {% if user.profilePicture %}
+        <button type="button" 
+                class="btn btn-outline-danger"
+                data-bs-toggle="modal" 
+                data-bs-target="#removePictureModal">
+          Supprimer la photo
+        </button>
+      {% endif %}
+    </div>
+
+  </div>
 </div>
 
 <div class="modal fade" id="editProfileModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
 
-      <div class="modal-header">
+      <div class="modal-header border-0">
         <h5 class="modal-title">Modifier mon profil</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
       </div>
@@ -101,11 +82,26 @@
       {{ form_start(editForm, { 'action': path('app_profile_edit'), 'attr': { 'enctype': 'multipart/form-data' } }) }}
         <div class="modal-body">
 
+          <div class="text-center mb-4">
+            {% if user.profilePicture %}
+              <img src="{{ asset(user.profilePicture) }}" 
+                   alt="{{ user.pseudo }}" 
+                   class="rounded-circle mb-2"
+                   width="80" height="80"
+                   style="object-fit: cover;">
+            {% else %}
+              <div class="rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center mx-auto mb-2" 
+                   style="width: 80px; height: 80px;">
+                <span class="text-primary" style="font-size: 2rem;">{{ user.pseudo|first|upper }}</span>
+              </div>
+            {% endif %}
+          </div>
+
           <div class="mb-3">
             {{ form_label(editForm.pseudo) }}
             {{ form_widget(editForm.pseudo) }}
             {{ form_errors(editForm.pseudo) }}
-            <div class="form-text">Entre 3 et 50 caractères. Lettres, chiffres, tirets et underscores uniquement.</div>
+            <div class="form-text">Entre 3 et 50 caractères.</div>
           </div>
 
           <div class="mb-3">
@@ -119,17 +115,17 @@
             {{ form_label(editForm.profilePictureFile) }}
             {{ form_widget(editForm.profilePictureFile) }}
             {{ form_errors(editForm.profilePictureFile) }}
-            <div class="form-text">Formats acceptés : JPG, PNG, GIF, WebP. Maximum 2 Mo.</div>
+            <div class="form-text">Formats : JPG, PNG, GIF, WebP. Max : 2 Mo.</div>
           </div>
 
         </div>
 
-        <div class="modal-footer">
+        <div class="modal-footer border-0">
           <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
             Annuler
           </button>
           <button type="submit" class="btn btn-primary">
-            Enregistrer les modifications
+            Enregistrer
           </button>
         </div>
       {{ form_end(editForm) }}
@@ -140,10 +136,10 @@
 
 {% if user.profilePicture %}
   <div class="modal fade" id="removePictureModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
 
-        <div class="modal-header">
+        <div class="modal-header border-0">
           <h5 class="modal-title">Supprimer la photo de profil</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
         </div>
@@ -153,14 +149,14 @@
           <p class="text-muted mb-0">Votre avatar affichera l'initiale de votre pseudo.</p>
         </div>
 
-        <div class="modal-footer">
+        <div class="modal-footer border-0">
           <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
             Annuler
           </button>
           <form method="post" action="{{ path('app_profile_remove_picture') }}">
             <input type="hidden" name="_token" value="{{ csrf_token('remove_picture') }}">
             <button type="submit" class="btn btn-danger">
-              Supprimer la photo
+              Supprimer
             </button>
           </form>
         </div>
