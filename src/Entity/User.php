@@ -10,6 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[UniqueEntity(fields: ['pseudo'], message: 'Ce pseudo est déjà pris.')]
 #[UniqueEntity(fields: ['email'], message: 'Cet email est déjà utilisé.')]
@@ -26,6 +27,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * Je garde l'email unique car c'est l'identifiant principal de connexion.
      */
     #[ORM\Column(length: 180, unique: true)]
+    #[Assert\NotBlank(message: "L'email est obligatoire.")]
+    #[Assert\Email(message: "L'adresse email n'est pas valide.")]
+    #[Assert\Length(
+        max: 180,
+        maxMessage: "L'email ne peut pas dépasser {{ limit }} caractères."
+    )]
     private ?string $email = null;
 
     /*
@@ -38,36 +45,63 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * Je stocke uniquement le mot de passe hashé.
      */
     #[ORM\Column]
+    #[Assert\NotBlank(message: "Le mot de passe est obligatoire.")]
+    #[Assert\Length(
+        min: 8,
+        max: 4096,
+        minMessage: "Le mot de passe doit contenir au moins {{ limit }} caractères."
+    )]
     private ?string $password = null;
 
     /*
      * J'ajoute un pseudo pour l'affichage public.
      */
     #[ORM\Column(length: 50, unique: true)]
+    #[Assert\NotBlank(message: "Le pseudo est obligatoire.")]
+    #[Assert\Length(
+        min: 3,
+        max: 50,
+        minMessage: "Le pseudo doit contenir au moins {{ limit }} caractères.",
+        maxMessage: "Le pseudo ne peut pas dépasser {{ limit }} caractères."
+    )]
+    #[Assert\Regex(
+        pattern: "/^[a-zA-Z0-9._-]+$/",
+        message: "Le pseudo ne peut contenir que des lettres, chiffres, points, tirets et underscores."
+    )]
     private ?string $pseudo = null;
 
     /*
      * Je stocke le chemin ou l'URL de la photo de profil.
      */
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(
+        max: 255,
+        maxMessage: "La photo de profil ne peut pas dépasser {{ limit }} caractères."
+    )]
     private ?string $profilePicture = null;
 
     /*
      * J'ajoute une biographie facultative.
      */
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Assert\Length(
+        max: 2000,
+        maxMessage: "La biographie ne peut pas dépasser {{ limit }} caractères."
+    )]
     private ?string $biography = null;
 
     /*
      * Je garde un état actif/inactif pour pouvoir désactiver un compte sans le supprimer.
      */
     #[ORM\Column(options: ['default' => true])]
+    #[Assert\NotNull]
     private bool $isActive = true;
 
     /*
      * Je conserve la date de création du compte.
      */
     #[ORM\Column]
+    #[Assert\NotNull]
     private \DateTimeImmutable $createdAt;
 
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Collection::class)]
@@ -78,7 +112,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Comment::class)]
     private DoctrineCollection $comments;
-
 
     #[ORM\ManyToMany(targetEntity: Genre::class, inversedBy: 'usersWhoFavorited')]
     #[ORM\JoinTable(name: 'user_favorite_genre')]
@@ -105,7 +138,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function setEmail(string $email): static
     {
-        $this->email = $email;
+        $this->email = trim($email);
 
         return $this;
     }
@@ -159,7 +192,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function setPseudo(string $pseudo): self
     {
-        $this->pseudo = $pseudo;
+        $this->pseudo = trim($pseudo);
 
         return $this;
     }
@@ -171,7 +204,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function setProfilePicture(?string $profilePicture): static
     {
-        $this->profilePicture = $profilePicture;
+        $profilePicture = $profilePicture !== null ? trim($profilePicture) : null;
+        $this->profilePicture = $profilePicture !== '' ? $profilePicture : null;
 
         return $this;
     }
@@ -183,7 +217,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function setBiography(?string $biography): static
     {
-        $this->biography = $biography;
+        $biography = $biography !== null ? trim($biography) : null;
+        $this->biography = $biography !== '' ? $biography : null;
 
         return $this;
     }
@@ -289,7 +324,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
-
 
     /**
      * @return DoctrineCollection<int, Genre>
