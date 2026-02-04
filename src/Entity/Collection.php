@@ -7,8 +7,11 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection as DoctrineCollection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: CollectionRepository::class)]
+#[Assert\Callback('validatePublishing')]
 class Collection
 {
     public const SCOPE_SYSTEM = 'system';
@@ -18,8 +21,12 @@ class Collection
     public const MEDIA_BOOK = 'book';
     public const MEDIA_MOVIE = 'movie';
 
+    public const VISIBILITY_PRIVATE = 'private';
+    public const VISIBILITY_PUBLIC = 'public';
+
     public const SCOPES = [self::SCOPE_SYSTEM, self::SCOPE_USER];
     public const MEDIA_TYPES = [self::MEDIA_ALL, self::MEDIA_BOOK, self::MEDIA_MOVIE];
+    public const VISIBILITIES = [self::VISIBILITY_PRIVATE, self::VISIBILITY_PUBLIC];
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -27,32 +34,55 @@ class Collection
     private ?int $id = null;
 
     #[ORM\Column(length: 150)]
+    #[Assert\NotBlank(message: "Le nom de la collection est obligatoire.")]
+    #[Assert\Length(
+        max: 150,
+        maxMessage: "Le nom ne peut pas dépasser {{ limit }} caractères."
+    )]
     private ?string $name = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(
+        max: 255,
+        maxMessage: "L'URL de couverture ne peut pas dépasser {{ limit }} caractères."
+    )]
+    #[Assert\Url(message: "L'URL de couverture n'est pas valide.")]
     private ?string $coverImage = null;
 
     #[ORM\Column(length: 60, nullable: true)]
+    #[Assert\Length(
+        max: 60,
+        maxMessage: "Le genre ne peut pas dépasser {{ limit }} caractères."
+    )]
     private ?string $genre = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Assert\Length(
+        max: 5000,
+        maxMessage: "La description ne peut pas dépasser {{ limit }} caractères."
+    )]
     private ?string $description = null;
 
     // ex: type -> scope
     #[ORM\Column(length: 10)]
+    #[Assert\Choice(choices: self::SCOPES, message: "Le scope de la collection n'est pas valide.")]
     private string $scope = self::SCOPE_USER;
 
     // NEW: all|book|movie
     #[ORM\Column(name: 'media_type', length: 10)]
+    #[Assert\Choice(choices: self::MEDIA_TYPES, message: "Le type de média n'est pas valide.")]
     private string $mediaType = self::MEDIA_ALL;
 
     #[ORM\Column(length: 10)]
-    private string $visibility = 'private';
+    #[Assert\Choice(choices: self::VISIBILITIES, message: "La visibilité n'est pas valide.")]
+    private string $visibility = self::VISIBILITY_PRIVATE;
 
     #[ORM\Column(options: ['default' => false])]
+    #[Assert\NotNull]
     private bool $isPublished = false;
 
     #[ORM\Column]
+    #[Assert\NotNull]
     private \DateTimeImmutable $createdAt;
 
     #[ORM\Column(nullable: true)]
@@ -60,6 +90,7 @@ class Collection
 
     #[ORM\ManyToOne(inversedBy: 'collections')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Assert\NotNull(message: "L'utilisateur propriétaire est obligatoire.")]
     private ?User $user = null;
 
     #[ORM\OneToMany(mappedBy: 'collection', targetEntity: CollectionBook::class, orphanRemoval: true, cascade: ['persist', 'remove'])]
@@ -110,7 +141,6 @@ class Collection
         $this->genre = $genre !== '' ? $genre : null;
         return $this;
     }
-
 
     public function getDescription(): ?string { return $this->description; }
     public function setDescription(?string $description): static { $this->description = $description; return $this; }
@@ -175,4 +205,25 @@ class Collection
     public function getCollectionMovies(): DoctrineCollection { return $this->collectionMovies; }
     public function getRatings(): DoctrineCollection { return $this->ratings; }
     public function getComments(): DoctrineCollection { return $this->comments; }
+
+    public function validatePublishing(ExecutionContextInterface $context): void
+    {
+        if ($this->isPublished && $this->publishedAt === null) {
+            $context->buildViolation("La date de publication est obligatoire lorsque la collection est publiée.")
+                ->atPath('publishedAt')
+                ->addViolation();
+        }
+
+        if (!$this->isPublished && $this->publishedAt !== null) {
+            $context->buildViolation("La date de publication doit être vide lorsque la collection n'est pas publiée.")
+                ->atPath('publishedAt')
+                ->addViolation();
+        }
+
+        if ($this->visibility === self::VISIBILITY_PUBLIC && !$this->isPublished) {
+            $context->buildViolation("Une collection publique doit être publiée.")
+                ->atPath('visibility')
+                ->addViolation();
+        }
+    }
 }
