@@ -10,6 +10,9 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Form\AdminCollectionEditType;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+
 
 #[Route('/admin/collections')]
 final class AdminCollectionController extends AbstractController
@@ -100,4 +103,66 @@ final class AdminCollectionController extends AbstractController
 
         return $this->redirectToRoute('admin_collections_index');
     }
+
+    #[Route('/{id}/edit', name: 'admin_collections_edit', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
+    public function edit(
+        int $id,
+        Request $request,
+        CollectionRepository $collectionRepository,
+        EntityManagerInterface $em
+    ): Response {
+        $this->denyAccessUnlessGranted(AdminVoter::COLLECTIONS_MANAGE);
+
+        $collection = $collectionRepository->find($id);
+        if (!$collection || $collection->getScope() !== Collection::SCOPE_USER) {
+            throw $this->createNotFoundException('Collection introuvable.');
+        }
+
+        $form = $this->createForm(AdminCollectionEditType::class, $collection);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->flush();
+            $this->addFlash('success', 'Collection mise à jour.');
+            return $this->redirectToRoute('admin_collections_index');
+        }
+
+        return $this->render('admin/collections/edit.html.twig', [
+            'collection' => $collection,
+            'form' => $form->createView(),
+        ]);
+    }
+
+    #[Route('/{id}/delete', name: 'admin_collections_delete', requirements: ['id' => '\d+'], methods: ['POST'])]
+    public function delete(
+        int $id,
+        Request $request,
+        CollectionRepository $collectionRepository,
+        EntityManagerInterface $em
+    ): RedirectResponse {
+        $this->denyAccessUnlessGranted(AdminVoter::COLLECTIONS_MANAGE);
+
+        $collection = $collectionRepository->find($id);
+        if (!$collection || $collection->getScope() !== Collection::SCOPE_USER) {
+            throw $this->createNotFoundException('Collection introuvable.');
+        }
+
+        if (
+            !$this->isCsrfTokenValid(
+                'admin_delete_collection_'.$collection->getId(),
+                (string) $request->request->get('_token')
+            )
+        ) {
+            $this->addFlash('danger', 'Jeton CSRF invalide.');
+            return $this->redirectToRoute('admin_collections_index');
+        }
+
+        $em->remove($collection);
+        $em->flush();
+
+        $this->addFlash('success', 'Collection supprimée.');
+        return $this->redirectToRoute('admin_collections_index');
+    }
+
+
 }

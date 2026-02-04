@@ -81,14 +81,61 @@
                     </a>
                   {% endif %}
 
-                  <form method="post" action="{{ path('admin_collections_toggle_publish', { id: c.id }) }}">
-                    <input type="hidden" name="_token" value="{{ csrf_token('admin_toggle_publish_collection_' ~ c.id) }}">
-                    <button type="submit" class="btn btn-outline-primary btn-sm"
-                            onclick="return confirm('Confirmer la modification de publication ?');">
-                      {{ c.isPublished ? 'Dépublier' : 'Publier' }}
-                    </button>
-                  </form>
+                  <a class="btn btn-outline-secondary btn-sm"
+                     href="{{ path('admin_collections_edit', { id: c.id }) }}">
+                    Modifier
+                  </a>
+
+                  <button
+                    type="button"
+                    class="btn btn-outline-danger btn-sm"
+                    data-bs-toggle="modal"
+                    data-bs-target="#deleteCollectionModal_{{ c.id }}">
+                    Supprimer
+                  </button>
+
+                  <button
+                    type="button"
+                    class="btn btn-outline-primary btn-sm"
+                    data-bs-toggle="modal"
+                    data-bs-target="#togglePublishCollectionModal_{{ c.id }}">
+                    {{ c.isPublished ? 'Dépublier' : 'Publier' }}
+                  </button>
                 </div>
+
+                {% include 'components/_modal.html.twig' with {
+                  id: 'deleteCollectionModal_' ~ c.id,
+                  title: 'Supprimer la collection',
+                  body: '
+                    <p>Voulez-vous vraiment supprimer la collection <strong>' ~ c.name|e ~ '</strong> ?</p>
+                    <p class="text-danger mb-0">Cette action est définitive.</p>
+                  ',
+                  footer: '
+                    <form method="post" action="' ~ path('admin_collections_delete', { id: c.id }) ~ '">
+                      <input type="hidden" name="_token" value="' ~ csrf_token('admin_delete_collection_' ~ c.id) ~ '">
+                      <button type="submit" class="btn btn-danger">
+                        Supprimer définitivement
+                      </button>
+                    </form>
+                  '
+                } %}
+
+                {% include 'components/_modal.html.twig' with {
+                  id: 'togglePublishCollectionModal_' ~ c.id,
+                  title: (c.isPublished ? 'Dépublier la collection' : 'Publier la collection'),
+                  body: '
+                    <p>Confirmer la modification de publication pour <strong>' ~ c.name|e ~ '</strong> ?</p>
+                  ',
+                  footer: '
+                    <form method="post" action="' ~ path('admin_collections_toggle_publish', { id: c.id }) ~ '">
+                      <input type="hidden" name="_token" value="' ~ csrf_token('admin_toggle_publish_collection_' ~ c.id) ~ '">
+                      <button type="submit" class="btn btn-primary">
+                        Confirmer
+                      </button>
+                    </form>
+                  '
+                } %}
+
               </td>
             </tr>
           {% endfor %}

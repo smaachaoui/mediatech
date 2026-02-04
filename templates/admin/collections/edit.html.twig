@@ -1,0 +1,34 @@
+{% extends 'dashboard/_layout.html.twig' %}
+
+{% block title %}Admin | Modifier collection{% endblock %}
+
+{% block dashboard_sidebar %}
+  {% include 'admin/partials/_sidebar.html.twig' with { section: 'collections' } %}
+{% endblock %}
+
+{% block dashboard_content %}
+  <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+    <div>
+      <h1 class="h3 mb-1">Modifier la collection</h1>
+      <div class="text-muted">{{ collection.name }}</div>
+    </div>
+
+    <a class="btn btn-outline-secondary btn-sm" href="{{ path('admin_collections_index') }}">
+      Retour
+    </a>
+  </div>
+
+  <div class="card border rounded-3">
+    <div class="card-body">
+      {{ form_start(form) }}
+        {{ form_row(form.name) }}
+        {{ form_row(form.genre) }}
+        {{ form_row(form.description) }}
+
+        <button class="btn btn-outline-primary btn-sm" type="submit">
+          Enregistrer
+        </button>
+      {{ form_end(form) }}
+    </div>
+  </div>
+{% endblock %}
