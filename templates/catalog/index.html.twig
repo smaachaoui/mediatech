@@ -12,7 +12,11 @@
     <form method="get" action="{{ path('app_catalog') }}" class="row g-2 align-items-center">
       <div class="col-12 col-md">
         <div class="input-group">
-          <span class="input-group-text" aria-hidden="true">🔎</span>
+          <span class="input-group-text" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+            </svg>
+          </span>
           <input
             type="search"
             name="q"
@@ -38,13 +42,13 @@
         <div class="border rounded-3 p-3">
           <h2 class="h6 mb-3">Filtrer</h2>
 
-          <form method="get" action="{{ path('app_catalog') }}">
+          <form method="get" action="{{ path('app_catalog') }}" id="filterForm">
             <div class="mb-3">
-              <label class="form-label">Type</label>
-              <select class="form-select" name="type">
-                <option value="all" {{ type == 'all' ? 'selected' : '' }}>Tout</option>
-                <option value="book" {{ type == 'book' ? 'selected' : '' }}>Livres</option>
-                <option value="movie" {{ type == 'movie' ? 'selected' : '' }}>Films</option>
+              <label class="form-label small fw-semibold">Type de média</label>
+              <select class="form-select" name="type" onchange="this.form.submit()">
+                <option value="all" {{ type == 'all' ? 'selected' : '' }}>Tout afficher</option>
+                <option value="book" {{ type == 'book' ? 'selected' : '' }}>Livres uniquement</option>
+                <option value="movie" {{ type == 'movie' ? 'selected' : '' }}>Films uniquement</option>
               </select>
             </div>
 
@@ -52,11 +56,35 @@
               <input type="hidden" name="q" value="{{ q }}">
             {% endif %}
 
+            <hr class="my-3">
+
             <div class="d-grid gap-2">
-              <button class="btn btn-dark" type="submit">Appliquer</button>
-              <a class="btn btn-outline-secondary" href="{{ path('app_catalog') }}">Réinitialiser</a>
+              <a class="btn btn-outline-secondary btn-sm" href="{{ path('app_catalog') }}">
+                Réinitialiser les filtres
+              </a>
             </div>
           </form>
+
+          <hr class="my-3">
+
+          <div class="mb-2">
+            <label class="form-label small fw-semibold">Affichage</label>
+          </div>
+          <div class="btn-group w-100" role="group" aria-label="Mode d'affichage">
+            <button type="button" class="btn btn-outline-secondary btn-sm active" id="btnGrid" onclick="setViewMode('grid')">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5zm6.5.5A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5zM1 10.5A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5zm6.5.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5z"/>
+              </svg>
+              Grille
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" id="btnList" onclick="setViewMode('list')">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5"/>
+              </svg>
+              Liste
+            </button>
+          </div>
+
         </div>
       </aside>
 
@@ -69,78 +97,97 @@
         {% if not hasAny %}
           {% include 'components/_state_empty.html.twig' with {
             title: q ? 'Aucun résultat' : 'Catalogue',
-            message: q ? 'Essayez de modifier vos filtres ou votre recherche.' : 'Aucun élément à afficher pour le moment.'
+            message: q ? 'Essayez de modifier votre recherche ou vos filtres.' : 'Aucun élément à afficher pour le moment.'
           } %}
 
         {% else %}
 
           {% if type == 'all' %}
+
             {% if books is not empty %}
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <h3 class="h6 mb-0">Livres</h3>
-                {% if q %}
-                  <a href="{{ path('app_catalog', { q: q, type: 'book' }) }}" class="btn btn-outline-primary btn-sm">
-                    Voir tous les livres
-                  </a>
-                {% else %}
-                  <a href="{{ path('app_catalog', { type: 'book' }) }}" class="btn btn-outline-primary btn-sm">
-                    Voir tous les livres
-                  </a>
-                {% endif %}
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="h6 mb-0">
+                  Livres
+                  <span class="badge bg-secondary ms-1">{{ books|length }}</span>
+                </h3>
+                <a href="{{ path('app_catalog', q ? { q: q, type: 'book' } : { type: 'book' }) }}" class="btn btn-outline-primary btn-sm">
+                  Voir tous les livres
+                </a>
               </div>
 
-              <div class="row g-3 mb-4">
+              <div class="row g-3 mb-4 view-grid" id="booksGridView">
                 {% for book in books %}
-                  <div class="col-6 col-md-4 col-lg-3">
-                    {% include 'components/_structure_media.html.twig' with { item: book, kind: 'book' } only %}
+                  <div class="col-6 col-md-4 col-xl-3">
+                    {% include 'components/_structure_media_grid.html.twig' with { item: book, kind: 'book' } only %}
                   </div>
+                {% endfor %}
+              </div>
+
+              <div class="d-flex flex-column gap-2 mb-4 view-list d-none" id="booksListView">
+                {% for book in books %}
+                  {% include 'components/_structure_media_list.html.twig' with { item: book, kind: 'book' } only %}
                 {% endfor %}
               </div>
             {% endif %}
 
             {% if movies is not empty %}
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <h3 class="h6 mb-0">Films</h3>
-                {% if q %}
-                  <a href="{{ path('app_catalog', { q: q, type: 'movie' }) }}" class="btn btn-outline-primary btn-sm">
-                    Voir tous les films
-                  </a>
-                {% else %}
-                  <a href="{{ path('app_catalog', { type: 'movie' }) }}" class="btn btn-outline-primary btn-sm">
-                    Voir tous les films
-                  </a>
-                {% endif %}
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="h6 mb-0">
+                  Films
+                  <span class="badge bg-secondary ms-1">{{ movies|length }}</span>
+                </h3>
+                <a href="{{ path('app_catalog', q ? { q: q, type: 'movie' } : { type: 'movie' }) }}" class="btn btn-outline-primary btn-sm">
+                  Voir tous les films
+                </a>
               </div>
 
-              <div class="row g-3">
+              <div class="row g-3 view-grid" id="moviesGridView">
                 {% for movie in movies %}
-                  <div class="col-6 col-md-4 col-lg-3">
-                    {% include 'components/_structure_media.html.twig' with { item: movie, kind: 'movie' } only %}
+                  <div class="col-6 col-md-4 col-xl-3">
+                    {% include 'components/_structure_media_grid.html.twig' with { item: movie, kind: 'movie' } only %}
                   </div>
+                {% endfor %}
+              </div>
+
+              <div class="d-flex flex-column gap-2 view-list d-none" id="moviesListView">
+                {% for movie in movies %}
+                  {% include 'components/_structure_media_list.html.twig' with { item: movie, kind: 'movie' } only %}
                 {% endfor %}
               </div>
             {% endif %}
 
           {% elseif type == 'book' %}
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <h3 class="h6 mb-0">Livres</h3>
-              {% if totalBooks is defined and totalBooks > 0 %}
-                <span class="text-muted small">{{ totalBooks }} résultat{{ totalBooks > 1 ? 's' : '' }}</span>
-              {% endif %}
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h3 class="h6 mb-0">
+                Livres
+                {% if totalBooks is defined and totalBooks > 0 %}
+                  <span class="badge bg-secondary ms-1">{{ totalBooks }} résultat{{ totalBooks > 1 ? 's' : '' }}</span>
+                {% endif %}
+              </h3>
             </div>
 
             {% if books is empty %}
-              <div class="text-muted small mb-4">Aucun livre trouvé.</div>
+              {% include 'components/_state_empty.html.twig' with {
+                title: 'Aucun livre trouvé',
+                message: 'Essayez de modifier votre recherche.'
+              } %}
             {% else %}
-              <div class="row g-3 mb-4">
+              <div class="row g-3 mb-4 view-grid" id="booksGridView">
                 {% for book in books %}
-                  <div class="col-6 col-md-4 col-lg-3">
-                    {% include 'components/_structure_media.html.twig' with { item: book, kind: 'book' } only %}
+                  <div class="col-6 col-md-4 col-xl-3">
+                    {% include 'components/_structure_media_grid.html.twig' with { item: book, kind: 'book' } only %}
                   </div>
                 {% endfor %}
               </div>
 
-              {% if totalPages > 1 %}
+              <div class="d-flex flex-column gap-2 mb-4 view-list d-none" id="booksListView">
+                {% for book in books %}
+                  {% include 'components/_structure_media_list.html.twig' with { item: book, kind: 'book' } only %}
+                {% endfor %}
+              </div>
+
+              {% if totalPages is defined and totalPages > 1 %}
                 {% include 'components/_nav_pagination.html.twig' with {
                   route: 'app_catalog',
                   page: page,
@@ -151,25 +198,37 @@
             {% endif %}
 
           {% else %}
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <h3 class="h6 mb-0">Films</h3>
-              {% if totalMovies is defined and totalMovies > 0 %}
-                <span class="text-muted small">{{ totalMovies }} résultat{{ totalMovies > 1 ? 's' : '' }}</span>
-              {% endif %}
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h3 class="h6 mb-0">
+                Films
+                {% if totalMovies is defined and totalMovies > 0 %}
+                  <span class="badge bg-secondary ms-1">{{ totalMovies }} résultat{{ totalMovies > 1 ? 's' : '' }}</span>
+                {% endif %}
+              </h3>
             </div>
 
             {% if movies is empty %}
-              <div class="text-muted small">Aucun film trouvé.</div>
+              {% include 'components/_state_empty.html.twig' with {
+                title: 'Aucun film trouvé',
+                message: 'Essayez de modifier votre recherche.'
+              } %}
             {% else %}
-              <div class="row g-3 mb-4">
+              <div class="row g-3 mb-4 view-grid" id="moviesGridView">
                 {% for movie in movies %}
-                  <div class="col-6 col-md-4 col-lg-3">
-                    {% include 'components/_structure_media.html.twig' with { item: movie, kind: 'movie' } only %}
+                  <div class="col-6 col-md-4 col-xl-3">
+                    {% include 'components/_structure_media_grid.html.twig' with { item: movie, kind: 'movie' } only %}
                   </div>
                 {% endfor %}
               </div>
 
-              {% if totalPages > 1 %}
+              <div class="d-flex flex-column gap-2 mb-4 view-list d-none" id="moviesListView">
+                {% for movie in movies %}
+                  {% include 'components/_structure_media_list.html.twig' with { item: movie, kind: 'movie' } only %}
+                {% endfor %}
+              </div>
+
+              {% if totalPages is defined and totalPages > 1 %}
                 {% include 'components/_nav_pagination.html.twig' with {
                   route: 'app_catalog',
                   page: page,
@@ -178,6 +237,7 @@
                 } %}
               {% endif %}
             {% endif %}
+
           {% endif %}
 
         {% endif %}
@@ -188,4 +248,37 @@
 
 </div>
 
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+  function setViewMode(mode) {
+    const btnGrid = document.getElementById('btnGrid');
+    const btnList = document.getElementById('btnList');
+    const gridViews = document.querySelectorAll('.view-grid');
+    const listViews = document.querySelectorAll('.view-list');
+
+    if (mode === 'list') {
+      btnList.classList.add('active');
+      btnGrid.classList.remove('active');
+      gridViews.forEach(el => el.classList.add('d-none'));
+      listViews.forEach(el => el.classList.remove('d-none'));
+      localStorage.setItem('catalogViewMode', 'list');
+    } else {
+      btnGrid.classList.add('active');
+      btnList.classList.remove('active');
+      gridViews.forEach(el => el.classList.remove('d-none'));
+      listViews.forEach(el => el.classList.add('d-none'));
+      localStorage.setItem('catalogViewMode', 'grid');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const savedMode = localStorage.getItem('catalogViewMode');
+    if (savedMode) {
+      setViewMode(savedMode);
+    }
+  });
+</script>
 {% endblock %}
