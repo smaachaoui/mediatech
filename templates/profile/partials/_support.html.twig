@@ -1,0 +1,106 @@
+<div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+  <div>
+    <h1 class="h3 mb-1">Support</h1>
+    <div class="text-muted">Besoin d'aide ? Consultez les ressources ci-dessous ou contactez-nous.</div>
+  </div>
+</div>
+
+<div class="row g-4">
+
+  <div class="col-12 col-lg-6">
+    <div class="card border rounded-3 h-100">
+      <div class="card-body">
+        <div class="fw-semibold mb-2">Questions fréquentes</div>
+        <div class="text-muted small mb-3">
+          Trouvez rapidement des réponses aux questions les plus courantes.
+        </div>
+
+        <div class="d-flex flex-column gap-3">
+          <div>
+            <div class="fw-semibold small">Comment créer une collection ?</div>
+            <div class="text-muted small">
+              Rendez-vous dans "Mes collections", puis cliquez sur "Créer une collection". 
+              Choisissez un nom et un type (livres ou films).
+            </div>
+          </div>
+
+          <div>
+            <div class="fw-semibold small">Comment ajouter un livre ou un film ?</div>
+            <div class="text-muted small">
+              Utilisez le catalogue pour rechercher un titre. Cliquez sur "Ajouter à ma collection" 
+              pour l'ajouter à votre espace "Non répertorié", puis déplacez-le dans une collection.
+            </div>
+          </div>
+
+          <div>
+            <div class="fw-semibold small">Comment publier ma collection ?</div>
+            <div class="text-muted small">
+              Ouvrez votre collection et cliquez sur "Publier". Votre collection apparaîtra 
+              dans "Nos collections" et sera visible par tous les visiteurs.
+            </div>
+          </div>
+
+          <div>
+            <div class="fw-semibold small">Comment supprimer mon compte ?</div>
+            <div class="text-muted small">
+              Pour supprimer votre compte, veuillez nous contacter via le formulaire ci-contre. 
+              Nous traiterons votre demande dans les plus brefs délais.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-lg-6">
+    <div class="card border rounded-3 h-100">
+      <div class="card-body">
+        <div class="fw-semibold mb-2">Nous contacter</div>
+        <div class="text-muted small mb-3">
+          Une question, un problème technique, une suggestion ? Nous sommes à votre écoute.
+        </div>
+
+        <div class="mb-4">
+          <a href="{{ path('app_contact') }}" class="btn btn-primary">
+            Accéder au formulaire de contact
+          </a>
+        </div>
+
+        <hr>
+
+        <div class="fw-semibold small mb-2">Informations légales</div>
+        <div class="d-flex flex-column gap-1">
+          <a href="{{ path('app_static_about') }}" class="text-decoration-none small">
+            À propos de MediaTech
+          </a>
+          <a href="{{ path('app_static_legal') }}" class="text-decoration-none small">
+            Mentions légales
+          </a>
+          <a href="{{ path('app_static_cgu') }}" class="text-decoration-none small">
+            Conditions générales d'utilisation
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="card border rounded-3 mt-4">
+  <div class="card-body">
+    <div class="d-flex align-items-center gap-3">
+      <div class="bg-primary bg-opacity-10 text-primary rounded-3 p-3">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+          <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
+        </svg>
+      </div>
+      <div>
+        <div class="fw-semibold">Délai de réponse</div>
+        <div class="text-muted small">
+          Nous nous efforçons de répondre à toutes les demandes sous 48 heures ouvrées.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
