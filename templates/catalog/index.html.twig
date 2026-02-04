@@ -87,7 +87,7 @@
       {# ZONE résultats #}
       <div class="col-12 col-lg-9">
 
-        {# ✅ On utilise DIRECTEMENT les variables envoyées par le controller #}
+        {# On utilise DIRECTEMENT les variables envoyées par le controller #}
         {% set books = books|default([]) %}
         {% set movies = movies|default([]) %}
         {% set hasAny = (books|length) + (movies|length) > 0 %}
