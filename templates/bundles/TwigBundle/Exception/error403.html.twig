@@ -1,16 +1,51 @@
-{% extends 'error.html.twig' %}
+{% extends 'base.html.twig' %}
 
-{% block title %}Accès refusé{% endblock %}
+{% block title %}Accès refusé | MediaTech{% endblock %}
 
 {% block body %}
-  <div class="container py-5 text-center">
-    <h1 class="fw-bold mb-3">403</h1>
-    <p class="text-muted mb-4">
-      Vous n'avez pas l'autorisation d'accéder à cette page.
-    </p>
 
-    <a href="{{ path('app_home') }}" class="btn btn-primary">
-      Retour à l'accueil
-    </a>
-  </div>
+<div class="d-flex flex-column gap-3">
+
+  <section class="bg-white border rounded-3 p-4">
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-8 col-lg-6 text-center py-5">
+
+        <div class="mb-4">
+          <div class="d-inline-flex align-items-center justify-content-center bg-danger bg-opacity-10 text-danger rounded-circle" 
+               style="width: 80px; height: 80px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2m3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2M5 8h6a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1"/>
+            </svg>
+          </div>
+        </div>
+
+        <h1 class="h2 fw-bold text-dark mb-2">Erreur 403</h1>
+        <h2 class="h5 text-muted mb-4">Accès refusé</h2>
+
+        <p class="text-muted mb-4">
+          Vous n'avez pas les droits nécessaires pour accéder à cette page.<br>
+          Si vous pensez qu'il s'agit d'une erreur, veuillez nous contacter.
+        </p>
+
+        <div class="d-flex flex-column flex-sm-row gap-2 justify-content-center">
+          <a href="{{ path('app_home') }}" class="btn btn-primary">
+            Retour à l'accueil
+          </a>
+          {% if not app.user %}
+            <a href="{{ path('app_login') }}" class="btn btn-outline-secondary">
+              Se connecter
+            </a>
+          {% else %}
+            <a href="{{ path('app_contact') }}" class="btn btn-outline-secondary">
+              Nous contacter
+            </a>
+          {% endif %}
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+</div>
+
 {% endblock %}
