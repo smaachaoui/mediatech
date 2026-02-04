@@ -1,0 +1,23 @@
+{% extends 'dashboard/_layout.html.twig' %}
+
+{% block title %}Administration{% endblock %}
+
+{% block dashboard_sidebar %}
+  {% include 'admin/partials/_sidebar.html.twig' with { section: section } %}
+{% endblock %}
+
+{% block dashboard_content %}
+  {% set current = section ?? 'overview' %}
+
+  {% if current == 'overview' %}
+    {% include 'admin/partials/_overview.html.twig' %}
+  {% elseif current == 'comments' %}
+    {% include 'admin/partials/_comments.html.twig' %}
+  {% elseif current == 'collections' %}
+    {% include 'admin/partials/_collections.html.twig' %}
+  {% elseif current == 'users' %}
+    {% include 'admin/partials/_users.html.twig' %}
+  {% else %}
+    {% include 'admin/partials/_overview.html.twig' %}
+  {% endif %}
+{% endblock %}

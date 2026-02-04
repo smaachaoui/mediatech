@@ -1,0 +1,29 @@
+{% extends 'dashboard/partials/_sidebar_base.html.twig' %}
+
+{% set current = section ?? 'overview' %}
+
+{% block dashboard_sidebar_nav %}
+  <div class="list-group list-group-flush">
+
+    <a class="list-group-item list-group-item-action {{ current == 'overview' ? 'active' : '' }}"
+       href="{{ path('admin_dashboard', { section: 'overview' }) }}">
+      Vue d’ensemble
+    </a>
+
+    <a class="list-group-item list-group-item-action {{ current == 'comments' ? 'active' : '' }}"
+       href="{{ path('admin_dashboard', { section: 'comments' }) }}">
+      Commentaires
+    </a>
+
+    <a class="list-group-item list-group-item-action {{ current == 'collections' ? 'active' : '' }}"
+       href="{{ path('admin_dashboard', { section: 'collections' }) }}">
+      Collections
+    </a>
+
+    <a class="list-group-item list-group-item-action {{ current == 'users' ? 'active' : '' }}"
+       href="{{ path('admin_dashboard', { section: 'users' }) }}">
+      Utilisateurs
+    </a>
+
+  </div>
+{% endblock %}
