@@ -18,7 +18,7 @@
   <section class="bg-white border rounded-3 p-3">
     <div class="d-flex justify-content-between align-items-center mb-2">
       <h2 class="h6 mb-0">Derniers livres ajoutés</h2>
-      <a class="btn btn-sm btn-outline-secondary" href="{{ path('app_catalog', { type: 'books' }) }}">Catalogue</a>
+      <a class="btn btn-sm btn-outline-secondary" href="{{ path('app_catalog', { type: 'book' }) }}">Catalogue</a>
     </div>
 
     {% if books is empty %}
@@ -33,7 +33,7 @@
         <div id="home-books" class="d-flex gap-3 overflow-auto flex-nowrap py-1" style="scroll-behavior:smooth;">
           {% for book in books %}
             <div style="min-width: 180px; max-width: 180px;">
-              {% include 'components/_structure_media.html.twig' with { item: book, kind: 'book' } only %}
+              {% include 'components/_structure_media_grid.html.twig' with { item: book, kind: 'book' } only %}
             </div>
           {% endfor %}
         </div>
@@ -46,7 +46,7 @@
   <section class="bg-white border rounded-3 p-3">
     <div class="d-flex justify-content-between align-items-center mb-2">
       <h2 class="h6 mb-0">Derniers films ajoutés</h2>
-      <a class="btn btn-sm btn-outline-secondary" href="{{ path('app_catalog', { type: 'movies' }) }}">Catalogue</a>
+      <a class="btn btn-sm btn-outline-secondary" href="{{ path('app_catalog', { type: 'movie' }) }}">Catalogue</a>
     </div>
 
     {% if movies is empty %}
@@ -61,7 +61,7 @@
         <div id="home-movies" class="d-flex gap-3 overflow-auto flex-nowrap py-1" style="scroll-behavior:smooth;">
           {% for movie in movies %}
             <div style="min-width: 180px; max-width: 180px;">
-              {% include 'components/_structure_media.html.twig' with { item: movie, kind: 'movie' } only %}
+              {% include 'components/_structure_media_grid.html.twig' with { item: movie, kind: 'movie' } only %}
             </div>
           {% endfor %}
         </div>
