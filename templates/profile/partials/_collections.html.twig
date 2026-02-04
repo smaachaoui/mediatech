@@ -318,70 +318,78 @@
           submit_label: 'Enregistrer',
           submit_class: 'btn-primary'
         } %}
+
           {% block body %}
-            <div class="mb-3">
-              <label class="form-label">Nom</label>
-              <input class="form-control" name="name" type="text" required maxlength="150"
-                     value="{{ c.name }}">
-            </div>
+          <div class="mb-3">
+            <label class="form-label">Nom</label>
+            <input class="form-control" name="name" type="text" required maxlength="150"
+                  value="{{ c.name }}">
+          </div>
 
-            {% set coverChoices = [] %}
-              {% set seen = {} %}
+          {% set coverChoices = [] %}
+          {% set seen = {} %}
 
-              {% for link in c.collectionBooks %}
-                {% if link.book and link.book.coverImage %}
-                  {% set url = link.book.coverImage %}
-                  {% if seen[url] is not defined %}
-                    {% set coverChoices = coverChoices|merge([url]) %}
-                    {% set seen = seen|merge({ (url): true }) %}
-                  {% endif %}
-                {% endif %}
-              {% endfor %}
-
-              {% for link in c.collectionMovies %}
-                {% if link.movie and link.movie.poster %}
-                  {% set url = link.movie.poster %}
-                  {% if seen[url] is not defined %}
-                    {% set coverChoices = coverChoices|merge([url]) %}
-                    {% set seen = seen|merge({ (url): true }) %}
-                  {% endif %}
-                {% endif %}
-              {% endfor %}
-
-
-            {% if coverChoices is not empty %}
-              <div class="mb-3">
-                <label class="form-label">Couverture</label>
-
-                <div class="d-flex flex-wrap gap-2">
-                  <label class="border rounded p-2" style="cursor:pointer;">
-                    <input type="radio" name="coverImage" value="" {{ c.coverImage is empty ? 'checked' : '' }}>
-                    <span class="small text-muted">Auto</span>
-                  </label>
-
-                  {% for url in coverChoices %}
-                    <label class="border rounded p-2" style="cursor:pointer;">
-                      <input type="radio" name="coverImage" value="{{ url }}" {{ c.coverImage == url ? 'checked' : '' }}>
-                      <img src="{{ url }}" alt="" style="height:70px;width:auto;display:block;">
-                    </label>
-                  {% endfor %}
-                </div>
-
-              </div>
+          {% for link in c.collectionBooks %}
+            {% if link.book and link.book.coverImage %}
+              {% set url = link.book.coverImage %}
+              {% if seen[url] is not defined %}
+                {% set coverChoices = coverChoices|merge([url]) %}
+                {% set seen = seen|merge({ (url): true }) %}
+              {% endif %}
             {% endif %}
+          {% endfor %}
 
+          {% for link in c.collectionMovies %}
+            {% if link.movie and link.movie.poster %}
+              {% set url = link.movie.poster %}
+              {% if seen[url] is not defined %}
+                {% set coverChoices = coverChoices|merge([url]) %}
+                {% set seen = seen|merge({ (url): true }) %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
 
+          {% if coverChoices is not empty %}
             <div class="mb-3">
-              <label class="form-label">Genre</label>
-              <input type="text" class="form-control" name="genre" value="{{ c.genre ?? '' }}" placeholder="Fantasy, Action, Romance...">
-            </div>
+              <label class="form-label">Couverture</label>
 
+              <div class="d-flex flex-wrap gap-2">
+                <label class="border rounded p-2" style="cursor:pointer;">
+                  <input type="radio" name="coverImage" value="__keep__" checked>
+                  <span class="small text-muted">Ne pas modifier</span>
+                </label>
 
-            <div class="mb-0">
-              <label class="form-label">Description</label>
-              <textarea class="form-control" name="description" rows="4" maxlength="2000">{{ c.description }}</textarea>
+                <label class="border rounded p-2" style="cursor:pointer;">
+                  <input type="radio" name="coverImage" value="__none__" {{ c.coverImage is empty ? 'checked' : '' }}>
+                  <span class="small text-muted">Supprimer</span>
+                </label>
+
+                {% for url in coverChoices %}
+                  <label class="border rounded p-2" style="cursor:pointer;">
+                    <input type="radio" name="coverImage" value="{{ url }}" {{ c.coverImage == url ? 'checked' : '' }}>
+                    <img src="{{ url }}" alt="" style="height:70px;width:auto;display:block;">
+                  </label>
+                {% endfor %}
+              </div>
+
+              <div class="form-text">
+                Je ne propose que les couvertures issues des médias déjà ajoutés.
+              </div>
             </div>
-          {% endblock %}
+          {% endif %}
+
+          <div class="mb-3">
+            <label class="form-label">Genre</label>
+            <input type="text" class="form-control" name="genre" value="{{ c.genre ?? '' }}" placeholder="Fantasy, Action, Romance...">
+          </div>
+
+          <div class="mb-0">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" name="description" rows="4" maxlength="2000">{{ c.description }}</textarea>
+          </div>
+
+        {% endblock %}
+
         {% endembed %}
 
         {# MODAL : SUPPRIMER #}

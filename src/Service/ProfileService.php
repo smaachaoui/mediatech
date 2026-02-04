@@ -18,7 +18,6 @@ final class ProfileService
     public function __construct(
         private readonly CollectionRepository $collectionRepository,
         private readonly CommentRepository $commentRepository,
-
         private readonly LibraryManager $libraryManager,
         private readonly CollectionBookRepository $collectionBookRepository,
         private readonly CollectionMovieRepository $collectionMovieRepository,
@@ -33,7 +32,7 @@ final class ProfileService
             'comments' => [
                 'comments' => $this->commentRepository->findLatestByAuthor($user),
             ],
-            
+
             default => [],
         };
     }
@@ -139,14 +138,11 @@ final class ProfileService
         if ($target->getScope() === Collection::SCOPE_SYSTEM && $target->getName() !== 'Non répertorié') {
             throw new \RuntimeException('Impossible de déplacer vers une collection système autre que “Non répertorié”.');
         }
-        
-        
 
         $targetMedia = $target->getMediaType();
         if ($targetMedia === '') {
             $targetMedia = Collection::MEDIA_ALL;
         }
-        
 
         if ($targetMedia !== Collection::MEDIA_ALL) {
             if ($type === 'book' && $targetMedia !== Collection::MEDIA_BOOK) {
@@ -155,15 +151,11 @@ final class ProfileService
             if ($type === 'movie' && $targetMedia !== Collection::MEDIA_MOVIE) {
                 throw new \RuntimeException('Cette collection est réservée aux livres.');
             }
-            
         }
 
         $link->setCollection($target);
         $this->em->flush();
     }
-
-
-
 
     /**
      * Je crée une collection "utilisateur".
@@ -221,7 +213,8 @@ final class ProfileService
 
     /**
      * Je mets à jour une collection utilisateur.
-     * Je valide la cover: elle doit correspondre à un média présent dans la collection, ou être vide (auto).
+     * Je valide la cover: elle doit correspondre à un média présent dans la collection,
+     * ou être null (je ne change rien) / "__none__" (je supprime).
      */
     public function updateUserCollection(
         User $user,
@@ -249,21 +242,22 @@ final class ProfileService
         $description = $description !== null ? trim($description) : null;
         $genre = $genre !== null ? trim($genre) : null;
 
-        $coverImage = $coverImage !== null ? trim($coverImage) : null;
-        if ($coverImage === '') {
-            $coverImage = null;
-        }
-
         if ($name === '') {
             throw new \InvalidArgumentException('Le nom ne peut pas être vide.');
         }
 
-        $this->assertCoverBelongsToCollection($collection, $coverImage);
-
         $collection->setName($name);
         $collection->setGenre($genre ?: null);
-        $collection->setCoverImage($coverImage);
         $collection->setDescription($description ?: null);
+
+        $coverImage = $coverImage !== null ? trim($coverImage) : null;
+
+        if ($coverImage === '__none__') {
+            $collection->setCoverImage(null);
+        } elseif (is_string($coverImage) && $coverImage !== '') {
+            $this->assertCoverBelongsToCollection($collection, $coverImage);
+            $collection->setCoverImage($coverImage);
+        }
 
         $this->em->flush();
     }

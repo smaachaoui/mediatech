@@ -33,4 +33,13 @@ class RatingRepository extends ServiceEntityRepository
             'count' => (int) ($result['totalRatings'] ?? 0),
         ];
     }
+
+    public function findOneByUserAndCollection(User $user, Collection $collection): ?Rating
+    {
+        return $this->findOneBy([
+            'user' => $user,
+            'collection' => $collection,
+        ]);
+    }
+
 }

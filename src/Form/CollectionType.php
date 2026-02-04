@@ -22,21 +22,31 @@ final class CollectionType extends AbstractType
             ->add('name', TextType::class, [
                 'label' => 'Nom',
                 'constraints' => [
-                    new NotBlank(['message' => 'Veuillez saisir un nom.']),
-                    new Length(['min' => 2, 'max' => 150]),
+                    new NotBlank([
+                        'message' => 'Veuillez saisir un nom.',
+                    ]),
+                    new Length([
+                        'min' => 2,
+                        'max' => 150,
+                        'minMessage' => 'Le nom doit contenir au moins {{ limit }} caractères.',
+                        'maxMessage' => 'Le nom ne peut pas dépasser {{ limit }} caractères.',
+                    ]),
                 ],
             ])
             ->add('description', TextareaType::class, [
                 'label' => 'Description',
                 'required' => false,
-                'attr' => ['rows' => 4],
-                'constraints' => [
-                    new Length(['max' => 2000]),
+                'attr' => [
+                    'rows' => 4,
                 ],
-            ])
-        ;
+                'constraints' => [
+                    new Length([
+                        'max' => 2000,
+                        'maxMessage' => 'La description ne peut pas dépasser {{ limit }} caractères.',
+                    ]),
+                ],
+            ]);
 
-        // ➜ Choix du type de média UNIQUEMENT à la création
         if (!$isEdit) {
             $builder->add('mediaType', ChoiceType::class, [
                 'label' => 'Type de collection',
@@ -46,7 +56,9 @@ final class CollectionType extends AbstractType
                 ],
                 'placeholder' => 'Choisir le type',
                 'constraints' => [
-                    new NotBlank(['message' => 'Veuillez choisir un type de collection.']),
+                    new NotBlank([
+                        'message' => 'Veuillez choisir un type de collection.',
+                    ]),
                 ],
             ]);
         }
