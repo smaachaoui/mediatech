@@ -1,5 +1,17 @@
+{# templates/components/_modal.html.twig
+   
+   Je recois :
+   - id: string (requis) - identifiant unique du modal
+   - title: string (requis) - titre affiche dans le header
+   - body: string (requis) - contenu HTML du modal
+   - footer: string (requis) - contenu HTML du footer (boutons d'action)
+   - size: string (optionnel) - classe Bootstrap pour la taille (modal-sm, modal-lg, modal-xl)
+#}
+
+{% set size = size ?? '' %}
+
 <div class="modal fade" id="{{ id }}" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog {{ size|default('') }}">
+  <div class="modal-dialog {{ size }}">
     <div class="modal-content">
 
       <div class="modal-header">
@@ -7,21 +19,16 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
       </div>
 
-      <form method="post" action="{{ action }}">
-        <div class="modal-body">
-          <input type="hidden" name="_token" value="{{ csrf_token(csrf_id) }}">
-          {% block body %}{% endblock %}
-        </div>
+      <div class="modal-body">
+        {{ body|raw }}
+      </div>
 
-        <div class="modal-footer">
-          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-            Annuler
-          </button>
-          <button type="submit" class="btn {{ submit_class|default('btn-primary') }}">
-            {{ submit_label|default('Valider') }}
-          </button>
-        </div>
-      </form>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+          Annuler
+        </button>
+        {{ footer|raw }}
+      </div>
 
     </div>
   </div>
