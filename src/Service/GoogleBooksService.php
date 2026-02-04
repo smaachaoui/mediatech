@@ -6,14 +6,16 @@ use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
+/**
+ * Je gere les appels a l'API Google Books avec mise en cache.
+ */
 final class GoogleBooksService
 {
     private const BASE_URL = 'https://www.googleapis.com/books/v1/volumes';
 
-    // TTLs (en secondes)
-    private const TTL_SEARCH = 1800;  // 30 min
-    private const TTL_NEWEST = 21600; // 6 h
-    private const TTL_BY_ID  = 86400; // 24 h
+    private const TTL_SEARCH = 1800;
+    private const TTL_NEWEST = 21600;
+    private const TTL_BY_ID  = 86400;
 
     public function __construct(
         private readonly HttpClientInterface $http,
@@ -22,72 +24,78 @@ final class GoogleBooksService
     ) {}
 
     /**
-     * Recherche de livres via Google Books.
+     * Je recherche des livres via Google Books avec pagination.
      *
-     * @return array<int, array<string, mixed>>
+     * @return array{items: array<int, array<string, mixed>>, total: int}
      */
-    public function search(string $query, int $limit = 12): array
+    public function search(string $query, int $limit = 12, int $page = 1): array
     {
         $query = trim($query);
-        $limit = max(1, min($limit, 40)); // Google maxResults <= 40
+        $limit = max(1, min($limit, 40));
+        $page = max(1, $page);
+        $startIndex = ($page - 1) * $limit;
 
         if ($query === '') {
-            return [];
+            return ['items' => [], 'total' => 0];
         }
 
-        $cacheKey = 'gbooks.search.' . md5($query . '|' . $limit);
+        $cacheKey = 'gbooks.search.' . md5($query . '|' . $limit . '|' . $page);
 
         $item = $this->cache->getItem($cacheKey);
         if ($item->isHit()) {
             $cached = $item->get();
-            return is_array($cached) ? $cached : [];
+            return is_array($cached) ? $cached : ['items' => [], 'total' => 0];
         }
 
         try {
-            $data = $this->fetchList([
+            $result = $this->fetchListWithTotal([
                 'q' => $query,
                 'printType' => 'books',
                 'maxResults' => $limit,
+                'startIndex' => $startIndex,
             ]);
         } catch (TransportExceptionInterface|\RuntimeException) {
-            $data = [];
+            $result = ['items' => [], 'total' => 0];
         }
 
-        $item->set($data);
+        $item->set($result);
         $item->expiresAfter(self::TTL_SEARCH);
         $this->cache->save($item);
 
-        return $data;
+        return $result;
     }
 
     /**
-     * Flux "newest" par sujet. On tente FR, puis fallback sans restriction.
+     * Je recupere les livres les plus recents avec pagination.
      *
-     * @return array<int, array<string, mixed>>
+     * @return array{items: array<int, array<string, mixed>>, total: int}
      */
-    public function newest(string $subject = 'fiction', int $limit = 12): array
+    public function newest(string $subject = 'fiction', int $limit = 12, int $page = 1): array
     {
         $subject = trim($subject) !== '' ? trim($subject) : 'fiction';
         $limit = max(1, min($limit, 40));
+        $page = max(1, $page);
+        $startIndex = ($page - 1) * $limit;
 
-        $cacheKey = 'gbooks.newest.' . md5($subject . '|' . $limit);
+        $cacheKey = 'gbooks.newest.' . md5($subject . '|' . $limit . '|' . $page);
 
         $item = $this->cache->getItem($cacheKey);
         if ($item->isHit()) {
             $cached = $item->get();
-            return is_array($cached) ? $cached : [];
+            return is_array($cached) ? $cached : ['items' => [], 'total' => 0];
         }
 
         try {
-            $primary = $this->fetchList([
+            $primary = $this->fetchListWithTotal([
                 'q' => sprintf('subject:%s', $subject),
                 'orderBy' => 'newest',
                 'printType' => 'books',
                 'langRestrict' => 'fr',
                 'maxResults' => $limit,
+                'startIndex' => $startIndex,
             ]);
 
-            if (!empty($primary)) {
+            if (!empty($primary['items'])) {
                 $item->set($primary);
                 $item->expiresAfter(self::TTL_NEWEST);
                 $this->cache->save($item);
@@ -95,11 +103,12 @@ final class GoogleBooksService
                 return $primary;
             }
 
-            $fallback = $this->fetchList([
+            $fallback = $this->fetchListWithTotal([
                 'q' => sprintf('subject:%s', $subject),
                 'orderBy' => 'newest',
                 'printType' => 'books',
                 'maxResults' => $limit,
+                'startIndex' => $startIndex,
             ]);
 
             $item->set($fallback);
@@ -108,17 +117,17 @@ final class GoogleBooksService
 
             return $fallback;
         } catch (TransportExceptionInterface|\RuntimeException) {
-            // Si erreur réseau/quota : renvoyer vide (le controller décidera du message)
-            $item->set([]);
-            $item->expiresAfter(300); // 5 min (évite de spammer l’API en boucle)
+            $result = ['items' => [], 'total' => 0];
+            $item->set($result);
+            $item->expiresAfter(300);
             $this->cache->save($item);
 
-            return [];
+            return $result;
         }
     }
 
     /**
-     * Détails d'un livre via son ID Google Books.
+     * Je recupere les details d'un livre via son ID Google Books.
      *
      * @return array<string, mixed>
      */
@@ -144,7 +153,6 @@ final class GoogleBooksService
                 'query' => [
                     'key' => $this->googleBooksApiKey,
                 ],
-                // robustesse réseau
                 'timeout' => 5.0,
                 'max_duration' => 8.0,
             ]);
@@ -166,7 +174,6 @@ final class GoogleBooksService
 
             return $mapped;
         } catch (TransportExceptionInterface|\RuntimeException $e) {
-            // Pas de cache long terme sur erreur, mais évite de marteler l’API
             $item->set([]);
             $item->expiresAfter(300);
             $this->cache->save($item);
@@ -176,10 +183,12 @@ final class GoogleBooksService
     }
 
     /**
+     * Je recupere une liste avec le total pour la pagination.
+     *
      * @param array<string, mixed> $query
-     * @return array<int, array<string, mixed>>
+     * @return array{items: array<int, array<string, mixed>>, total: int}
      */
-    private function fetchList(array $query): array
+    private function fetchListWithTotal(array $query): array
     {
         $query['key'] = $this->googleBooksApiKey;
 
@@ -196,9 +205,11 @@ final class GoogleBooksService
             throw new \RuntimeException($message);
         }
 
+        $total = isset($data['totalItems']) ? (int) $data['totalItems'] : 0;
+
         $items = $data['items'] ?? [];
         if (!is_array($items)) {
-            return [];
+            return ['items' => [], 'total' => $total];
         }
 
         $mapped = [];
@@ -214,11 +225,11 @@ final class GoogleBooksService
             $mapped[] = $this->mapItem($row, $info);
         }
 
-        return $mapped;
+        return ['items' => $mapped, 'total' => $total];
     }
 
     /**
-     * Mappe un item Google Books vers un format stable utilisé par les templates.
+     * Je mappe un item Google Books vers un format stable.
      *
      * @param array<string, mixed> $row
      * @param array<string, mixed> $info
@@ -231,7 +242,6 @@ final class GoogleBooksService
         if (isset($info['imageLinks']) && is_array($info['imageLinks'])) {
             $thumb = $info['imageLinks']['thumbnail'] ?? null;
             if (is_string($thumb) && $thumb !== '') {
-                // Force https
                 $thumbnail = str_replace('http://', 'https://', $thumb);
             }
         }
@@ -263,7 +273,6 @@ final class GoogleBooksService
             return null;
         }
 
-        // Recherche ISBN_13
         foreach ($ids as $id) {
             if (!is_array($id)) {
                 continue;
@@ -274,7 +283,6 @@ final class GoogleBooksService
             }
         }
 
-        // Fallback ISBN_10
         foreach ($ids as $id) {
             if (!is_array($id)) {
                 continue;

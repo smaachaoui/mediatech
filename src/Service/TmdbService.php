@@ -6,14 +6,16 @@ use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
+/**
+ * Je gere les appels a l'API TMDB avec mise en cache.
+ */
 final class TmdbService
 {
     private const BASE_URL = 'https://api.themoviedb.org/3';
 
-    // TTLs (secondes)
-    private const TTL_SEARCH = 1800;   // 30 min
-    private const TTL_NOW    = 3600;   // 1 h
-    private const TTL_BY_ID  = 86400;  // 24 h
+    private const TTL_SEARCH = 1800;
+    private const TTL_NOW    = 3600;
+    private const TTL_BY_ID  = 86400;
 
     public function __construct(
         private readonly HttpClientInterface $http,
@@ -22,90 +24,90 @@ final class TmdbService
     ) {}
 
     /**
-     * Recherche de films.
+     * Je recherche des films avec pagination.
      *
-     * @return array<int, array<string, mixed>>
+     * @return array{items: array<int, array<string, mixed>>, total: int, totalPages: int}
      */
-    public function search(string $query, int $limit = 12): array
+    public function search(string $query, int $limit = 12, int $page = 1): array
     {
         $query = trim($query);
         $limit = max(1, min($limit, 20));
+        $page = max(1, $page);
 
         if ($query === '') {
-            return [];
+            return ['items' => [], 'total' => 0, 'totalPages' => 0];
         }
 
-        $cacheKey = 'tmdb.search.' . md5($query . '|' . $limit);
+        $cacheKey = 'tmdb.search.' . md5($query . '|' . $limit . '|' . $page);
         $item = $this->cache->getItem($cacheKey);
 
         if ($item->isHit()) {
             $cached = $item->get();
-            return is_array($cached) ? $cached : [];
+            return is_array($cached) ? $cached : ['items' => [], 'total' => 0, 'totalPages' => 0];
         }
 
         try {
-            $data = $this->fetchList('/search/movie', [
+            $result = $this->fetchListWithTotal('/search/movie', [
                 'query' => $query,
-                'page' => 1,
-            ]);
+                'page' => $page,
+            ], $limit);
 
-            $mapped = array_slice($data, 0, $limit);
-
-            $item->set($mapped);
+            $item->set($result);
             $item->expiresAfter(self::TTL_SEARCH);
             $this->cache->save($item);
 
-            return $mapped;
+            return $result;
         } catch (TransportExceptionInterface|\RuntimeException) {
-            $item->set([]);
-            $item->expiresAfter(300); // 5 min anti-spam API
+            $result = ['items' => [], 'total' => 0, 'totalPages' => 0];
+            $item->set($result);
+            $item->expiresAfter(300);
             $this->cache->save($item);
 
-            return [];
+            return $result;
         }
     }
 
     /**
-     * Films actuellement à l'affiche (France).
+     * Je recupere les films actuellement a l'affiche avec pagination.
      *
-     * @return array<int, array<string, mixed>>
+     * @return array{items: array<int, array<string, mixed>>, total: int, totalPages: int}
      */
-    public function nowPlaying(int $limit = 12): array
+    public function nowPlaying(int $limit = 12, int $page = 1): array
     {
         $limit = max(1, min($limit, 20));
+        $page = max(1, $page);
 
-        $cacheKey = 'tmdb.now_playing.' . $limit;
+        $cacheKey = 'tmdb.now_playing.' . $limit . '|' . $page;
         $item = $this->cache->getItem($cacheKey);
 
         if ($item->isHit()) {
             $cached = $item->get();
-            return is_array($cached) ? $cached : [];
+            return is_array($cached) ? $cached : ['items' => [], 'total' => 0, 'totalPages' => 0];
         }
 
         try {
-            $data = $this->fetchList('/movie/now_playing', [
+            $result = $this->fetchListWithTotal('/movie/now_playing', [
                 'region' => 'FR',
-                'page' => 1,
-            ]);
+                'page' => $page,
+            ], $limit);
 
-            $mapped = array_slice($data, 0, $limit);
-
-            $item->set($mapped);
+            $item->set($result);
             $item->expiresAfter(self::TTL_NOW);
             $this->cache->save($item);
 
-            return $mapped;
+            return $result;
         } catch (TransportExceptionInterface|\RuntimeException) {
-            $item->set([]);
+            $result = ['items' => [], 'total' => 0, 'totalPages' => 0];
+            $item->set($result);
             $item->expiresAfter(300);
             $this->cache->save($item);
 
-            return [];
+            return $result;
         }
     }
 
     /**
-     * Détails d'un film.
+     * Je recupere les details d'un film.
      *
      * @return array<string, mixed>
      */
@@ -156,10 +158,12 @@ final class TmdbService
     }
 
     /**
+     * Je recupere une liste avec le total pour la pagination.
+     *
      * @param array<string, mixed> $query
-     * @return array<int, array<string, mixed>>
+     * @return array{items: array<int, array<string, mixed>>, total: int, totalPages: int}
      */
-    private function fetchList(string $endpoint, array $query): array
+    private function fetchListWithTotal(string $endpoint, array $query, int $limit): array
     {
         $res = $this->http->request('GET', self::BASE_URL . $endpoint, [
             'query' => array_merge($query, [
@@ -172,8 +176,11 @@ final class TmdbService
 
         $data = $res->toArray(false);
 
+        $total = isset($data['total_results']) ? (int) $data['total_results'] : 0;
+        $totalPages = isset($data['total_pages']) ? (int) $data['total_pages'] : 0;
+
         if (!isset($data['results']) || !is_array($data['results'])) {
-            return [];
+            return ['items' => [], 'total' => $total, 'totalPages' => $totalPages];
         }
 
         $mapped = [];
@@ -185,11 +192,13 @@ final class TmdbService
             $mapped[] = $this->mapMovie($m);
         }
 
-        return $mapped;
+        $mapped = array_slice($mapped, 0, $limit);
+
+        return ['items' => $mapped, 'total' => $total, 'totalPages' => $totalPages];
     }
 
     /**
-     * Mapping stable d'un film TMDB.
+     * Je mappe un film TMDB vers un format stable.
      *
      * @param array<string, mixed> $m
      * @return array<string, mixed>
