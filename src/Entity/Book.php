@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection as DoctrineCollection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: BookRepository::class)]
 class Book
@@ -17,21 +18,43 @@ class Book
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le titre est obligatoire.")]
+    #[Assert\Length(
+        max: 255,
+        maxMessage: "Le titre ne peut pas dépasser {{ limit }} caractères."
+    )]
     private ?string $title = null;
 
     /*
      * Je stocke l'URL ou le chemin de l'image de couverture si j'en ai une.
      */
     #[ORM\Column(length: 500, nullable: true)]
+    #[Assert\Length(
+        max: 500,
+        maxMessage: "L'URL de couverture ne peut pas dépasser {{ limit }} caractères."
+    )]
+    #[Assert\Url(message: "L'URL de couverture n'est pas valide.")]
     private ?string $coverImage = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(
+        max: 255,
+        maxMessage: "Le nom de l'auteur ne peut pas dépasser {{ limit }} caractères."
+    )]
     private ?string $author = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(
+        max: 255,
+        maxMessage: "L'éditeur ne peut pas dépasser {{ limit }} caractères."
+    )]
     private ?string $publisher = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(
+        max: 255,
+        maxMessage: "Le traducteur ne peut pas dépasser {{ limit }} caractères."
+    )]
     private ?string $translator = null;
 
     /*
@@ -44,29 +67,50 @@ class Book
      * Je garde le genre en texte pour rester simple et rapide au départ.
      */
     #[ORM\Column(length: 100, nullable: true)]
+    #[Assert\Length(
+        max: 100,
+        maxMessage: "Le genre ne peut pas dépasser {{ limit }} caractères."
+    )]
     private ?string $genre = null;
 
     #[ORM\Column(nullable: true)]
+    #[Assert\Positive(message: "Le nombre de pages doit être positif.")]
     private ?int $pageCount = null;
 
     #[ORM\Column(length: 20, nullable: true)]
+    #[Assert\Length(
+        max: 20,
+        maxMessage: "L'ISBN ne peut pas dépasser {{ limit }} caractères."
+    )]
+    #[Assert\Regex(
+        pattern: "/^[0-9Xx- ]+$/",
+        message: "L'ISBN contient des caractères non valides."
+    )]
     private ?string $isbn = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Assert\Length(
+        max: 5000,
+        maxMessage: "Le synopsis ne peut pas dépasser {{ limit }} caractères."
+    )]
     private ?string $synopsis = null;
 
-    #[ORM\Column(length: 50, nullable: true, unique:true)]
+    #[ORM\Column(length: 50, nullable: true, unique: true)]
+    #[Assert\Length(
+        max: 50,
+        maxMessage: "L'identifiant Google Books ne peut pas dépasser {{ limit }} caractères."
+    )]
     private ?string $googleBooksId = null;
 
     /*
      * Je stocke la date d'ajout en base pour trier les derniers livres.
      */
     #[ORM\Column]
+    #[Assert\NotNull]
     private \DateTimeImmutable $createdAt;
 
     #[ORM\OneToMany(mappedBy: 'book', targetEntity: CollectionBook::class, orphanRemoval: true, cascade: ['persist', 'remove'])]
     private DoctrineCollection $collectionBooks;
-
 
     public function __construct()
     {
@@ -86,7 +130,7 @@ class Book
 
     public function setTitle(string $title): static
     {
-        $this->title = $title;
+        $this->title = trim($title);
 
         return $this;
     }
@@ -98,7 +142,8 @@ class Book
 
     public function setCoverImage(?string $coverImage): static
     {
-        $this->coverImage = $coverImage;
+        $coverImage = $coverImage !== null ? trim($coverImage) : null;
+        $this->coverImage = $coverImage !== '' ? $coverImage : null;
 
         return $this;
     }
@@ -110,7 +155,8 @@ class Book
 
     public function setAuthor(?string $author): static
     {
-        $this->author = $author;
+        $author = $author !== null ? trim($author) : null;
+        $this->author = $author !== '' ? $author : null;
 
         return $this;
     }
@@ -122,7 +168,8 @@ class Book
 
     public function setPublisher(?string $publisher): static
     {
-        $this->publisher = $publisher;
+        $publisher = $publisher !== null ? trim($publisher) : null;
+        $this->publisher = $publisher !== '' ? $publisher : null;
 
         return $this;
     }
@@ -134,7 +181,8 @@ class Book
 
     public function setTranslator(?string $translator): static
     {
-        $this->translator = $translator;
+        $translator = $translator !== null ? trim($translator) : null;
+        $this->translator = $translator !== '' ? $translator : null;
 
         return $this;
     }
@@ -158,7 +206,8 @@ class Book
 
     public function setGenre(?string $genre): static
     {
-        $this->genre = $genre;
+        $genre = $genre !== null ? trim($genre) : null;
+        $this->genre = $genre !== '' ? $genre : null;
 
         return $this;
     }
@@ -182,7 +231,8 @@ class Book
 
     public function setIsbn(?string $isbn): static
     {
-        $this->isbn = $isbn;
+        $isbn = $isbn !== null ? trim($isbn) : null;
+        $this->isbn = $isbn !== '' ? $isbn : null;
 
         return $this;
     }
@@ -194,7 +244,8 @@ class Book
 
     public function setSynopsis(?string $synopsis): static
     {
-        $this->synopsis = $synopsis;
+        $synopsis = $synopsis !== null ? trim($synopsis) : null;
+        $this->synopsis = $synopsis !== '' ? $synopsis : null;
 
         return $this;
     }
@@ -206,7 +257,8 @@ class Book
 
     public function setGoogleBooksId(?string $googleBooksId): static
     {
-        $this->googleBooksId = $googleBooksId;
+        $googleBooksId = $googleBooksId !== null ? trim($googleBooksId) : null;
+        $this->googleBooksId = $googleBooksId !== '' ? $googleBooksId : null;
 
         return $this;
     }
@@ -252,7 +304,4 @@ class Book
 
         return $this;
     }
-
-    
-
 }
