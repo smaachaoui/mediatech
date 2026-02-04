@@ -12,7 +12,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 final class ProfileController extends AbstractController
 {
-    private const ALLOWED_SECTIONS = ['info', 'collections', 'comments', 'friends', 'support'];
+    private const ALLOWED_SECTIONS = ['info', 'collections', 'comments', 'support'];
 
     #[Route('/profile', name: 'app_profile', methods: ['GET'])]
     public function index(Request $request, ProfileService $profileService): Response

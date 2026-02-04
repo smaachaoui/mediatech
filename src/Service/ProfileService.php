@@ -19,7 +19,6 @@ final class ProfileService
     public function __construct(
         private readonly CollectionRepository $collectionRepository,
         private readonly CommentRepository $commentRepository,
-        private readonly FriendshipRepository $friendshipRepository,
 
         private readonly LibraryManager $libraryManager,
         private readonly CollectionBookRepository $collectionBookRepository,
@@ -35,12 +34,7 @@ final class ProfileService
             'comments' => [
                 'comments' => $this->commentRepository->findLatestByAuthor($user),
             ],
-
-            'friends' => [
-                'friends' => $this->friendshipRepository->findAcceptedFriends($user),
-                'pending' => $this->friendshipRepository->findPendingRequests($user),
-            ],
-
+            
             default => [],
         };
     }
