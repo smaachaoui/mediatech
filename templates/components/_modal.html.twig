@@ -1,11 +1,28 @@
 {# templates/components/_modal.html.twig
+
+   Ce composant supporte deux modes d'utilisation :
    
-   Je recois :
-   - id: string (requis) - identifiant unique du modal
-   - title: string (requis) - titre affiche dans le header
-   - body: string (requis) - contenu HTML du modal
-   - footer: string (requis) - contenu HTML du footer (boutons d'action)
-   - size: string (optionnel) - classe Bootstrap pour la taille (modal-sm, modal-lg, modal-xl)
+   MODE 1 - Avec embed et blocs (pour les formulaires complexes) :
+   {% embed 'components/_modal.html.twig' with {
+     id: 'myModal',
+     title: 'Mon titre',
+     action: path('my_route'),
+     csrf_id: 'my_csrf_token',
+     submit_label: 'Valider',
+     submit_class: 'btn-primary'
+   } %}
+     {% block body %}
+       <p>Mon contenu ici</p>
+     {% endblock %}
+   {% endembed %}
+   
+   MODE 2 - Avec include et variables (pour les confirmations simples) :
+   {% include 'components/_modal.html.twig' with {
+     id: 'myModal',
+     title: 'Mon titre',
+     body: '<p>Mon contenu HTML</p>',
+     footer: '<form>...</form>'
+   } %}
 #}
 
 {% set size = size ?? '' %}
@@ -19,16 +36,39 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
       </div>
 
-      <div class="modal-body">
-        {{ body|raw }}
-      </div>
+      {# MODE 1 : Utilisation avec embed et formulaire integre #}
+      {% if action is defined %}
+        <form method="post" action="{{ action }}">
+          <div class="modal-body">
+            {% if csrf_id is defined %}
+              <input type="hidden" name="_token" value="{{ csrf_token(csrf_id) }}">
+            {% endif %}
+            {% block body %}{% endblock %}
+          </div>
 
-      <div class="modal-footer">
-        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-          Annuler
-        </button>
-        {{ footer|raw }}
-      </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+              Annuler
+            </button>
+            <button type="submit" class="btn {{ submit_class|default('btn-primary') }}">
+              {{ submit_label|default('Valider') }}
+            </button>
+          </div>
+        </form>
+
+      {# MODE 2 : Utilisation avec include et variables body/footer #}
+      {% else %}
+        <div class="modal-body">
+          {{ body|default('')|raw }}
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+            Annuler
+          </button>
+          {{ footer|default('')|raw }}
+        </div>
+      {% endif %}
 
     </div>
   </div>

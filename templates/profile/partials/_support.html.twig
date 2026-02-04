@@ -1,106 +1,54 @@
 <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
   <div>
     <h1 class="h3 mb-1">Support</h1>
-    <div class="text-muted">Besoin d'aide ? Consultez les ressources ci-dessous ou contactez-nous.</div>
+    <div class="text-muted">Besoin d'aide ? Contactez-nous.</div>
   </div>
 </div>
 
-<div class="row g-4">
+<div class="row justify-content-center">
+  <div class="col-12 col-md-8 col-lg-6">
 
-  <div class="col-12 col-lg-6">
-    <div class="card border rounded-3 h-100">
+    <div class="card border rounded-3 text-center">
+      <div class="card-body py-5">
+        <div class="mb-3">
+          <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center" 
+               style="width: 64px; height: 64px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1zm13 2.383-4.708 2.825L15 11.105zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741M1 11.105l4.708-2.897L1 5.383z"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="fw-semibold fs-5 mb-2">Nous contacter</div>
+        <div class="text-muted mb-4">
+          Une question, un problème technique, une suggestion ?<br>
+          Nous sommes à votre écoute.
+        </div>
+
+        <a href="{{ path('app_contact') }}" class="btn btn-primary">
+          Accéder au formulaire de contact
+        </a>
+      </div>
+    </div>
+
+    <div class="card border rounded-3 mt-3">
       <div class="card-body">
-        <div class="fw-semibold mb-2">Questions fréquentes</div>
-        <div class="text-muted small mb-3">
-          Trouvez rapidement des réponses aux questions les plus courantes.
-        </div>
-
-        <div class="d-flex flex-column gap-3">
-          <div>
-            <div class="fw-semibold small">Comment créer une collection ?</div>
-            <div class="text-muted small">
-              Rendez-vous dans "Mes collections", puis cliquez sur "Créer une collection". 
-              Choisissez un nom et un type (livres ou films).
-            </div>
+        <div class="d-flex align-items-center gap-3">
+          <div class="bg-success bg-opacity-10 text-success rounded-3 p-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71z"/>
+              <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0"/>
+            </svg>
           </div>
-
           <div>
-            <div class="fw-semibold small">Comment ajouter un livre ou un film ?</div>
+            <div class="fw-semibold">Délai de réponse</div>
             <div class="text-muted small">
-              Utilisez le catalogue pour rechercher un titre. Cliquez sur "Ajouter à ma collection" 
-              pour l'ajouter à votre espace "Non répertorié", puis déplacez-le dans une collection.
-            </div>
-          </div>
-
-          <div>
-            <div class="fw-semibold small">Comment publier ma collection ?</div>
-            <div class="text-muted small">
-              Ouvrez votre collection et cliquez sur "Publier". Votre collection apparaîtra 
-              dans "Nos collections" et sera visible par tous les visiteurs.
-            </div>
-          </div>
-
-          <div>
-            <div class="fw-semibold small">Comment supprimer mon compte ?</div>
-            <div class="text-muted small">
-              Pour supprimer votre compte, veuillez nous contacter via le formulaire ci-contre. 
-              Nous traiterons votre demande dans les plus brefs délais.
+              Nous nous efforçons de répondre à toutes les demandes sous 48 heures ouvrées.
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <div class="col-12 col-lg-6">
-    <div class="card border rounded-3 h-100">
-      <div class="card-body">
-        <div class="fw-semibold mb-2">Nous contacter</div>
-        <div class="text-muted small mb-3">
-          Une question, un problème technique, une suggestion ? Nous sommes à votre écoute.
-        </div>
-
-        <div class="mb-4">
-          <a href="{{ path('app_contact') }}" class="btn btn-primary">
-            Accéder au formulaire de contact
-          </a>
-        </div>
-
-        <hr>
-
-        <div class="fw-semibold small mb-2">Informations légales</div>
-        <div class="d-flex flex-column gap-1">
-          <a href="{{ path('app_static_about') }}" class="text-decoration-none small">
-            À propos de MediaTech
-          </a>
-          <a href="{{ path('app_static_legal') }}" class="text-decoration-none small">
-            Mentions légales
-          </a>
-          <a href="{{ path('app_static_cgu') }}" class="text-decoration-none small">
-            Conditions générales d'utilisation
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
-
-</div>
-
-<div class="card border rounded-3 mt-4">
-  <div class="card-body">
-    <div class="d-flex align-items-center gap-3">
-      <div class="bg-primary bg-opacity-10 text-primary rounded-3 p-3">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
-          <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
-          <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
-        </svg>
-      </div>
-      <div>
-        <div class="fw-semibold">Délai de réponse</div>
-        <div class="text-muted small">
-          Nous nous efforçons de répondre à toutes les demandes sous 48 heures ouvrées.
-        </div>
-      </div>
-    </div>
   </div>
 </div>

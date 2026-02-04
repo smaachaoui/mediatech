@@ -82,21 +82,8 @@ class ProfileEditType extends AbstractType
                     'class' => 'form-control',
                     'accept' => 'image/jpeg,image/png,image/gif,image/webp',
                 ],
-            ])
-            ->add('favoriteGenres', EntityType::class, [
-                'class' => Genre::class,
-                'choice_label' => 'name',
-                'multiple' => true,
-                'expanded' => true,
-                'required' => false,
-                'label' => 'Genres favoris',
-                'group_by' => function (Genre $genre) {
-                    return $genre->getType() === 'book' ? 'Livres' : 'Films';
-                },
-                'attr' => [
-                    'class' => 'genre-checkboxes',
-                ],
             ]);
+            
     }
 
     public function configureOptions(OptionsResolver $resolver): void

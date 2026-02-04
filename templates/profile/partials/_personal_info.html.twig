@@ -59,21 +59,6 @@
           {% endif %}
         </div>
 
-        <div class="mb-4">
-          <div class="text-muted small mb-2">Genres favoris</div>
-          {% if user.favoriteGenres is defined and user.favoriteGenres|length > 0 %}
-            <div class="d-flex flex-wrap gap-2">
-              {% for genre in user.favoriteGenres %}
-                <span class="badge {{ genre.type == 'book' ? 'text-bg-primary' : 'text-bg-success' }}">
-                  {{ genre.name }}
-                </span>
-              {% endfor %}
-            </div>
-          {% else %}
-            <div class="text-muted fst-italic">Aucun genre favori sélectionné.</div>
-          {% endif %}
-        </div>
-
         <hr class="my-4">
 
         <div class="d-flex flex-wrap gap-2">
@@ -116,6 +101,14 @@
       {{ form_start(editForm, { 'action': path('app_profile_edit'), 'attr': { 'enctype': 'multipart/form-data' } }) }}
         <div class="modal-body">
 
+
+            <div class="mb-3">
+                {{ form_label(editForm.profilePictureFile) }}
+                {{ form_widget(editForm.profilePictureFile) }}
+                {{ form_errors(editForm.profilePictureFile) }}
+                <div class="form-text">Formats acceptés : JPG, PNG, GIF, WebP. Maximum 2 Mo.</div>
+            </div>
+
           <div class="mb-3">
             {{ form_label(editForm.pseudo) }}
             {{ form_widget(editForm.pseudo) }}
@@ -128,21 +121,6 @@
             {{ form_widget(editForm.biography) }}
             {{ form_errors(editForm.biography) }}
             <div class="form-text">Maximum 500 caractères.</div>
-          </div>
-
-          <div class="mb-3">
-            {{ form_label(editForm.profilePictureFile) }}
-            {{ form_widget(editForm.profilePictureFile) }}
-            {{ form_errors(editForm.profilePictureFile) }}
-            <div class="form-text">Formats acceptés : JPG, PNG, GIF, WebP. Maximum 2 Mo.</div>
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label">Genres favoris</label>
-            <div class="border rounded p-3" style="max-height: 250px; overflow-y: auto;">
-              {{ form_widget(editForm.favoriteGenres, { 'attr': { 'class': 'd-flex flex-wrap gap-3' } }) }}
-            </div>
-            <div class="form-text">Sélectionnez vos genres préférés pour personnaliser votre expérience.</div>
           </div>
 
         </div>
