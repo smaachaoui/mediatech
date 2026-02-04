@@ -79,8 +79,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Comment::class)]
     private DoctrineCollection $comments;
 
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Wishlist::class)]
-    private DoctrineCollection $wishlists;
 
     #[ORM\ManyToMany(targetEntity: Genre::class, inversedBy: 'usersWhoFavorited')]
     #[ORM\JoinTable(name: 'user_favorite_genre')]
@@ -92,7 +90,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->collections = new ArrayCollection();
         $this->ratings = new ArrayCollection();
         $this->comments = new ArrayCollection();
-        $this->wishlists = new ArrayCollection();
         $this->favoriteGenres = new ArrayCollection();
     }
 
@@ -293,35 +290,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * @return DoctrineCollection<int, Wishlist>
-     */
-    public function getWishlists(): DoctrineCollection
-    {
-        return $this->wishlists;
-    }
-
-    public function addWishlist(Wishlist $wishlist): static
-    {
-        if (!$this->wishlists->contains($wishlist)) {
-            $this->wishlists->add($wishlist);
-            $wishlist->setUser($this);
-        }
-
-        return $this;
-    }
-
-    public function removeWishlist(Wishlist $wishlist): static
-    {
-        if ($this->wishlists->removeElement($wishlist)) {
-            // set the owning side to null (unless already changed)
-            if ($wishlist->getUser() === $this) {
-                $wishlist->setUser(null);
-            }
-        }
-
-        return $this;
-    }
 
     /**
      * @return DoctrineCollection<int, Genre>
