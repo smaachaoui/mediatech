@@ -4,8 +4,10 @@ namespace App\Controller;
 
 use App\Entity\Collection;
 use App\Entity\Rating;
+use App\Entity\User;
 use App\Repository\CollectionRepository;
 use App\Repository\RatingRepository;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -31,13 +33,18 @@ final class RatingController extends AbstractController
 
         if (
             !$collection->isPublished()
-            || $collection->getVisibility() !== 'public'
+            || $collection->getVisibility() !== Collection::VISIBILITY_PUBLIC
             || $collection->getScope() !== Collection::SCOPE_USER
         ) {
             throw $this->createNotFoundException('Collection introuvable.');
         }
 
-        if (!$this->isCsrfTokenValid('rate_collection_'.$collection->getId(), (string) $request->request->get('_token'))) {
+        if (
+            !$this->isCsrfTokenValid(
+                'rate_collection_' . $collection->getId(),
+                (string) $request->request->get('_token')
+            )
+        ) {
             $this->addFlash('danger', 'Jeton CSRF invalide.');
             return $this->redirectToRoute('app_collection_show', ['id' => $collection->getId()]);
         }
@@ -49,7 +56,7 @@ final class RatingController extends AbstractController
         }
 
         $user = $this->getUser();
-        if (!$user instanceof \App\Entity\User) {
+        if (!$user instanceof User) {
             $this->addFlash('danger', 'Vous devez être connecté pour noter.');
             return $this->redirectToRoute('app_collection_show', ['id' => $collection->getId()]);
         }
@@ -60,21 +67,36 @@ final class RatingController extends AbstractController
             return $this->redirectToRoute('app_collection_show', ['id' => $collection->getId()]);
         }
 
-
         $rating = $ratingRepository->findOneBy([
             'collection' => $collection,
             'user' => $user,
         ]);
 
         if (!$rating) {
-            $rating = new Rating();
-            $rating->setCollection($collection);
-            $rating->setUser($user);
+            $rating = (new Rating())
+                ->setCollection($collection)
+                ->setUser($user);
+
             $em->persist($rating);
         }
 
         $rating->setValue($value);
-        $em->flush();
+
+        try {
+            $em->flush();
+        } catch (UniqueConstraintViolationException) {
+            $em->clear();
+
+            $existing = $ratingRepository->findOneBy([
+                'collection' => $collection,
+                'user' => $user,
+            ]);
+
+            if ($existing instanceof Rating) {
+                $existing->setValue($value);
+                $em->flush();
+            }
+        }
 
         $this->addFlash('success', 'Votre note a été enregistrée.');
         return $this->redirectToRoute('app_collection_show', ['id' => $collection->getId()]);
