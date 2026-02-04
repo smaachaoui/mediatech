@@ -1,6 +1,4 @@
 services:
-    Symfony\Component\RateLimiter\RateLimiterFactory $collectionCommentLimiter: '@limiter.collection_comment'
-
     _defaults:
         autowire: true
         autoconfigure: true
@@ -8,6 +6,11 @@ services:
             $tmdbApiKey: '%env(TMDB_API_KEY)%'
             $googleBooksApiKey: '%env(GOOGLE_BOOKS_API_KEY)%'
             $cache: '@cache.app'
+
+    Symfony\Component\RateLimiter\RateLimiterFactory $collectionCommentLimiter:
+        alias: 'limiter.collection_comment'
+
+       
 
     App\:
         resource: '../src/'

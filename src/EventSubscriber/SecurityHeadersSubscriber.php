@@ -6,11 +6,12 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
+use Symfony\Component\HttpKernel\KernelInterface;
 
 final class SecurityHeadersSubscriber implements EventSubscriberInterface
 {
     public function __construct(
-        private readonly string $appEnv
+        private readonly KernelInterface $kernel
     ) {}
 
     public static function getSubscribedEvents(): array
@@ -31,43 +32,25 @@ final class SecurityHeadersSubscriber implements EventSubscriberInterface
 
         $this->applyBaseHeaders($response);
         $this->applyCsp($response);
-        $this->applyHsts($response, $request->isSecure());
+
+        if ($this->kernel->getEnvironment() === 'prod' && $request->isSecure()) {
+            $this->applyHsts($response);
+        }
     }
 
     private function applyBaseHeaders(Response $response): void
     {
         $headers = $response->headers;
 
-        if (!$headers->has('X-Content-Type-Options')) {
-            $headers->set('X-Content-Type-Options', 'nosniff');
-        }
-
-        if (!$headers->has('Referrer-Policy')) {
-            $headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
-        }
-
-        if (!$headers->has('X-Frame-Options')) {
-            $headers->set('X-Frame-Options', 'DENY');
-        }
-
-        if (!$headers->has('Permissions-Policy')) {
-            $headers->set(
-                'Permissions-Policy',
-                'camera=(), microphone=(), geolocation=(), payment=(), usb=(), accelerometer=(), gyroscope=(), magnetometer=()'
-            );
-        }
-
-        if (!$headers->has('Cross-Origin-Opener-Policy')) {
-            $headers->set('Cross-Origin-Opener-Policy', 'same-origin');
-        }
-
-        if (!$headers->has('Cross-Origin-Resource-Policy')) {
-            $headers->set('Cross-Origin-Resource-Policy', 'same-origin');
-        }
-
-        if (!$headers->has('Cross-Origin-Embedder-Policy')) {
-            $headers->set('Cross-Origin-Embedder-Policy', 'unsafe-none');
-        }
+        $headers->set('X-Content-Type-Options', 'nosniff');
+        $headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
+        $headers->set('X-Frame-Options', 'DENY');
+        $headers->set(
+            'Permissions-Policy',
+            'camera=(), microphone=(), geolocation=(), payment=(), usb=(), accelerometer=(), gyroscope=(), magnetometer=()'
+        );
+        $headers->set('Cross-Origin-Opener-Policy', 'same-origin');
+        $headers->set('Cross-Origin-Resource-Policy', 'same-origin');
     }
 
     private function applyCsp(Response $response): void
@@ -89,27 +72,22 @@ final class SecurityHeadersSubscriber implements EventSubscriberInterface
             "connect-src 'self' https:",
         ]);
 
-        if ($this->appEnv === 'prod') {
+        if ($this->kernel->getEnvironment() === 'prod') {
             $policy .= '; upgrade-insecure-requests';
         }
 
         $response->headers->set('Content-Security-Policy', $policy);
     }
 
-    private function applyHsts(Response $response, bool $isSecure): void
+    private function applyHsts(Response $response): void
     {
-        if ($this->appEnv !== 'prod') {
-            return;
-        }
-
-        if (!$isSecure) {
-            return;
-        }
-
         if ($response->headers->has('Strict-Transport-Security')) {
             return;
         }
 
-        $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+        $response->headers->set(
+            'Strict-Transport-Security',
+            'max-age=31536000; includeSubDomains'
+        );
     }
 }
