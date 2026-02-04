@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\RatingRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: RatingRepository::class)]
 #[ORM\Table(name: 'rating')]
@@ -20,9 +21,16 @@ class Rating
      * Je stocke une note de 1 à 5.
      */
     #[ORM\Column(type: Types::SMALLINT)]
+    #[Assert\NotNull(message: "La note est obligatoire.")]
+    #[Assert\Range(
+        min: 1,
+        max: 5,
+        notInRangeMessage: "La note doit être comprise entre {{ min }} et {{ max }}."
+    )]
     private ?int $value = null;
 
     #[ORM\Column]
+    #[Assert\NotNull]
     private \DateTimeImmutable $createdAt;
 
     #[ORM\Column(nullable: true)]
@@ -30,10 +38,12 @@ class Rating
 
     #[ORM\ManyToOne(inversedBy: 'ratings')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Assert\NotNull(message: "L'utilisateur est obligatoire pour une note.")]
     private ?User $user = null;
 
     #[ORM\ManyToOne(inversedBy: 'ratings')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Assert\NotNull(message: "La collection est obligatoire pour une note.")]
     private ?Collection $collection = null;
 
     public function __construct()
