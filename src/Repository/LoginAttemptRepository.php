@@ -21,28 +21,74 @@ class LoginAttemptRepository extends ServiceEntityRepository
         parent::__construct($registry, LoginAttempt::class);
     }
 
-//    /**
-//     * @return LoginAttempt[] Returns an array of LoginAttempt objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('l')
-//            ->andWhere('l.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('l.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
+    /**
+     * Je compte les tentatives echouees pour un email sur une periode donnee.
+     */
+    public function countRecentFailedAttemptsByEmail(string $email, int $minutes = 15): int
+    {
+        $since = new \DateTimeImmutable(sprintf('-%d minutes', $minutes));
 
-//    public function findOneBySomeField($value): ?LoginAttempt
-//    {
-//        return $this->createQueryBuilder('l')
-//            ->andWhere('l.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+        return (int) $this->createQueryBuilder('la')
+            ->select('COUNT(la.id)')
+            ->andWhere('la.email = :email')
+            ->andWhere('la.success = :success')
+            ->andWhere('la.attemptedAt >= :since')
+            ->setParameter('email', mb_strtolower($email))
+            ->setParameter('success', false)
+            ->setParameter('since', $since)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * Je compte les tentatives echouees pour une adresse IP sur une periode donnee.
+     */
+    public function countRecentFailedAttemptsByIp(string $ipAddress, int $minutes = 15): int
+    {
+        $since = new \DateTimeImmutable(sprintf('-%d minutes', $minutes));
+
+        return (int) $this->createQueryBuilder('la')
+            ->select('COUNT(la.id)')
+            ->andWhere('la.ipAddress = :ip')
+            ->andWhere('la.success = :success')
+            ->andWhere('la.attemptedAt >= :since')
+            ->setParameter('ip', $ipAddress)
+            ->setParameter('success', false)
+            ->setParameter('since', $since)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * J'enregistre une nouvelle tentative de connexion.
+     */
+    public function recordAttempt(string $email, string $ipAddress, bool $success): LoginAttempt
+    {
+        $attempt = new LoginAttempt();
+        $attempt->setEmail(mb_strtolower($email));
+        $attempt->setIpAddress($ipAddress);
+        $attempt->setSuccess($success);
+
+        $em = $this->getEntityManager();
+        $em->persist($attempt);
+        $em->flush();
+
+        return $attempt;
+    }
+
+    /**
+     * Je supprime les anciennes tentatives pour nettoyer la base.
+     * J'appelle cette methode periodiquement via une commande ou un cron.
+     */
+    public function purgeOldAttempts(int $days = 7): int
+    {
+        $threshold = new \DateTimeImmutable(sprintf('-%d days', $days));
+
+        return (int) $this->createQueryBuilder('la')
+            ->delete()
+            ->andWhere('la.attemptedAt < :threshold')
+            ->setParameter('threshold', $threshold)
+            ->getQuery()
+            ->execute();
+    }
 }
