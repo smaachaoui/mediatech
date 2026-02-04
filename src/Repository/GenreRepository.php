@@ -21,28 +21,47 @@ class GenreRepository extends ServiceEntityRepository
         parent::__construct($registry, Genre::class);
     }
 
-//    /**
-//     * @return Genre[] Returns an array of Genre objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('g')
-//            ->andWhere('g.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('g.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
+    /**
+     * Je retourne tous les genres tries par type puis par nom.
+     *
+     * @return Genre[]
+     */
+    public function findAllSorted(): array
+    {
+        return $this->createQueryBuilder('g')
+            ->orderBy('g.type', 'ASC')
+            ->addOrderBy('g.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 
-//    public function findOneBySomeField($value): ?Genre
-//    {
-//        return $this->createQueryBuilder('g')
-//            ->andWhere('g.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+    /**
+     * Je retourne les genres de livres.
+     *
+     * @return Genre[]
+     */
+    public function findBookGenres(): array
+    {
+        return $this->createQueryBuilder('g')
+            ->andWhere('g.type = :type')
+            ->setParameter('type', 'book')
+            ->orderBy('g.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Je retourne les genres de films.
+     *
+     * @return Genre[]
+     */
+    public function findMovieGenres(): array
+    {
+        return $this->createQueryBuilder('g')
+            ->andWhere('g.type = :type')
+            ->setParameter('type', 'movie')
+            ->orderBy('g.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }
