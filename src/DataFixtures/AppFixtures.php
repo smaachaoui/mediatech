@@ -142,7 +142,8 @@ final class AppFixtures extends Fixture
             ->setGenre('Science-fiction')
             ->setIsbn('978-2266320481')
             ->setSynopsis("Une grande fresque de science-fiction politique et mystique.")
-            ->setGoogleBooksId('dune-fixture-1');
+            ->setGoogleBooksId('dune-fixture-1')
+            ->setCoverImage('https://covers.openlibrary.org/b/isbn/9782266320481-L.jpg');
 
         $b2 = (new Book())
             ->setTitle('Le Seigneur des Anneaux')
@@ -150,7 +151,8 @@ final class AppFixtures extends Fixture
             ->setGenre('Fantasy')
             ->setIsbn('978-2266286268')
             ->setSynopsis("Un voyage épique pour détruire l'Anneau Unique.")
-            ->setGoogleBooksId('lotr-fixture-1');
+            ->setGoogleBooksId('lotr-fixture-1')
+            ->setCoverImage('https://covers.openlibrary.org/b/isbn/9782266286268-L.jpg');
 
         $b3 = (new Book())
             ->setTitle('Sapiens')
@@ -158,7 +160,8 @@ final class AppFixtures extends Fixture
             ->setGenre('Histoire')
             ->setIsbn('978-2226257017')
             ->setSynopsis("Une histoire globale de l'humanité.")
-            ->setGoogleBooksId('sapiens-fixture-1');
+            ->setGoogleBooksId('sapiens-fixture-1')
+            ->setCoverImage('https://covers.openlibrary.org/b/isbn/9782226257017-L.jpg');
 
         foreach ([$b1, $b2, $b3] as $b) {
             $manager->persist($b);
@@ -169,19 +172,22 @@ final class AppFixtures extends Fixture
             ->setTitle('Interstellar')
             ->setGenre('Science-fiction')
             ->setSynopsis("Une mission spatiale pour sauver l'humanité.")
-            ->setTmdbId(100001);
+            ->setTmdbId(100001)
+            ->setPoster('https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg');
 
         $m2 = (new Movie())
             ->setTitle('Le Voyage de Chihiro')
             ->setGenre('Animation')
             ->setSynopsis("Une jeune fille se retrouve piégée dans un monde d'esprits.")
-            ->setTmdbId(100002);
+            ->setTmdbId(100002)
+            ->setPoster('https://image.tmdb.org/t/p/w500/39wmItIWsg5sZMyRUHLkWBcuVCM.jpg');
 
         $m3 = (new Movie())
             ->setTitle('Mad Max: Fury Road')
             ->setGenre('Action')
             ->setSynopsis("Une course-poursuite dans un désert post-apocalyptique.")
-            ->setTmdbId(100003);
+            ->setTmdbId(100003)
+            ->setPoster('https://image.tmdb.org/t/p/w500/8tZYtuWezp8JbcsvHYO0O46tFbo.jpg');
 
         foreach ([$m1, $m2, $m3] as $m) {
             $manager->persist($m);
@@ -219,50 +225,77 @@ final class AppFixtures extends Fixture
             $manager->persist($default);
             $manager->persist($wishlist);
 
-            $public = (new Collection())
-                ->setName('Mes incontournables')
+            $publicBooks = (new Collection())
+                ->setName('Mes livres incontournables')
                 ->setScope(Collection::SCOPE_USER)
-                ->setMediaType(Collection::MEDIA_ALL)
+                ->setMediaType(Collection::MEDIA_BOOK)
                 ->setVisibility('public')
                 ->setIsPublished(true)
                 ->setPublishedAt(new \DateTimeImmutable('-10 days'))
-                ->setDescription("Une collection publique de démonstration.")
+                ->setDescription("Une collection publique de livres pour la démonstration.")
                 ->setUser($user);
 
-            $manager->persist($public);
+            $publicMovies = (new Collection())
+                ->setName('Mes films incontournables')
+                ->setScope(Collection::SCOPE_USER)
+                ->setMediaType(Collection::MEDIA_MOVIE)
+                ->setVisibility('public')
+                ->setIsPublished(true)
+                ->setPublishedAt(new \DateTimeImmutable('-10 days'))
+                ->setDescription("Une collection publique de films pour la démonstration.")
+                ->setUser($user);
 
-            $this->attachMediaToCollection($manager, $public, $media);
-            $this->attachMediaToCollection($manager, $wishlist, $media, true);
+            $manager->persist($publicBooks);
+            $manager->persist($publicMovies);
 
-            $this->createRatings($manager, $users, $public);
-            $this->createComments($manager, $users, $public);
+            $this->attachBooksToCollection($manager, $publicBooks, $media);
+            $this->attachMoviesToCollection($manager, $publicMovies, $media);
+
+            $this->attachBooksToCollection($manager, $wishlist, $media, true);
+            $this->attachMoviesToCollection($manager, $wishlist, $media, true);
+
+            $publicBooks->setCoverImage($media['books'][0]->getCoverImage());
+            $publicMovies->setCoverImage($media['movies'][0]->getPoster());
+
+            $this->createRatings($manager, $users, $publicMovies);
+            $this->createComments($manager, $users, $publicMovies);
         }
     }
 
     /**
      * @param array{books: Book[], movies: Movie[]} $media
      */
-    private function attachMediaToCollection(
+    private function attachBooksToCollection(
         ObjectManager $manager,
         Collection $collection,
         array $media,
         bool $light = false
     ): void {
         $books = $media['books'];
-        $movies = $media['movies'];
+        $count = $light ? 1 : min(2, count($books));
 
-        $bookCount = $light ? 1 : 2;
-        $movieCount = $light ? 1 : 2;
-
-        for ($i = 0; $i < $bookCount; $i++) {
+        for ($i = 0; $i < $count; $i++) {
             $cb = (new CollectionBook())
                 ->setCollection($collection)
                 ->setBook($books[$i]);
 
             $manager->persist($cb);
         }
+    }
 
-        for ($i = 0; $i < $movieCount; $i++) {
+    /**
+     * @param array{books: Book[], movies: Movie[]} $media
+     */
+    private function attachMoviesToCollection(
+        ObjectManager $manager,
+        Collection $collection,
+        array $media,
+        bool $light = false
+    ): void {
+        $movies = $media['movies'];
+        $count = $light ? 1 : min(2, count($movies));
+
+        for ($i = 0; $i < $count; $i++) {
             $cm = (new CollectionMovie())
                 ->setCollection($collection)
                 ->setMovie($movies[$i]);
