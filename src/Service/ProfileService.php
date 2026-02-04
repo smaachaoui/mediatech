@@ -10,7 +10,6 @@ use App\Repository\CollectionBookRepository;
 use App\Repository\CollectionMovieRepository;
 use App\Repository\CollectionRepository;
 use App\Repository\CommentRepository;
-use App\Repository\FriendshipRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
