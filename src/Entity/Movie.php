@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection as DoctrineCollection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: MovieRepository::class)]
 class Movie
@@ -17,15 +18,33 @@ class Movie
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le titre est obligatoire.")]
+    #[Assert\Length(
+        max: 255,
+        maxMessage: "Le titre ne peut pas dépasser {{ limit }} caractères."
+    )]
     private ?string $title = null;
 
     #[ORM\Column(length: 500, nullable: true)]
+    #[Assert\Length(
+        max: 500,
+        maxMessage: "L'URL du poster ne peut pas dépasser {{ limit }} caractères."
+    )]
+    #[Assert\Url(message: "L'URL du poster n'est pas valide.")]
     private ?string $poster = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(
+        max: 255,
+        maxMessage: "Le réalisateur ne peut pas dépasser {{ limit }} caractères."
+    )]
     private ?string $director = null;
 
     #[ORM\Column(length: 100, nullable: true)]
+    #[Assert\Length(
+        max: 100,
+        maxMessage: "Le genre ne peut pas dépasser {{ limit }} caractères."
+    )]
     private ?string $genre = null;
 
     /*
@@ -35,15 +54,21 @@ class Movie
     private ?\DateTimeImmutable $releaseDate = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Assert\Length(
+        max: 5000,
+        maxMessage: "Le synopsis ne peut pas dépasser {{ limit }} caractères."
+    )]
     private ?string $synopsis = null;
 
-    #[ORM\Column(nullable: true, unique:true)]
+    #[ORM\Column(nullable: true, unique: true)]
+    #[Assert\Positive(message: "L'identifiant TMDB doit être positif.")]
     private ?int $tmdbId = null;
 
     /*
      * Je stocke la date d'ajout en base pour trier les derniers films.
      */
     #[ORM\Column]
+    #[Assert\NotNull]
     private \DateTimeImmutable $createdAt;
 
     #[ORM\OneToMany(mappedBy: 'movie', targetEntity: CollectionMovie::class, orphanRemoval: true, cascade: ['persist', 'remove'])]
@@ -67,7 +92,7 @@ class Movie
 
     public function setTitle(string $title): static
     {
-        $this->title = $title;
+        $this->title = trim($title);
 
         return $this;
     }
@@ -79,7 +104,8 @@ class Movie
 
     public function setPoster(?string $poster): static
     {
-        $this->poster = $poster;
+        $poster = $poster !== null ? trim($poster) : null;
+        $this->poster = $poster !== '' ? $poster : null;
 
         return $this;
     }
@@ -91,7 +117,8 @@ class Movie
 
     public function setDirector(?string $director): static
     {
-        $this->director = $director;
+        $director = $director !== null ? trim($director) : null;
+        $this->director = $director !== '' ? $director : null;
 
         return $this;
     }
@@ -103,7 +130,8 @@ class Movie
 
     public function setGenre(?string $genre): static
     {
-        $this->genre = $genre;
+        $genre = $genre !== null ? trim($genre) : null;
+        $this->genre = $genre !== '' ? $genre : null;
 
         return $this;
     }
@@ -127,7 +155,8 @@ class Movie
 
     public function setSynopsis(?string $synopsis): static
     {
-        $this->synopsis = $synopsis;
+        $synopsis = $synopsis !== null ? trim($synopsis) : null;
+        $this->synopsis = $synopsis !== '' ? $synopsis : null;
 
         return $this;
     }
@@ -185,5 +214,4 @@ class Movie
 
         return $this;
     }
-
 }
