@@ -1,0 +1,189 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mentions légales | MediaTech{% endblock %}
+
+{% block body %}
+<section class="bg-white border rounded-3 p-4">
+
+  <h1 class="h4 mb-3">Mentions légales</h1>
+
+  <p class="text-muted small mb-4">Dernière mise à jour : février 2026</p>
+
+  <h2 class="h6 mt-4">Éditeur du site</h2>
+
+  <p>
+    Le site MediaTech est un projet réalisé dans le cadre de ma formation de développeur web et web mobile.
+    Il s'agit d'un projet pédagogique à but non commercial.
+  </p>
+
+  <ul>
+    <li>Responsable du projet : Seifeddine MAACHAOUI</li>
+    <li>Adresse : STUDI</li>
+    <li>Contact : <a href="{{ path('app_contact') }}">Formulaire de contact</a></li>
+  </ul>
+
+  <h2 class="h6 mt-4">Hébergement</h2>
+
+  <p>
+    Ce site est actuellement hébergé en environnement de développement local.
+    En cas de mise en production, les informations relatives à l'hébergeur seraient ajoutées ici
+    conformément aux obligations légales.
+  </p>
+
+  <h2 class="h6 mt-4">Propriété intellectuelle</h2>
+
+  <p>
+    L'ensemble des éléments constituant ce site (structure, code, design, textes, images)
+    sont ma propriété ou font l'objet d'une autorisation d'utilisation.
+    Toute reproduction, même partielle, est interdite sans mon accord préalable.
+  </p>
+
+  <p>
+    Les données relatives aux livres proviennent de l'API Google Books.
+    Les données relatives aux films proviennent de l'API The Movie Database (TMDB).
+    Ces contenus restent la propriété de leurs détenteurs respectifs et sont utilisés
+    conformément aux conditions d'utilisation de ces services.
+  </p>
+
+  <h2 class="h6 mt-4">Protection des données personnelles</h2>
+
+  <p>
+    Conformément au Règlement Général sur la Protection des Données (RGPD) et à la loi
+    Informatique et Libertés, j'accorde une importance particulière à la protection
+    de vos données personnelles.
+  </p>
+
+  <h3 class="h6 mt-3" style="font-weight: 500;">Données collectées</h3>
+
+  <p>
+    Lors de votre utilisation de MediaTech, je collecte les données suivantes :
+  </p>
+
+  <ul>
+    <li>
+      <strong>Données de compte</strong> : adresse email, pseudo et mot de passe
+      (ce dernier est stocké sous forme chiffrée et n'est jamais visible en clair)
+    </li>
+    <li>
+      <strong>Données d'utilisation</strong> : collections créées, commentaires publiés,
+      notes attribuées aux collections
+    </li>
+    <li>
+      <strong>Données techniques</strong> : adresse IP et informations de connexion
+      (utilisées uniquement à des fins de sécurité)
+    </li>
+  </ul>
+
+  <h3 class="h6 mt-3" style="font-weight: 500;">Finalités du traitement</h3>
+
+  <p>Les données collectées servent à :</p>
+
+  <ul>
+    <li>Permettre la création et la gestion de votre compte utilisateur</li>
+    <li>Vous permettre de créer et organiser vos collections personnelles</li>
+    <li>Afficher vos commentaires et notes sur les collections publiques</li>
+    <li>Assurer la sécurité du site et prévenir les tentatives de connexion frauduleuses</li>
+    <li>Répondre à vos demandes via le formulaire de contact</li>
+  </ul>
+
+  <h3 class="h6 mt-3" style="font-weight: 500;">Base légale</h3>
+
+  <p>Le traitement de vos données repose sur :</p>
+
+  <ul>
+    <li>
+      <strong>L'exécution du contrat</strong> : la création de votre compte et l'utilisation
+      des fonctionnalités du site nécessitent le traitement de certaines données
+    </li>
+    <li>
+      <strong>L'intérêt légitime</strong> : la sécurisation du site et l'amélioration
+      du service justifient certains traitements
+    </li>
+  </ul>
+
+  <h3 class="h6 mt-3" style="font-weight: 500;">Durée de conservation</h3>
+
+  <p>
+    Vos données sont conservées pendant toute la durée de votre inscription.
+    Si vous demandez la suppression de votre compte, vos données personnelles seront
+    effacées sous 30 jours, à l'exception des données que je suis légalement tenu de conserver.
+  </p>
+
+  <h3 class="h6 mt-3" style="font-weight: 500;">Vos droits</h3>
+
+  <p>Conformément à la réglementation, vous disposez des droits suivants :</p>
+
+  <ul>
+    <li><strong>Droit d'accès</strong> : obtenir une copie des données vous concernant</li>
+    <li><strong>Droit de rectification</strong> : corriger des données inexactes ou incomplètes</li>
+    <li><strong>Droit à l'effacement</strong> : demander la suppression de vos données</li>
+    <li><strong>Droit à la limitation</strong> : limiter temporairement le traitement de vos données</li>
+    <li><strong>Droit à la portabilité</strong> : récupérer vos données dans un format structuré</li>
+    <li><strong>Droit d'opposition</strong> : vous opposer au traitement de vos données</li>
+  </ul>
+
+  <p>
+    Pour exercer ces droits, vous pouvez me contacter via le
+    <a href="{{ path('app_contact') }}">formulaire de contact</a>.
+    Je m'engage à traiter votre demande dans un délai d'un mois.
+  </p>
+
+  <p>
+    Si vous estimez que vos droits ne sont pas respectés, vous pouvez introduire
+    une réclamation auprès de la CNIL (Commission Nationale de l'Informatique et des Libertés).
+  </p>
+
+  <h2 class="h6 mt-4">Cookies</h2>
+
+  <p>
+    MediaTech utilise uniquement des cookies techniques indispensables au bon fonctionnement du site :
+  </p>
+
+  <ul>
+    <li>
+      <strong>Cookie de session</strong> : permet de maintenir votre connexion
+      pendant votre navigation
+    </li>
+    <li>
+      <strong>Cookie CSRF</strong> : protège les formulaires contre les attaques
+      de type Cross-Site Request Forgery
+    </li>
+  </ul>
+
+  <p>
+    Ces cookies sont strictement nécessaires et ne requièrent pas votre consentement
+    préalable conformément aux recommandations de la CNIL.
+    Aucun cookie publicitaire ou de suivi n'est utilisé sur ce site.
+  </p>
+
+  <h2 class="h6 mt-4">Limitation de responsabilité</h2>
+
+  <p>
+    Je m'efforce de fournir des informations exactes et à jour sur ce site.
+    Toutefois, je ne peux garantir l'exactitude ni l'exhaustivité des informations affichées,
+    notamment celles provenant des API externes (Google Books et TMDB).
+  </p>
+
+  <p>
+    Ces données sont fournies à titre indicatif. L'utilisateur reconnaît les utiliser
+    sous sa propre responsabilité.
+  </p>
+
+  <h2 class="h6 mt-4">Liens externes</h2>
+
+  <p>
+    Le site peut contenir des liens vers des sites tiers.
+    Je n'exerce aucun contrôle sur ces sites et décline toute responsabilité
+    quant à leur contenu ou leurs pratiques en matière de confidentialité.
+  </p>
+
+  <h2 class="h6 mt-4">Droit applicable</h2>
+
+  <p class="mb-0">
+    Les présentes mentions légales sont soumises au droit français.
+    En cas de litige, et après tentative de résolution amiable,
+    les tribunaux français seront compétents.
+  </p>
+
+</section>
+{% endblock %}

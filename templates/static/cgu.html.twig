@@ -1,0 +1,225 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Conditions générales d'utilisation | MediaTech{% endblock %}
+
+{% block body %}
+<section class="bg-white border rounded-3 p-4">
+
+  <h1 class="h4 mb-3">Conditions générales d'utilisation</h1>
+
+  <p class="text-muted small mb-4">Dernière mise à jour : Février 2026</p>
+
+  <p>
+    En utilisant le site MediaTech, vous acceptez les présentes conditions générales d'utilisation.
+    Je vous invite à les lire attentivement avant de créer un compte ou d'utiliser les services proposés.
+  </p>
+
+  <h2 class="h6 mt-4">Présentation du service</h2>
+
+  <p>
+    MediaTech est une application web que j'ai développée dans le cadre de ma formation.
+    Elle permet de rechercher des livres et des films, de les organiser en collections personnelles
+    et de partager ces collections avec la communauté.
+  </p>
+
+  <p>Le service propose les fonctionnalités suivantes :</p>
+
+  <ul>
+    <li>Recherche de livres via l'API Google Books</li>
+    <li>Recherche de films via l'API The Movie Database (TMDB)</li>
+    <li>Création de collections thématiques (livres ou films)</li>
+    <li>Publication de collections pour les rendre visibles par tous</li>
+    <li>Possibilité de commenter et noter les collections publiées</li>
+  </ul>
+
+  <p>
+    L'accès au catalogue et aux collections publiques est ouvert à tous.
+    La création de collections et la publication de commentaires nécessitent un compte utilisateur.
+  </p>
+
+  <h2 class="h6 mt-4">Inscription et compte utilisateur</h2>
+
+  <h3 class="h6 mt-3" style="font-weight: 500;">Création de compte</h3>
+
+  <p>Pour créer un compte, vous devez fournir :</p>
+
+  <ul>
+    <li>Une adresse email valide (elle servira d'identifiant de connexion)</li>
+    <li>Un pseudo unique, composé de 3 à 50 caractères (lettres, chiffres, tirets ou underscores)</li>
+    <li>Un mot de passe sécurisé</li>
+  </ul>
+
+  <p>
+    Vous vous engagez à fournir des informations exactes et à les maintenir à jour.
+    L'utilisation d'une fausse identité ou d'informations trompeuses peut entraîner
+    la suspension de votre compte.
+  </p>
+
+  <h3 class="h6 mt-3" style="font-weight: 500;">Sécurité du compte</h3>
+
+  <p>
+    Vous êtes responsable de la confidentialité de vos identifiants de connexion.
+    Toute action effectuée depuis votre compte est réputée avoir été réalisée par vous.
+    En cas de suspicion d'accès non autorisé, je vous recommande de modifier immédiatement
+    votre mot de passe et de me contacter via le formulaire de contact.
+  </p>
+
+  <h3 class="h6 mt-3" style="font-weight: 500;">Suppression de compte</h3>
+
+  <p>
+    Vous pouvez demander la suppression de votre compte à tout moment
+    en me contactant via le <a href="{{ path('app_contact') }}">formulaire de contact</a>.
+    La suppression entraîne l'effacement de vos données personnelles et de vos collections privées.
+    Les commentaires que vous avez publiés pourront être anonymisés plutôt que supprimés,
+    afin de préserver la cohérence des discussions.
+  </p>
+
+  <h2 class="h6 mt-4">Utilisation des services</h2>
+
+  <h3 class="h6 mt-3" style="font-weight: 500;">Collections</h3>
+
+  <p>
+    Vous pouvez créer autant de collections que vous le souhaitez.
+    Chaque collection peut contenir des livres ou des films, mais pas les deux à la fois.
+  </p>
+
+  <p>Une collection peut être :</p>
+
+  <ul>
+    <li><strong>Privée</strong> : visible uniquement par vous</li>
+    <li><strong>Publique</strong> : visible par tous les visiteurs du site une fois publiée</li>
+  </ul>
+
+  <p>
+    Vous restez libre de modifier ou supprimer vos collections à tout moment.
+    La publication d'une collection est réversible : vous pouvez la dépublier si vous changez d'avis.
+  </p>
+
+  <h3 class="h6 mt-3" style="font-weight: 500;">Commentaires et notes</h3>
+
+  <p>
+    Vous pouvez commenter et noter les collections publiques des autres utilisateurs.
+    Les commentaires sont visibles par tous les visiteurs du site.
+    Vous pouvez modifier ou supprimer vos propres commentaires depuis votre espace personnel.
+  </p>
+
+  <h2 class="h6 mt-4">Règles de conduite</h2>
+
+  <p>
+    En utilisant MediaTech, vous vous engagez à adopter un comportement respectueux
+    envers les autres utilisateurs et à ne pas publier de contenus :
+  </p>
+
+  <ul>
+    <li>Injurieux, diffamatoires, discriminatoires ou incitant à la haine</li>
+    <li>À caractère pornographique ou violent</li>
+    <li>Portant atteinte à la vie privée d'autrui</li>
+    <li>Violant les droits de propriété intellectuelle</li>
+    <li>Contenant des informations fausses ou trompeuses</li>
+    <li>À caractère publicitaire ou promotionnel non sollicité</li>
+  </ul>
+
+  <p>
+    Je me réserve le droit de supprimer tout contenu contraire à ces règles,
+    sans préavis ni justification. En cas de manquement grave ou répété,
+    votre compte pourra être suspendu ou supprimé définitivement.
+  </p>
+
+  <h2 class="h6 mt-4">Propriété intellectuelle</h2>
+
+  <h3 class="h6 mt-3" style="font-weight: 500;">Contenus du site</h3>
+
+  <p>
+    L'ensemble des éléments du site (code, design, structure, textes)
+    sont protégés par le droit de la propriété intellectuelle.
+    Toute reproduction ou utilisation non autorisée est interdite.
+  </p>
+
+  <h3 class="h6 mt-3" style="font-weight: 500;">Contenus des utilisateurs</h3>
+
+  <p>
+    Vous conservez la propriété des contenus que vous publiez (descriptions de collections, commentaires).
+    En les publiant sur MediaTech, vous m'accordez une licence non exclusive
+    permettant leur affichage sur le site dans le cadre du service.
+  </p>
+
+  <h3 class="h6 mt-3" style="font-weight: 500;">Données des API externes</h3>
+
+  <p>
+    Les informations relatives aux livres et films (titres, couvertures, synopsis, etc.)
+    proviennent de Google Books et The Movie Database.
+    Ces contenus appartiennent à leurs détenteurs respectifs.
+    Je les utilise conformément aux conditions d'utilisation de ces services.
+  </p>
+
+  <h2 class="h6 mt-4">Disponibilité du service</h2>
+
+  <p>
+    Je m'efforce de maintenir le site accessible en permanence.
+    Toutefois, l'accès peut être temporairement interrompu pour des raisons techniques,
+    de maintenance ou de mise à jour.
+  </p>
+
+  <p>
+    MediaTech étant un projet pédagogique, je ne peux garantir une disponibilité continue
+    ni un niveau de service équivalent à celui d'une application commerciale.
+  </p>
+
+  <h2 class="h6 mt-4">Limitation de responsabilité</h2>
+
+  <p>
+    Les données affichées sur le site (informations sur les livres et films)
+    proviennent de sources externes. Je ne peux garantir leur exactitude ni leur exhaustivité.
+    Ces informations sont fournies à titre indicatif uniquement.
+  </p>
+
+  <p>
+    Je ne saurais être tenu responsable des contenus publiés par les utilisateurs.
+    Chaque utilisateur est seul responsable de ses publications.
+  </p>
+
+  <p>
+    En cas de dysfonctionnement du site ou de perte de données,
+    ma responsabilité ne pourra être engagée que dans la limite du cadre pédagogique de ce projet.
+  </p>
+
+  <h2 class="h6 mt-4">Protection des données</h2>
+
+  <p>
+    Je collecte et traite vos données personnelles conformément au RGPD
+    et à la loi Informatique et Libertés.
+    Pour connaître les données collectées, les finalités du traitement
+    et vos droits, consultez les <a href="{{ path('app_legal') }}">mentions légales</a>.
+  </p>
+
+  <h2 class="h6 mt-4">Modification des conditions</h2>
+
+  <p>
+    Je me réserve le droit de modifier ces conditions générales d'utilisation à tout moment.
+    Les modifications prennent effet dès leur publication sur cette page.
+    Je vous invite à consulter régulièrement cette page pour rester informé des éventuelles mises à jour.
+  </p>
+
+  <p>
+    En continuant à utiliser le site après une modification,
+    vous acceptez les nouvelles conditions.
+  </p>
+
+  <h2 class="h6 mt-4">Droit applicable</h2>
+
+  <p>
+    Les présentes conditions sont régies par le droit français.
+    En cas de litige, et après tentative de résolution amiable,
+    les tribunaux français seront seuls compétents.
+  </p>
+
+  <h2 class="h6 mt-4">Contact</h2>
+
+  <p class="mb-0">
+    Pour toute question concernant ces conditions ou l'utilisation du site,
+    vous pouvez me contacter via le <a href="{{ path('app_contact') }}">formulaire de contact</a>.
+    Je m'engage à vous répondre dans les meilleurs délais.
+  </p>
+
+</section>
+{% endblock %}

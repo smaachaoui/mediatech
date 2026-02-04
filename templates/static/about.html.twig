@@ -8,42 +8,100 @@
   <h1 class="h4 mb-3">À propos</h1>
 
   <p>
-    MediaTech est un projet que j’ai réalisé dans le cadre de ma formation de développeur web et web mobile.
-    L’objectif principal était de concevoir une application complète, depuis la conception jusqu’à la mise en
-    place des fonctionnalités, en respectant une architecture claire et maintenable.
+    MediaTech est un projet que j'ai réalisé dans le cadre de ma formation de développeur web et web mobile.
+    L'objectif principal était de concevoir une application complète, depuis la phase de conception
+    jusqu'au développement des fonctionnalités, en respectant une architecture claire et maintenable.
+  </p>
+
+  <h2 class="h6 mt-4">Le concept</h2>
+
+  <p>
+    L'idée derrière MediaTech est simple : proposer un espace où chacun peut constituer et organiser
+    sa propre collection de livres et de films. Un peu comme une bibliothèque personnelle numérique,
+    où l'on peut regrouper ses lectures et ses visionnages par thématique, par genre ou selon ses envies.
   </p>
 
   <p>
-    L’application permet de rechercher des livres et des films à partir d’APIs externes, de consulter des fiches
-    détaillées et, à terme, de constituer des collections personnelles une fois connecté.
-    J’ai volontairement choisi de travailler avec des données réelles afin de me rapprocher d’un contexte
-    professionnel.
+    Au-delà de l'aspect personnel, MediaTech intègre une dimension communautaire.
+    Les utilisateurs peuvent choisir de publier leurs collections pour les partager avec les autres visiteurs.
+    Ces collections publiques peuvent ensuite être consultées, notées et commentées par la communauté.
+    C'est une façon de découvrir de nouvelles œuvres à travers les recommandations des autres utilisateurs.
   </p>
+
+  <h2 class="h6 mt-4">Comment ça fonctionne</h2>
+
+  <p>Le parcours utilisateur se déroule en plusieurs étapes :</p>
+
+  <ol>
+    <li class="mb-2">
+      <strong>Explorer le catalogue</strong> : le visiteur peut rechercher des livres ou des films
+      directement depuis le catalogue. Les données proviennent d'APIs externes (Google Books pour les livres,
+      The Movie Database pour les films), ce qui garantit un catalogue riche et constamment à jour.
+    </li>
+    <li class="mb-2">
+      <strong>Créer un compte</strong> : pour aller plus loin, l'utilisateur peut s'inscrire gratuitement.
+      L'inscription lui donne accès à son espace personnel.
+    </li>
+    <li class="mb-2">
+      <strong>Constituer ses collections</strong> : une fois connecté, l'utilisateur peut créer
+      des collections thématiques (par exemple "Mes romans policiers préférés" ou "Films à voir absolument").
+      Chaque collection peut contenir soit des livres, soit des films.
+    </li>
+    <li class="mb-2">
+      <strong>Publier et partager</strong> : quand une collection est prête, l'utilisateur peut la publier.
+      Elle devient alors visible dans la section "Nos collections" et accessible à tous les visiteurs du site.
+    </li>
+    <li class="mb-2">
+      <strong>Interagir avec la communauté</strong> : les visiteurs peuvent noter les collections publiées
+      et laisser des commentaires. C'est l'occasion d'échanger autour de ses découvertes et de ses coups de cœur.
+    </li>
+  </ol>
 
   <h2 class="h6 mt-4">Pourquoi ce projet</h2>
 
   <p>
-    J’ai choisi ce sujet car il me permettait de manipuler plusieurs concepts importants :
-    la communication avec des APIs, la gestion d’une base de données, l’authentification des utilisateurs
-    et la structuration d’une application Symfony.
+    J'ai choisi ce sujet car il me permettait de travailler sur plusieurs aspects essentiels
+    du développement web : la communication avec des APIs externes, la gestion d'une base de données relationnelle,
+    l'authentification des utilisateurs et la mise en place d'un système de permissions.
   </p>
 
   <p>
-    Le projet MediaTech m’a également permis de travailler sur l’expérience utilisateur, en essayant de proposer
-    une interface simple, lisible et cohérente, tout en restant conforme aux bonnes pratiques du développement web.
+    Le fait de travailler avec des données réelles issues de Google Books et TMDB m'a permis
+    de me confronter à des problématiques concrètes : gestion des erreurs réseau, mise en cache des réponses,
+    adaptation des données reçues au format attendu par l'application.
+  </p>
+
+  <p>
+    J'ai également voulu proposer une expérience utilisateur soignée, avec une interface claire et intuitive.
+    L'objectif était de rendre l'application agréable à utiliser, que ce soit sur ordinateur, tablette ou mobile.
   </p>
 
   <h2 class="h6 mt-4">Aspects techniques</h2>
 
+  <p>L'application repose sur les technologies suivantes :</p>
+
+  <ul>
+    <li><strong>Symfony</strong> : framework PHP utilisé pour structurer l'application selon le modèle MVC</li>
+    <li><strong>Doctrine</strong> : ORM qui assure la liaison entre les entités PHP et la base de données MySQL</li>
+    <li><strong>Twig</strong> : moteur de templates pour générer les pages HTML</li>
+    <li><strong>Bootstrap</strong> : framework CSS pour le design responsive</li>
+    <li><strong>Google Books API</strong> : source des données pour les livres</li>
+    <li><strong>TMDB API</strong> : source des données pour les films</li>
+  </ul>
+
   <p>
-    L’application est développée avec le framework Symfony.
-    Elle utilise Twig pour le rendu des pages, Doctrine pour la gestion de la base de données,
-    et des APIs externes comme Google Books et The Movie Database pour l’affichage des contenus.
+    Le projet inclut également un système d'authentification complet (inscription, connexion,
+    réinitialisation de mot de passe), une protection contre les attaques par force brute,
+    et un espace d'administration pour la modération des contenus.
   </p>
 
+  <h2 class="h6 mt-4">Perspectives d'évolution</h2>
+
   <p class="mb-0">
-    MediaTech est un projet évolutif, pensé comme une base solide sur laquelle de nouvelles fonctionnalités
-    pourront être ajoutées par la suite.
+    MediaTech a été conçu comme une base solide sur laquelle de nouvelles fonctionnalités
+    pourront être ajoutées. Parmi les évolutions envisagées : un système de recommandations personnalisées,
+    la possibilité de suivre d'autres utilisateurs, ou encore l'ajout de statistiques sur ses habitudes
+    de lecture et de visionnage. Le projet reste ouvert aux améliorations futures.
   </p>
 
 </section>
