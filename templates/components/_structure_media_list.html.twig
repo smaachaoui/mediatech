@@ -1,0 +1,107 @@
+{# templates/components/_structure_media_list.html.twig #}
+{% set isBook = (kind == 'book') %}
+
+{% if isBook %}
+  {% set id = item.id %}
+  {% set title = item.title %}
+  {% set imageUrl = item.thumbnail %}
+  {% set authors = item.authors ?? [] %}
+  {% set authorLine = authors is not empty ? authors|join(', ') : null %}
+  {% set year = item.publishedDate ? item.publishedDate|slice(0, 4) : null %}
+  {% set description = item.description ?? null %}
+  {% set showPath = path('app_book_show', { id: id }) %}
+  {% set mediaLabel = 'Livre' %}
+{% else %}
+  {% set id = item.id %}
+  {% set title = item.title %}
+  {% set imageUrl = item.poster %}
+  {% set authorLine = null %}
+  {% set year = item.releaseDate ? item.releaseDate|slice(0, 4) : null %}
+  {% set description = item.overview ?? null %}
+  {% set showPath = path('app_movie_show', { id: id }) %}
+  {% set mediaLabel = 'Film' %}
+{% endif %}
+
+{% set addPath = path('app_media_add_to_default', { kind: kind, id: id }) %}
+{% set wishlistPath = path('app_media_add_to_wishlist', { kind: kind, id: id }) %}
+{% set tokenId = 'add_media_' ~ kind ~ '_' ~ id %}
+{% set wishlistTokenId = 'add_wishlist_' ~ kind ~ '_' ~ id %}
+
+<div class="card border rounded-3 overflow-hidden">
+  <div class="row g-0">
+
+    <div class="col-auto">
+      <a href="{{ showPath }}" class="text-decoration-none">
+        {% if imageUrl %}
+          <img src="{{ imageUrl }}" 
+               alt="{{ title }}" 
+               class="rounded-start"
+               style="width: 80px; height: 120px; object-fit: cover;">
+        {% else %}
+          <div class="d-flex align-items-center justify-content-center bg-light rounded-start" 
+               style="width: 80px; height: 120px;">
+            <span class="text-muted small">?</span>
+          </div>
+        {% endif %}
+      </a>
+    </div>
+
+    <div class="col">
+      <div class="card-body py-2 px-3 d-flex flex-column h-100">
+
+        <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
+          <a href="{{ showPath }}" class="text-decoration-none flex-grow-1">
+            <div class="fw-semibold text-dark" style="line-height: 1.3;">
+              {{ title }}
+            </div>
+          </a>
+          <span class="badge text-bg-light border flex-shrink-0">{{ mediaLabel }}</span>
+        </div>
+
+        <div class="small text-muted mb-2">
+          {% if authorLine %}
+            {{ authorLine }}
+            {% if year %} &bull; {{ year }}{% endif %}
+          {% elseif year %}
+            {{ year }}
+          {% else %}
+            &mdash;
+          {% endif %}
+        </div>
+
+        {% if description %}
+          <div class="small text-muted mb-2 d-none d-md-block" 
+               style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+            {{ description|striptags|slice(0, 150) }}{% if description|length > 150 %}...{% endif %}
+          </div>
+        {% endif %}
+
+        <div class="mt-auto d-flex flex-wrap gap-2 align-items-center">
+          {% if app.user %}
+            <form method="post" action="{{ addPath }}" class="d-inline">
+              <input type="hidden" name="_token" value="{{ csrf_token(tokenId) }}">
+              <input type="hidden" name="redirectTo" value="{{ app.request.uri }}">
+              <button type="submit" class="btn btn-primary btn-sm">
+                + Collection
+              </button>
+            </form>
+
+            <form method="post" action="{{ wishlistPath }}" class="d-inline">
+              <input type="hidden" name="_token" value="{{ csrf_token(wishlistTokenId) }}">
+              <input type="hidden" name="redirectTo" value="{{ app.request.uri }}">
+              <button type="submit" class="btn btn-outline-primary btn-sm">
+                + Envies
+              </button>
+            </form>
+          {% endif %}
+
+          <a href="{{ showPath }}" class="btn btn-outline-secondary btn-sm">
+            Détails
+          </a>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
