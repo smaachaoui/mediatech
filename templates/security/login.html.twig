@@ -10,16 +10,18 @@
                 <div class="card-body p-4 p-md-5">
 
                     <h1 class="h3 mb-1 text-center">Se connecter</h1>
-                    <p class="text-muted text-center mb-4">Accède à ton espace MediaTech.</p>
+                    <p class="text-muted text-center mb-4">
+                        Accède à ton espace MediaTech.
+                    </p>
 
                     {% if error %}
-                        <div class="alert alert-danger">
-                            {{ error.messageKey|trans(error.messageData, 'security') }}
+                        <div class="alert alert-danger" role="alert">
+                            Adresse email ou mot de passe incorrect.
                         </div>
                     {% endif %}
 
                     {% if app.user %}
-                        <div class="alert alert-info">
+                        <div class="alert alert-info" role="alert">
                             Connecté en tant que <strong>{{ app.user.userIdentifier }}</strong>.
                             <a class="alert-link" href="{{ path('app_logout') }}">Se déconnecter</a>
                         </div>
@@ -38,6 +40,7 @@
                                 required
                                 autofocus
                                 placeholder="exemple@mail.com"
+                                aria-describedby="emailHelp"
                             >
                         </div>
 
@@ -54,15 +57,11 @@
                             >
                         </div>
 
-                        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
-
-                        {# Optionnel : activer remember_me dans security.yaml puis décommenter #}
-                        {#
-                        <div class="form-check mb-3">
-                            <input class="form-check-input" type="checkbox" name="_remember_me" id="remember_me">
-                            <label class="form-check-label" for="remember_me">Se souvenir de moi</label>
-                        </div>
-                        #}
+                        <input
+                            type="hidden"
+                            name="_csrf_token"
+                            value="{{ csrf_token('authenticate') }}"
+                        >
 
                         <button class="btn btn-primary w-100" type="submit">
                             Se connecter
@@ -73,12 +72,13 @@
                             <a href="{{ path('app_register') }}">Créer un compte</a>
                         </div>
 
-                        {# Bonus (si tu as la route de reset) #}
-                        {#
-                        <div class="text-center mt-2">
-                            <a href="{{ path('app_forgot_password_request') }}">Mot de passe oublié ?</a>
-                        </div>
-                        #}
+                        {% if app.request.attributes.get('_route') is defined and app.request.attributes.get('_route') != 'app_forgot_password_request' %}
+                            <div class="text-center mt-2">
+                                <a href="{{ path('app_forgot_password_request') }}">
+                                    Mot de passe oublié ?
+                                </a>
+                            </div>
+                        {% endif %}
                     </form>
 
                 </div>
