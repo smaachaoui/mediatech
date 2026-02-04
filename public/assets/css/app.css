@@ -58,3 +58,9 @@
   --bs-aspect-ratio: 150%;
 }
 
+
+.genre-checkboxes .form-check {
+    display: inline-flex;
+    margin-right: 1rem;
+}
+
