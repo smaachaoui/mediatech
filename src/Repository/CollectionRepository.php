@@ -131,6 +131,34 @@ use Doctrine\Persistence\ManagerRegistry;
         ];
     }
 
+    /**
+     * Je compte le nombre total de collections utilisateur.
+     */
+    public function countUserCollections(): int
+    {
+        return (int) $this->createQueryBuilder('c')
+            ->select('COUNT(c.id)')
+            ->andWhere('c.scope = :scope')
+            ->setParameter('scope', Collection::SCOPE_USER)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * Je compte les collections publiees.
+     */
+    public function countPublished(): int
+    {
+        return (int) $this->createQueryBuilder('c')
+            ->select('COUNT(c.id)')
+            ->andWhere('c.scope = :scope')
+            ->andWhere('c.isPublished = :published')
+            ->setParameter('scope', Collection::SCOPE_USER)
+            ->setParameter('published', true)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
 
 
 

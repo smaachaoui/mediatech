@@ -40,28 +40,82 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->getEntityManager()->flush();
     }
 
-//    /**
-//     * @return User[] Returns an array of User objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('u')
-//            ->andWhere('u.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('u.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
+    /**
+     * Je compte le nombre total d'utilisateurs.
+     */
+    public function countAll(): int
+    {
+        return (int) $this->createQueryBuilder('u')
+            ->select('COUNT(u.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 
-//    public function findOneBySomeField($value): ?User
-//    {
-//        return $this->createQueryBuilder('u')
-//            ->andWhere('u.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+    /**
+     * Je compte les utilisateurs actifs.
+     */
+    public function countActive(): int
+    {
+        return (int) $this->createQueryBuilder('u')
+            ->select('COUNT(u.id)')
+            ->andWhere('u.isActive = :active')
+            ->setParameter('active', true)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * Je compte les utilisateurs inscrits ce mois-ci.
+     */
+    public function countRegisteredThisMonth(): int
+    {
+        $startOfMonth = new \DateTimeImmutable('first day of this month midnight');
+
+        return (int) $this->createQueryBuilder('u')
+            ->select('COUNT(u.id)')
+            ->andWhere('u.createdAt >= :start')
+            ->setParameter('start', $startOfMonth)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * Je retourne une pagination des utilisateurs pour l'admin.
+     *
+     * @return array{items: User[], total: int}
+     */
+    public function findPaginatedForAdmin(?bool $isActive, string $search, int $page, int $limit): array
+    {
+        $qb = $this->createQueryBuilder('u');
+
+        if ($isActive !== null) {
+            $qb->andWhere('u.isActive = :active')
+               ->setParameter('active', $isActive);
+        }
+
+        if ($search !== '') {
+            $qb->andWhere('u.pseudo LIKE :search OR u.email LIKE :search')
+               ->setParameter('search', '%' . $search . '%');
+        }
+
+        $qb->orderBy('u.createdAt', 'DESC')
+           ->addOrderBy('u.id', 'DESC');
+
+        $countQb = clone $qb;
+        $total = (int) $countQb
+            ->select('COUNT(u.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        $items = $qb
+            ->setFirstResult(($page - 1) * $limit)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+
+        return [
+            'items' => $items,
+            'total' => $total,
+        ];
+    }
 }
