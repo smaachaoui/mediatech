@@ -1,7 +1,7 @@
 <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
   <div>
     <h1 class="h3 mb-1">Informations personnelles</h1>
-    <div class="text-muted">Gérez vos informations de profil et vos préférences.</div>
+    <div class="text-muted">Gérez vos informations de profil.</div>
   </div>
 </div>
 
@@ -90,7 +90,7 @@
 </div>
 
 <div class="modal fade" id="editProfileModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
+  <div class="modal-dialog">
     <div class="modal-content">
 
       <div class="modal-header">
@@ -100,14 +100,6 @@
 
       {{ form_start(editForm, { 'action': path('app_profile_edit'), 'attr': { 'enctype': 'multipart/form-data' } }) }}
         <div class="modal-body">
-
-
-            <div class="mb-3">
-                {{ form_label(editForm.profilePictureFile) }}
-                {{ form_widget(editForm.profilePictureFile) }}
-                {{ form_errors(editForm.profilePictureFile) }}
-                <div class="form-text">Formats acceptés : JPG, PNG, GIF, WebP. Maximum 2 Mo.</div>
-            </div>
 
           <div class="mb-3">
             {{ form_label(editForm.pseudo) }}
@@ -121,6 +113,13 @@
             {{ form_widget(editForm.biography) }}
             {{ form_errors(editForm.biography) }}
             <div class="form-text">Maximum 500 caractères.</div>
+          </div>
+
+          <div class="mb-3">
+            {{ form_label(editForm.profilePictureFile) }}
+            {{ form_widget(editForm.profilePictureFile) }}
+            {{ form_errors(editForm.profilePictureFile) }}
+            <div class="form-text">Formats acceptés : JPG, PNG, GIF, WebP. Maximum 2 Mo.</div>
           </div>
 
         </div>
