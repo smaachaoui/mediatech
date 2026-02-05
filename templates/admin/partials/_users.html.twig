@@ -1,3 +1,5 @@
+{# templates/admin/_users.html.twig #}
+
 <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
   <div>
     <h1 class="h3 mb-1">Utilisateurs</h1>
@@ -23,10 +25,10 @@
 
   <form method="get" action="{{ path('admin_users_index') }}" class="d-flex gap-2">
     <input type="hidden" name="status" value="{{ filter }}">
-    <input type="text" 
-           name="q" 
-           class="form-control form-control-sm" 
-           placeholder="Rechercher..." 
+    <input type="text"
+           name="q"
+           class="form-control form-control-sm"
+           placeholder="Rechercher..."
            value="{{ search }}"
            style="min-width: 200px;">
     <button type="submit" class="btn btn-outline-primary btn-sm">Rechercher</button>
@@ -42,6 +44,8 @@
         message: 'Aucun utilisateur ne correspond à vos critères de recherche.'
       } only %}
     {% else %}
+      {% set me = app.user %}
+
       <div class="table-responsive">
         <table class="table align-middle mb-0">
           <thead>
@@ -54,17 +58,22 @@
               <th class="text-end">Actions</th>
             </tr>
           </thead>
+
           <tbody>
             {% for user in users %}
+              {% set isSelf = me and (me.id == user.id) %}
+              {% set isAdmin = 'ROLE_ADMIN' in user.roles %}
+
               <tr>
                 <td>
                   <div class="d-flex align-items-center gap-2">
-                    <div class="rounded-circle overflow-hidden border bg-light d-flex align-items-center justify-content-center" 
-                         style="width: 36px; height: 36px;">
+                    <div class="mt-avatar mt-avatar--sm">
                       {% if user.profilePicture %}
-                        <img src="{{ asset(user.profilePicture) }}" alt="" class="w-100 h-100" style="object-fit: cover;">
+                        <img src="{{ asset(user.profilePicture) }}" alt="" class="mt-avatar__img">
                       {% else %}
-                        <span class="text-muted small">{{ user.pseudo|slice(0, 1)|upper }}</span>
+                        <div class="mt-avatar__fallback small">
+                          {{ user.pseudo|slice(0, 1)|upper }}
+                        </div>
                       {% endif %}
                     </div>
                     <div class="fw-semibold">{{ user.pseudo }}</div>
@@ -86,7 +95,7 @@
                 </td>
 
                 <td>
-                  {% if 'ROLE_ADMIN' in user.roles %}
+                  {% if isAdmin %}
                     <span class="badge text-bg-primary">Admin</span>
                   {% else %}
                     <span class="badge text-bg-secondary">Membre</span>
@@ -94,59 +103,78 @@
                 </td>
 
                 <td class="text-end">
-                  <div class="d-inline-flex gap-2">
+                  {% if isSelf %}
+                    <span class="text-muted small">Compte courant</span>
+                  {% else %}
+                    <div class="d-inline-flex gap-2">
 
-                    <button type="button" 
-                            class="btn btn-outline-secondary btn-sm"
-                            data-bs-toggle="modal" 
-                            data-bs-target="#toggleStatusModal_{{ user.id }}">
-                      {{ user.isActive ? 'Désactiver' : 'Réactiver' }}
-                    </button>
-
-                    {% if 'ROLE_ADMIN' not in user.roles or user.id != app.user.id %}
-                      <button type="button" 
-                              class="btn btn-outline-primary btn-sm"
-                              data-bs-toggle="modal" 
-                              data-bs-target="#toggleAdminModal_{{ user.id }}">
-                        {{ 'ROLE_ADMIN' in user.roles ? 'Retirer admin' : 'Promouvoir admin' }}
+                      <button type="button"
+                              class="btn btn-outline-secondary btn-sm"
+                              data-bs-toggle="modal"
+                              data-bs-target="#toggleStatusModal_{{ user.id }}">
+                        {{ user.isActive ? 'Désactiver' : 'Réactiver' }}
                       </button>
-                    {% endif %}
 
-                  </div>
+                      <button type="button"
+                              class="btn btn-outline-primary btn-sm"
+                              data-bs-toggle="modal"
+                              data-bs-target="#toggleAdminModal_{{ user.id }}">
+                        {{ isAdmin ? 'Retirer admin' : 'Promouvoir admin' }}
+                      </button>
 
-                  {% include 'components/_modal.html.twig' with {
-                    id: 'toggleStatusModal_' ~ user.id,
-                    title: (user.isActive ? 'Désactiver le compte' : 'Réactiver le compte'),
-                    body: '
-                      <p>Voulez-vous ' ~ (user.isActive ? 'désactiver' : 'réactiver') ~ ' le compte de <strong>' ~ user.pseudo|e ~ '</strong> ?</p>
-                      ' ~ (user.isActive ? '<p class="text-warning mb-0">L\'utilisateur ne pourra plus se connecter.</p>' : '<p class="text-success mb-0">L\'utilisateur pourra à nouveau se connecter.</p>') ~ '
-                    ',
-                    footer: '
-                      <form method="post" action="' ~ path('admin_users_toggle_status', { id: user.id }) ~ '">
-                        <input type="hidden" name="_token" value="' ~ csrf_token('admin_toggle_user_' ~ user.id) ~ '">
-                        <button type="submit" class="btn ' ~ (user.isActive ? 'btn-warning' : 'btn-success') ~ '">
+                    </div>
+
+                    {# Modal Toggle Status #}
+                    {% set statusModalBody %}
+                      <p>Voulez-vous {{ user.isActive ? 'désactiver' : 'réactiver' }} le compte de <strong>{{ user.pseudo }}</strong> ?</p>
+                      {% if user.isActive %}
+                        <p class="text-warning mb-0">L'utilisateur ne pourra plus se connecter.</p>
+                      {% else %}
+                        <p class="text-success mb-0">L'utilisateur pourra à nouveau se connecter.</p>
+                      {% endif %}
+                    {% endset %}
+
+                    {% set statusModalFooter %}
+                      <form method="post" action="{{ path('admin_users_toggle_status', { id: user.id }) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('admin_toggle_user_' ~ user.id) }}">
+                        <button type="submit" class="btn {{ user.isActive ? 'btn-warning' : 'btn-success' }}">
                           Confirmer
                         </button>
                       </form>
-                    '
-                  } %}
+                    {% endset %}
 
-                  {% include 'components/_modal.html.twig' with {
-                    id: 'toggleAdminModal_' ~ user.id,
-                    title: ('ROLE_ADMIN' in user.roles ? 'Retirer les droits administrateur' : 'Promouvoir administrateur'),
-                    body: '
-                      <p>Voulez-vous ' ~ ('ROLE_ADMIN' in user.roles ? 'retirer les droits administrateur de' : 'promouvoir') ~ ' <strong>' ~ user.pseudo|e ~ '</strong> ' ~ ('ROLE_ADMIN' in user.roles ? '' : 'au rang d\'administrateur') ~ ' ?</p>
-                    ',
-                    footer: '
-                      <form method="post" action="' ~ path('admin_users_toggle_admin', { id: user.id }) ~ '">
-                        <input type="hidden" name="_token" value="' ~ csrf_token('admin_toggle_admin_' ~ user.id) ~ '">
-                        <button type="submit" class="btn btn-primary">
-                          Confirmer
-                        </button>
+                    {% include 'components/_modal.html.twig' with {
+                      id: 'toggleStatusModal_' ~ user.id,
+                      title: user.isActive ? 'Désactiver le compte' : 'Réactiver le compte',
+                      body: statusModalBody,
+                      footer: statusModalFooter
+                    } %}
+
+                    {# Modal Toggle Admin #}
+                    {% set adminModalBody %}
+                      <p>
+                        {% if isAdmin %}
+                          Voulez-vous retirer les droits administrateur de <strong>{{ user.pseudo }}</strong> ?
+                        {% else %}
+                          Voulez-vous promouvoir <strong>{{ user.pseudo }}</strong> au rang d'administrateur ?
+                        {% endif %}
+                      </p>
+                    {% endset %}
+
+                    {% set adminModalFooter %}
+                      <form method="post" action="{{ path('admin_users_toggle_admin', { id: user.id }) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('admin_toggle_admin_' ~ user.id) }}">
+                        <button type="submit" class="btn btn-primary">Confirmer</button>
                       </form>
-                    '
-                  } %}
+                    {% endset %}
 
+                    {% include 'components/_modal.html.twig' with {
+                      id: 'toggleAdminModal_' ~ user.id,
+                      title: isAdmin ? 'Retirer les droits administrateur' : 'Promouvoir administrateur',
+                      body: adminModalBody,
+                      footer: adminModalFooter
+                    } %}
+                  {% endif %}
                 </td>
               </tr>
             {% endfor %}
