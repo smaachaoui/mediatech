@@ -182,8 +182,6 @@ final class ProfileCollectionController extends AbstractController
         /** @var User $user */
         $user = $this->getUser();
 
-        $this->profileService->removeItemFromCollection($user, $type, $linkId);
-
         $origin = (string) $request->request->get('origin', '');
 
         try {
