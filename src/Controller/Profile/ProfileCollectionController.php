@@ -28,16 +28,21 @@ final class ProfileCollectionController extends AbstractController
     {
         $this->denyAccessUnlessGranted('ROLE_USER');
 
-        if (!$this->isCsrfTokenValid('move_item', (string) $request->request->get('_token'))) {
+        $type = (string) $request->request->get('type');
+        $linkId = (int) $request->request->get('linkId');
+        $collectionId = (int) $request->request->get('collectionId');
+
+        if ($linkId <= 0 || $collectionId <= 0) {
+            $this->addFlash('danger', 'Requête invalide.');
+            return $this->redirectToRoute('app_profile', ['section' => 'collections']);
+        }
+
+        if (!$this->isCsrfTokenValid('move_item_' . $linkId, (string) $request->request->get('_token'))) {
             throw $this->createAccessDeniedException();
         }
 
         /** @var User $user */
         $user = $this->getUser();
-
-        $type = (string) $request->request->get('type');
-        $linkId = (int) $request->request->get('linkId');
-        $collectionId = (int) $request->request->get('collectionId');
 
         $this->profileService->moveUnlistedItemToCollection($user, $type, $linkId, $collectionId);
 
@@ -162,15 +167,20 @@ final class ProfileCollectionController extends AbstractController
     {
         $this->denyAccessUnlessGranted('ROLE_USER');
 
-        if (!$this->isCsrfTokenValid('remove_item', (string) $request->request->get('_token'))) {
+        $type = (string) $request->request->get('type');
+        $linkId = (int) $request->request->get('linkId');
+
+        if ($linkId <= 0) {
+            $this->addFlash('danger', 'Requête invalide.');
+            return $this->redirectToRoute('app_profile', ['section' => 'collections']);
+        }
+
+        if (!$this->isCsrfTokenValid('remove_item_' . $linkId, (string) $request->request->get('_token'))) {
             throw $this->createAccessDeniedException();
         }
 
         /** @var User $user */
         $user = $this->getUser();
-
-        $type = (string) $request->request->get('type');
-        $linkId = (int) $request->request->get('linkId');
 
         $this->profileService->removeItemFromCollection($user, $type, $linkId);
 

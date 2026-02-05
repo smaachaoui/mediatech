@@ -176,6 +176,12 @@ class Collection
         return $this;
     }
 
+    public function isSystem(): bool
+    {
+        return $this->getScope() === self::SCOPE_SYSTEM;
+    }
+
+
     /**
      * Compat temporaire (facultatif mais conseillé pendant refacto)
      * => évite les crashes si du code appelle encore getType/setType
