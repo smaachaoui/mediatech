@@ -4,21 +4,24 @@
 
 {% block body %}
 
-<div class="d-flex flex-column gap-3">
-
-  <section class="bg-white border rounded-3 p-3">
-    <div class="rounded-3 bg-light border d-flex align-items-center justify-content-center" style="height: 180px;">
-      <div class="text-center">
-        <div class="fw-semibold">Banner</div>
-        <div class="text-muted small">Zone de mise en avant</div>
-      </div>
+<section class="mt-home-hero">
+  <div class="mt-home-hero__overlay">
+    <div class="mt-home-hero__content text-center text-white">
+      <h2 class="mt-home-hero__title mb-0">
+        Bienvenue sur MediaTech !
+      </h2>
     </div>
-  </section>
+  </div>
+</section>
 
-  <section class="bg-white border rounded-3 p-3">
+<div class="d-flex flex-column gap-3 mt-3">
+
+  <section class="mt-card p-3">
     <div class="d-flex justify-content-between align-items-center mb-2">
-      <h2 class="h6 mb-0">Derniers livres ajoutés</h2>
-      <a class="btn btn-sm btn-outline-secondary" href="{{ path('app_catalog', { type: 'book' }) }}">Catalogue</a>
+      <h2 class="h6 mb-0 mt-section-title">Derniers livres ajoutés</h2>
+      <a class="btn btn-sm btn-outline-primary" href="{{ path('app_catalog', { type: 'book' }) }}">
+        Catalogue
+      </a>
     </div>
 
     {% if books is empty %}
@@ -27,26 +30,34 @@
         message: 'Impossible de charger le flux de livres pour le moment.'
       } only %}
     {% else %}
-      <div class="d-flex align-items-center gap-2">
-        <button class="btn btn-outline-secondary btn-sm" type="button" onclick="homeScroll('home-books', -1)">&lsaquo;</button>
+      <div class="mt-home-row">
+        <button class="btn btn-outline-primary btn-sm mt-home-arrow"
+                type="button"
+                onclick="homeScroll('home-books', -1)"
+                aria-label="Defiler a gauche">&#8249;</button>
 
-        <div id="home-books" class="d-flex gap-3 overflow-auto flex-nowrap py-1" style="scroll-behavior:smooth;">
+        <div id="home-books" class="mt-home-scroll d-flex gap-3 overflow-auto flex-nowrap py-2">
           {% for book in books %}
-            <div style="min-width: 180px; max-width: 180px;">
+            <div class="mt-home-item">
               {% include 'components/_structure_media_grid.html.twig' with { item: book, kind: 'book' } only %}
             </div>
           {% endfor %}
         </div>
 
-        <button class="btn btn-outline-secondary btn-sm" type="button" onclick="homeScroll('home-books', 1)">&rsaquo;</button>
+        <button class="btn btn-outline-primary btn-sm mt-home-arrow"
+                type="button"
+                onclick="homeScroll('home-books', 1)"
+                aria-label="Defiler a droite">&#8250;</button>
       </div>
     {% endif %}
   </section>
 
-  <section class="bg-white border rounded-3 p-3">
+  <section class="mt-card p-3">
     <div class="d-flex justify-content-between align-items-center mb-2">
-      <h2 class="h6 mb-0">Derniers films ajoutés</h2>
-      <a class="btn btn-sm btn-outline-secondary" href="{{ path('app_catalog', { type: 'movie' }) }}">Catalogue</a>
+      <h2 class="h6 mb-0 mt-section-title">Derniers films ajoutés</h2>
+      <a class="btn btn-sm btn-outline-primary" href="{{ path('app_catalog', { type: 'movie' }) }}">
+        Catalogue
+      </a>
     </div>
 
     {% if movies is empty %}
@@ -55,30 +66,39 @@
         message: 'Impossible de charger le flux de films pour le moment.'
       } only %}
     {% else %}
-      <div class="d-flex align-items-center gap-2">
-        <button class="btn btn-outline-secondary btn-sm" type="button" onclick="homeScroll('home-movies', -1)">&lsaquo;</button>
+      <div class="mt-home-row">
+        <button class="btn btn-outline-primary btn-sm mt-home-arrow"
+                type="button"
+                onclick="homeScroll('home-movies', -1)"
+                aria-label="Defiler a gauche">&#8249;</button>
 
-        <div id="home-movies" class="d-flex gap-3 overflow-auto flex-nowrap py-1" style="scroll-behavior:smooth;">
+        <div id="home-movies" class="mt-home-scroll d-flex gap-3 overflow-auto flex-nowrap py-2">
           {% for movie in movies %}
-            <div style="min-width: 180px; max-width: 180px;">
+            <div class="mt-home-item">
               {% include 'components/_structure_media_grid.html.twig' with { item: movie, kind: 'movie' } only %}
             </div>
           {% endfor %}
         </div>
 
-        <button class="btn btn-outline-secondary btn-sm" type="button" onclick="homeScroll('home-movies', 1)">&rsaquo;</button>
+        <button class="btn btn-outline-primary btn-sm mt-home-arrow"
+                type="button"
+                onclick="homeScroll('home-movies', 1)"
+                aria-label="Defiler a droite">&#8250;</button>
       </div>
     {% endif %}
   </section>
 
 </div>
 
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
 <script>
   function homeScroll(id, dir) {
     const el = document.getElementById(id);
     if (!el) return;
-    el.scrollLeft += dir * 420;
+    el.scrollLeft += dir * 520;
   }
 </script>
-
 {% endblock %}

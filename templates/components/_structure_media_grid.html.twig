@@ -1,4 +1,3 @@
-{# templates/components/_structure_media_grid.html.twig #}
 {% set isBook = (kind == 'book') %}
 
 {% if isBook %}
@@ -27,48 +26,44 @@
 {% set tokenId = 'add_media_' ~ kind ~ '_' ~ id %}
 {% set wishlistTokenId = 'add_wishlist_' ~ kind ~ '_' ~ id %}
 
-<div class="card h-100 border rounded-3 overflow-hidden">
+<div class="mt-card mt-media-card h-100 overflow-hidden">
 
-  <a href="{{ showPath }}" class="text-decoration-none">
+  <a href="{{ showPath }}" class="mt-media-card__thumb">
     {% if imageUrl %}
-      <img src="{{ imageUrl }}" class="card-img-top" alt="{{ title }}">
+      <img src="{{ imageUrl }}" class="mt-media-card__img" alt="{{ title }}">
     {% else %}
-      <div class="d-flex align-items-center justify-content-center bg-light" style="height: 220px;">
+      <div class="mt-media-card__img-placeholder">
         <div class="text-center px-2">
-          <div class="fw-semibold text-muted">Aucune image</div>
-          <div class="small text-muted">({{ isBook ? 'couverture' : 'affiche' }})</div>
+          <div class="fw-semibold mt-muted">Aucune image</div>
+          <div class="small mt-muted">({{ isBook ? 'couverture' : 'affiche' }})</div>
         </div>
       </div>
     {% endif %}
   </a>
 
-  <div class="card-body d-flex flex-column">
+  <div class="p-3 d-flex flex-column">
+
+    <span class="badge mt-badge-soft mb-2 align-self-start">{{ mediaLabel }}</span>
 
     <a href="{{ showPath }}" class="text-decoration-none">
-      <div class="fw-semibold text-dark"
-           style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+      <div class="fw-semibold mt-text mt-clamp-2">
         {{ title }}
       </div>
     </a>
 
-    <div class="small text-muted mt-1 mb-2"
-         style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+    <div class="small mt-muted mt-1 mb-3 mt-clamp-2">
       {{ metaLine }}
     </div>
 
-    <div class="mt-auto pt-2">
-
-      <div class="d-flex justify-content-between align-items-center mb-2">
-        <span class="badge text-bg-light border">{{ mediaLabel }}</span>
-      </div>
-
+    <div class="mt-auto">
       <div class="d-grid gap-2">
+
         {% if app.user %}
           <form method="post" action="{{ addPath }}">
             <input type="hidden" name="_token" value="{{ csrf_token(tokenId) }}">
             <input type="hidden" name="redirectTo" value="{{ app.request.uri }}">
             <button type="submit" class="btn btn-primary btn-sm w-100">
-              Ajouter a ma collection
+              Ajouter
             </button>
           </form>
 
@@ -76,28 +71,28 @@
             <input type="hidden" name="_token" value="{{ csrf_token(wishlistTokenId) }}">
             <input type="hidden" name="redirectTo" value="{{ app.request.uri }}">
             <button type="submit" class="btn btn-outline-primary btn-sm w-100">
-              Ajouter a ma liste d'envie
+              Envies
             </button>
           </form>
         {% else %}
-          <a href="{{ path('app_login') }}" 
+          <a href="{{ path('app_login') }}"
              class="btn btn-primary btn-sm w-100"
              title="Vous devez etre connecte pour ajouter ce media a votre collection">
-            Ajouter a ma collection
+            Ajouter
           </a>
 
-          <a href="{{ path('app_login') }}" 
+          <a href="{{ path('app_login') }}"
              class="btn btn-outline-primary btn-sm w-100"
              title="Vous devez etre connecte pour ajouter ce media a votre liste d'envie">
-            Ajouter a ma liste d'envie
+            Envies
           </a>
         {% endif %}
 
-        <a href="{{ showPath }}" class="btn btn-outline-secondary btn-sm w-100">
-          Voir plus
+        <a href="{{ showPath }}" class="btn btn-outline-primary btn-sm w-100">
+          Details
         </a>
-      </div>
 
+      </div>
     </div>
 
   </div>

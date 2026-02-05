@@ -1,4 +1,3 @@
-{# templates/components/_structure_media_list.html.twig #}
 {% set isBook = (kind == 'book') %}
 
 {% if isBook %}
@@ -27,38 +26,34 @@
 {% set tokenId = 'add_media_' ~ kind ~ '_' ~ id %}
 {% set wishlistTokenId = 'add_wishlist_' ~ kind ~ '_' ~ id %}
 
-<div class="card border rounded-3 overflow-hidden">
+<div class="mt-card mt-media-row overflow-hidden">
   <div class="row g-0">
 
     <div class="col-auto">
-      <a href="{{ showPath }}" class="text-decoration-none">
+      <a href="{{ showPath }}" class="mt-media-row__thumb">
         {% if imageUrl %}
-          <img src="{{ imageUrl }}" 
-               alt="{{ title }}" 
-               class="rounded-start"
-               style="width: 80px; height: 120px; object-fit: cover;">
+          <img src="{{ imageUrl }}" alt="{{ title }}" class="mt-media-row__img">
         {% else %}
-          <div class="d-flex align-items-center justify-content-center bg-light rounded-start" 
-               style="width: 80px; height: 120px;">
-            <span class="text-muted small">?</span>
+          <div class="mt-media-row__img-placeholder">
+            <span class="mt-muted small">?</span>
           </div>
         {% endif %}
       </a>
     </div>
 
     <div class="col">
-      <div class="card-body py-2 px-3 d-flex flex-column h-100">
+      <div class="py-2 px-3 d-flex flex-column h-100">
 
         <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
           <a href="{{ showPath }}" class="text-decoration-none flex-grow-1">
-            <div class="fw-semibold text-dark" style="line-height: 1.3;">
+            <div class="fw-semibold mt-text" style="line-height: 1.3;">
               {{ title }}
             </div>
           </a>
-          <span class="badge text-bg-light border flex-shrink-0">{{ mediaLabel }}</span>
+          <span class="badge mt-badge-soft flex-shrink-0">{{ mediaLabel }}</span>
         </div>
 
-        <div class="small text-muted mb-2">
+        <div class="small mt-muted mb-2">
           {% if authorLine %}
             {{ authorLine }}
             {% if year %} - {{ year }}{% endif %}
@@ -70,8 +65,7 @@
         </div>
 
         {% if description %}
-          <div class="small text-muted mb-2 d-none d-md-block" 
-               style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+          <div class="small mt-muted mb-2 d-none d-md-block mt-clamp-2">
             {{ description|striptags|slice(0, 150) }}{% if description|length > 150 %}...{% endif %}
           </div>
         {% endif %}
@@ -94,20 +88,20 @@
               </button>
             </form>
           {% else %}
-            <a href="{{ path('app_login') }}" 
+            <a href="{{ path('app_login') }}"
                class="btn btn-primary btn-sm"
                title="Vous devez etre connecte pour ajouter ce media a votre collection">
               + Collection
             </a>
 
-            <a href="{{ path('app_login') }}" 
+            <a href="{{ path('app_login') }}"
                class="btn btn-outline-primary btn-sm"
                title="Vous devez etre connecte pour ajouter ce media a votre liste d'envie">
               + Envies
             </a>
           {% endif %}
 
-          <a href="{{ showPath }}" class="btn btn-outline-secondary btn-sm">
+          <a href="{{ showPath }}" class="btn btn-outline-primary btn-sm">
             Details
           </a>
         </div>

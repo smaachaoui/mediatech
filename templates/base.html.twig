@@ -15,12 +15,17 @@
     integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
     crossorigin="anonymous"
   >
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="{{ asset('assets/css/app.css') }}">
 
   {% block stylesheets %}{% endblock %}
 </head>
 
-<body class="bg-light d-flex flex-column min-vh-100">
+<body class="mt-page d-flex flex-column min-vh-100">
 
   {% include 'partials/_header.html.twig' %}
 

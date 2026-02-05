@@ -6,8 +6,8 @@
 
 <div class="d-flex flex-column gap-3">
 
-  <section class="bg-white border rounded-3 p-3">
-    <h1 class="h5 mb-3 text-center">Vous cherchez un livre ou un film ?</h1>
+  <section class="mt-card p-3">
+    <h1 class="h5 mb-3 text-center mt-section-title">Vous cherchez un livre ou un film ?</h1>
 
     <form method="get" action="{{ path('app_catalog') }}" class="row g-2 align-items-center">
       <div class="col-12 col-md">
@@ -35,12 +35,12 @@
     </form>
   </section>
 
-  <section class="bg-white border rounded-3 p-3">
+  <section class="mt-card p-3">
     <div class="row g-4">
 
       <aside class="col-12 col-lg-3">
-        <div class="border rounded-3 p-3">
-          <h2 class="h6 mb-3">Filtrer</h2>
+        <div class="mt-surface-2 border rounded-3 p-3">
+          <h2 class="h6 mb-3 mt-section-title">Filtrer</h2>
 
           <form method="get" action="{{ path('app_catalog') }}" id="filterForm">
             <div class="mb-3">
@@ -59,7 +59,7 @@
             <hr class="my-3">
 
             <div class="d-grid gap-2">
-              <a class="btn btn-outline-secondary btn-sm" href="{{ path('app_catalog') }}">
+              <a class="btn btn-outline-primary btn-sm" href="{{ path('app_catalog') }}">
                 Réinitialiser les filtres
               </a>
             </div>
@@ -71,13 +71,13 @@
             <label class="form-label small fw-semibold">Affichage</label>
           </div>
           <div class="btn-group w-100" role="group" aria-label="Mode d'affichage">
-            <button type="button" class="btn btn-outline-secondary btn-sm active" id="btnGrid" onclick="setViewMode('grid')">
+            <button type="button" class="btn btn-outline-primary btn-sm active" id="btnGrid" onclick="setViewMode('grid')">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                 <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5zm6.5.5A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5zM1 10.5A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5zm6.5.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5z"/>
               </svg>
               Grille
             </button>
-            <button type="button" class="btn btn-outline-secondary btn-sm" id="btnList" onclick="setViewMode('list')">
+            <button type="button" class="btn btn-outline-primary btn-sm" id="btnList" onclick="setViewMode('list')">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                 <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5"/>
               </svg>
@@ -106,9 +106,9 @@
 
             {% if books is not empty %}
               <div class="d-flex justify-content-between align-items-center mb-3">
-                <h3 class="h6 mb-0">
+                <h3 class="h6 mb-0 mt-section-title">
                   Livres
-                  <span class="badge bg-secondary ms-1">{{ books|length }}</span>
+                  <span class="badge mt-badge-count ms-1">{{ books|length }}</span>
                 </h3>
                 <a href="{{ path('app_catalog', q ? { q: q, type: 'book' } : { type: 'book' }) }}" class="btn btn-outline-primary btn-sm">
                   Voir tous les livres
@@ -132,9 +132,9 @@
 
             {% if movies is not empty %}
               <div class="d-flex justify-content-between align-items-center mb-3">
-                <h3 class="h6 mb-0">
+                <h3 class="h6 mb-0 mt-section-title">
                   Films
-                  <span class="badge bg-secondary ms-1">{{ movies|length }}</span>
+                  <span class="badge mt-badge-count ms-1">{{ movies|length }}</span>
                 </h3>
                 <a href="{{ path('app_catalog', q ? { q: q, type: 'movie' } : { type: 'movie' }) }}" class="btn btn-outline-primary btn-sm">
                   Voir tous les films
@@ -159,10 +159,10 @@
           {% elseif type == 'book' %}
 
             <div class="d-flex justify-content-between align-items-center mb-3">
-              <h3 class="h6 mb-0">
+              <h3 class="h6 mb-0 mt-section-title">
                 Livres
                 {% if totalBooks is defined and totalBooks > 0 %}
-                  <span class="badge bg-secondary ms-1">{{ totalBooks }} résultat{{ totalBooks > 1 ? 's' : '' }}</span>
+                  <span class="badge mt-badge-count ms-1">{{ totalBooks }} résultat{{ totalBooks > 1 ? 's' : '' }}</span>
                 {% endif %}
               </h3>
             </div>
@@ -200,10 +200,10 @@
           {% else %}
 
             <div class="d-flex justify-content-between align-items-center mb-3">
-              <h3 class="h6 mb-0">
+              <h3 class="h6 mb-0 mt-section-title">
                 Films
                 {% if totalMovies is defined and totalMovies > 0 %}
-                  <span class="badge bg-secondary ms-1">{{ totalMovies }} résultat{{ totalMovies > 1 ? 's' : '' }}</span>
+                  <span class="badge mt-badge-count ms-1">{{ totalMovies }} résultat{{ totalMovies > 1 ? 's' : '' }}</span>
                 {% endif %}
               </h3>
             </div>

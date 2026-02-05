@@ -1,28 +1,16 @@
-<footer class="mt-footer text-white mt-auto">
-  <div class="container py-4">
-    <div class="row g-3 align-items-center">
-      <div class="col-12 col-md">
-        <div class="fw-semibold">MediaTech</div>
-        <div class="small opacity-75">Gérez et partagez vos collections de livres et de films.</div>
+<footer class="mt-footer py-4 mt-4">
+  <div class="container">
+    <div class="d-flex flex-column align-items-center text-center gap-2">
+      <div class="fw-semibold">MediaTech</div>
+      <div class="small">
+        <p>Gérez et partagez vos collections de livres et de films.</p>
+        <p>&copy; 2026-2027 | Seifeddine MAACHAOUI | Tout droits réservés.</p>
       </div>
 
-      <div class="col-12 col-md-auto">
-        <ul class="list-inline mb-0">
-          <li class="list-inline-item me-3">
-            <a class="mt-footer-link" href="{{ path('app_legal') }}">Mentions légales</a>
-          </li>
-          <li class="list-inline-item">
-            <a class="mt-footer-link" href="{{ path('app_cgu') }}">CGU</a>
-          </li>
-        </ul>
+      <div class="d-flex flex-column gap-1 mt-2">
+        <a class="mt-footer-link" href="{{ path('app_legal') }}">Mentions légales</a>
+        <a class="mt-footer-link" href="{{ path('app_cgu') }}">CGU</a>
       </div>
-    </div>
-
-    <hr class="border-light opacity-25 my-3">
-
-    <div class="d-flex flex-column flex-md-row justify-content-between gap-2 small opacity-75">
-      <div>© {{ "now"|date("Y") }} MediaTech</div>
-      <div>mediatech-support@media.fr</div>
     </div>
   </div>
 </footer>
