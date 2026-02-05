@@ -66,6 +66,9 @@ final class SecurityHeadersSubscriber implements EventSubscriberInterface
         $tmdbImages = 'https://image.tmdb.org';
         $googleApis = 'https://www.googleapis.com';
         $openLibraryCovers = 'https://covers.openlibrary.org';
+        $googleBooks = 'https://books.google.com';
+        $googleBookUserContent = 'https://books.googleusercontent.com';
+
 
         $policy = implode('; ', [
             "default-src 'self'",
@@ -73,8 +76,8 @@ final class SecurityHeadersSubscriber implements EventSubscriberInterface
             "object-src 'none'",
             "frame-ancestors 'none'",
             "form-action 'self'",
-            "img-src 'self' data: {$tmdbImages} {$openLibraryCovers}",
-            "font-src 'self' data: {$googleFontsFiles}",
+            "img-src 'self' data: {$tmdbImages} {$openLibraryCovers} {$googleBooks} {$googleBookUserContent}",
+            "font-src 'self' data: {$googleFontsFiles} {$cdnJsDelivr}",
             "style-src 'self' 'unsafe-inline' {$cdnJsDelivr} {$googleFontsCss}",
             "script-src 'self' 'unsafe-inline' {$cdnJsDelivr}",
             "connect-src 'self' {$tmdbApi} {$googleApis}",
