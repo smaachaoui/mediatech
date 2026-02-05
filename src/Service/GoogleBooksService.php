@@ -39,7 +39,7 @@ final class GoogleBooksService
             return ['items' => [], 'total' => 0];
         }
 
-        $cacheKey = 'gbooks.search.' . md5($query . '|' . $limit . '|' . $page);
+        $cacheKey = 'gbooks.search.v2.' . md5($query . '|' . $limit . '|' . $page);
 
         $item = $this->cache->getItem($cacheKey);
         if ($item->isHit()) {
@@ -77,7 +77,7 @@ final class GoogleBooksService
         $page = max(1, $page);
         $startIndex = ($page - 1) * $limit;
 
-        $cacheKey = 'gbooks.newest.' . md5($subject . '|' . $limit . '|' . $page);
+        $cacheKey = 'gbooks.newest.v2.' . md5($subject . '|' . $limit . '|' . $page);
 
         $item = $this->cache->getItem($cacheKey);
         if ($item->isHit()) {
@@ -138,7 +138,7 @@ final class GoogleBooksService
             throw new \InvalidArgumentException('Google Books ID invalide.');
         }
 
-        $cacheKey = 'gbooks.by_id.' . md5($googleBooksId);
+        $cacheKey = 'gbooks.by_id.v2.' . md5($googleBooksId);
 
         $item = $this->cache->getItem($cacheKey);
         if ($item->isHit()) {
@@ -251,6 +251,11 @@ final class GoogleBooksService
             $authors = [];
         }
 
+        $categories = $info['categories'] ?? [];
+        if (!is_array($categories)) {
+            $categories = [];
+        }
+
         return [
             'id' => (string) ($row['id'] ?? $fallbackId ?? ''),
             'title' => (string) ($info['title'] ?? 'Sans titre'),
@@ -261,6 +266,7 @@ final class GoogleBooksService
             'thumbnail' => $thumbnail,
             'pageCount' => isset($info['pageCount']) ? (int) $info['pageCount'] : null,
             'isbn' => self::extractIsbn($info['industryIdentifiers'] ?? []),
+            'categories' => $categories,
         ];
     }
 
