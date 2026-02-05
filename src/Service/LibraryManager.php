@@ -96,6 +96,10 @@ final class LibraryManager
             });
         }
 
+        if (!ctype_digit($externalId)) {
+            throw new \InvalidArgumentException('TMDB id must be a positive integer.');
+        }
+
         $movie = $this->getOrCreateMovieFromApi((int) $externalId);
 
         return $this->em->wrapInTransaction(function () use ($collection, $otherCollection, $movie): string {
@@ -140,6 +144,12 @@ final class LibraryManager
 
     private function getOrCreateBookFromApi(string $googleBooksId): Book
     {
+        $googleBooksId = trim($googleBooksId);
+
+        if ($googleBooksId === '') {
+            throw new \InvalidArgumentException('Google Books id cannot be empty.');
+        }
+
         $repo = $this->em->getRepository(Book::class);
 
         /** @var Book|null $book */
@@ -150,9 +160,13 @@ final class LibraryManager
 
         $data = $this->googleBooks->getById($googleBooksId);
 
+        if (empty($data) || !isset($data['id'], $data['title'])) {
+            throw new \RuntimeException('Livre introuvable (Google Books).');
+        }
+
         $book = new Book();
-        $book->setGoogleBooksId((string) ($data['id'] ?? $googleBooksId));
-        $book->setTitle((string) ($data['title'] ?? 'Sans titre'));
+        $book->setGoogleBooksId((string) $data['id']);
+        $book->setTitle((string) $data['title']);
 
         $authors = $data['authors'] ?? [];
         if (is_array($authors) && !empty($authors)) {
@@ -188,9 +202,18 @@ final class LibraryManager
 
         $data = $this->tmdb->getById($tmdbId);
 
+        if (empty($data) || !isset($data['id'], $data['title'])) {
+            throw new \RuntimeException('Film introuvable (TMDB).');
+        }
+
+        $apiId = (int) $data['id'];
+        if ($apiId <= 0) {
+            throw new \RuntimeException('Film introuvable (TMDB).');
+        }
+
         $movie = new Movie();
-        $movie->setTmdbId((int) ($data['id'] ?? $tmdbId));
-        $movie->setTitle((string) ($data['title'] ?? 'Sans titre'));
+        $movie->setTmdbId($apiId);
+        $movie->setTitle((string) $data['title']);
         $movie->setSynopsis(isset($data['overview']) ? (string) $data['overview'] : null);
         $movie->setPoster(isset($data['poster']) ? (string) $data['poster'] : null);
         $movie->setReleaseDate($this->parseIsoDate($data['releaseDate'] ?? null));

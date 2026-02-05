@@ -201,7 +201,7 @@
                     {% for link in collection.collectionBooks %}
                       {% set book = link.book %}
                       <div class="col-12 col-md-6 col-xl-4">
-                        <a class="text-decoration-none" href="{{ path('app_book_show', { id: book.id }) }}">
+                        <a class="text-decoration-none" href="{{ path('app_book_show', { id: book.googleBooksId ?: book.id }) }}">
                           <div class="card border rounded-3 h-100 overflow-hidden">
                             <div class="ratio ratio-2x3 bg-light">
                               {% if book.coverImage %}
@@ -233,7 +233,7 @@
                     {% for link in collection.collectionMovies %}
                       {% set movie = link.movie %}
                       <div class="col-12 col-md-6 col-xl-4">
-                        <a class="text-decoration-none" href="{{ path('app_movie_show', { id: movie.id }) }}">
+                        <a class="text-decoration-none" href="{{ path('app_movie_show', { id: movie.tmdbId ?: movie.id }) }}">
                           <div class="card border rounded-3 h-100 overflow-hidden">
                             <div class="ratio ratio-2x3 bg-light">
                               {% if movie.poster %}
