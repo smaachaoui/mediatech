@@ -1,0 +1,94 @@
+<div class="tab-pane fade" id="tab-wishlist" role="tabpanel">
+
+  {% if (wishlistBookLinks|default([]) is empty) and (wishlistMovieLinks|default([]) is empty) %}
+    <div class="alert alert-info mb-0">Votre liste d’envie est vide.</div>
+  {% else %}
+    <div class="alert alert-info small">
+      Je peux retirer un élément, ou le déplacer vers “Non répertorié” ou une collection existante.
+    </div>
+
+    <div class="list-group">
+
+      {# LIVRES #}
+      {% for link in wishlistBookLinks|default([]) %}
+        <div class="list-group-item">
+          <div class="d-flex flex-column flex-md-row gap-2 align-items-md-center justify-content-between">
+            <div>
+              <div class="fw-semibold">{{ link.book.title }}</div>
+              <div class="text-muted small">Livre · ajouté le {{ link.addedAt|date('d/m/Y') }}</div>
+            </div>
+
+            <div class="d-flex flex-column flex-md-row gap-2">
+              <form method="post" action="{{ path('app_profile_wishlist_move_item') }}" class="d-flex gap-2">
+                <input type="hidden" name="_token" value="{{ csrf_token('wishlist_move_item') }}">
+                <input type="hidden" name="type" value="book">
+                <input type="hidden" name="linkId" value="{{ link.id }}">
+
+                <select class="form-select form-select-sm" name="collectionId" required>
+                  <option value="" selected disabled>Déplacer vers…</option>
+                  <option value="{{ unlistedCollection.id }}">Non répertorié</option>
+                  {% for c in collections|default([]) %}
+                    <option value="{{ c.id }}">{{ c.name }}</option>
+                  {% endfor %}
+                </select>
+
+                <button class="btn btn-primary btn-sm" type="submit">Déplacer</button>
+              </form>
+
+              <form method="post" action="{{ path('app_profile_wishlist_remove_item') }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('wishlist_remove_item') }}">
+                <input type="hidden" name="type" value="book">
+                <input type="hidden" name="linkId" value="{{ link.id }}">
+                <button class="btn btn-outline-danger btn-sm" type="submit"
+                        onclick="return confirm('Retirer cet élément de la liste d’envie ?');">
+                  Retirer
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+
+      {# FILMS #}
+      {% for link in wishlistMovieLinks|default([]) %}
+        <div class="list-group-item">
+          <div class="d-flex flex-column flex-md-row gap-2 align-items-md-center justify-content-between">
+            <div>
+              <div class="fw-semibold">{{ link.movie.title }}</div>
+              <div class="text-muted small">Film · ajouté le {{ link.addedAt|date('d/m/Y') }}</div>
+            </div>
+
+            <div class="d-flex flex-column flex-md-row gap-2">
+              <form method="post" action="{{ path('app_profile_wishlist_move_item') }}" class="d-flex gap-2">
+                <input type="hidden" name="_token" value="{{ csrf_token('wishlist_move_item') }}">
+                <input type="hidden" name="type" value="movie">
+                <input type="hidden" name="linkId" value="{{ link.id }}">
+
+                <select class="form-select form-select-sm" name="collectionId" required>
+                  <option value="" selected disabled>Déplacer vers…</option>
+                  <option value="{{ unlistedCollection.id }}">Non répertorié</option>
+                  {% for c in collections|default([]) %}
+                    <option value="{{ c.id }}">{{ c.name }}</option>
+                  {% endfor %}
+                </select>
+
+                <button class="btn btn-primary btn-sm" type="submit">Déplacer</button>
+              </form>
+
+              <form method="post" action="{{ path('app_profile_wishlist_remove_item') }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('wishlist_remove_item') }}">
+                <input type="hidden" name="type" value="movie">
+                <input type="hidden" name="linkId" value="{{ link.id }}">
+                <button class="btn btn-outline-danger btn-sm" type="submit"
+                        onclick="return confirm('Retirer cet élément de la liste d’envie ?');">
+                  Retirer
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+
+    </div>
+  {% endif %}
+</div>

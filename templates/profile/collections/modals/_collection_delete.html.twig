@@ -1,0 +1,18 @@
+{% embed 'components/_modal.html.twig' with {
+  id: 'modalDeleteCollection' ~ c.id,
+  title: 'Supprimer la collection',
+  action: path('app_profile_delete_collection', { id: c.id }),
+  csrf_id: 'delete_collection_' ~ c.id,
+  submit_label: 'Supprimer',
+  submit_class: 'btn-danger'
+} %}
+  {% block body %}
+    <p class="mb-0">
+      Supprimer <strong>{{ c.name }}</strong> ?<br>
+      Les éléments qu’elle contient seront retirés de cette collection.
+    </p>
+    <p class="small text-muted mt-2 mb-0">
+      Cette action est irréversible.
+    </p>
+  {% endblock %}
+{% endembed %}

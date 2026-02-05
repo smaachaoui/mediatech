@@ -1,0 +1,153 @@
+<div class="tab-pane fade" id="tab-collections" role="tabpanel">
+
+  <div class="d-flex flex-column flex-sm-row gap-2 justify-content-between align-items-sm-center mb-3">
+    <div class="text-muted small">
+      Crée des collections et range tes titres depuis “Non répertorié”.
+    </div>
+
+    <button class="btn btn-primary btn-sm"
+            type="button"
+            data-bs-toggle="modal"
+            data-bs-target="#modalCreateCollection">
+      Créer une collection
+    </button>
+  </div>
+
+  {% include 'profile/collections/modals/_collection_create.html.twig' %}
+
+  {% if collections|default([]) is empty %}
+    <div class="alert alert-info mb-0">Aucune collection pour le moment.</div>
+  {% else %}
+    <div class="accordion" id="accordionCollections">
+      {% for c in collections %}
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="headingCollection{{ c.id }}">
+            <button class="accordion-button collapsed"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#collapseCollection{{ c.id }}"
+                    aria-expanded="false"
+                    aria-controls="collapseCollection{{ c.id }}">
+              <div class="d-flex flex-column">
+                <span class="fw-semibold">{{ c.name }}</span>
+                {% if c.description %}
+                  <span class="text-muted small">{{ c.description }}</span>
+                {% endif %}
+                <span class="small text-muted mt-1">
+                  Visibilité : {% include 'components/_ui_badge_visibility.html.twig' with { collection: c } %}
+                  · Livres : {{ c.collectionBooks|length }}
+                  · Films : {{ c.collectionMovies|length }}
+                  {% if c.publishedAt %}
+                    · Publiée le {{ c.publishedAt|date('d/m/Y') }}
+                  {% endif %}
+                </span>
+              </div>
+            </button>
+          </h2>
+
+          <div id="collapseCollection{{ c.id }}"
+               class="accordion-collapse collapse"
+               aria-labelledby="headingCollection{{ c.id }}"
+               data-bs-parent="#accordionCollections">
+            <div class="accordion-body">
+
+              <div class="d-flex flex-column flex-md-row gap-2 align-items-md-center justify-content-between mb-3">
+                <div class="text-muted small">
+                  Gère ta collection : modifie le nom/description ou retire des éléments.
+                </div>
+
+                <div class="d-flex gap-2">
+                  <form method="post"
+                        action="{{ path('app_profile_toggle_publish_collection', { id: c.id }) }}"
+                        onsubmit="return confirm('{{ c.isPublished ? 'Dépublier cette collection ?' : 'Publier cette collection et l’afficher dans Nos collections ?' }}');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('toggle_publish_' ~ c.id) }}">
+                    {% if c.isPublished %}
+                      <button class="btn btn-outline-warning btn-sm" type="submit">Dépublier</button>
+                    {% else %}
+                      <button class="btn btn-outline-success btn-sm" type="submit">Publier</button>
+                    {% endif %}
+                  </form>
+
+                  <button class="btn btn-outline-secondary btn-sm"
+                          type="button"
+                          data-bs-toggle="modal"
+                          data-bs-target="#modalEditCollection{{ c.id }}">
+                    Modifier
+                  </button>
+
+                  <button class="btn btn-outline-danger btn-sm"
+                          type="button"
+                          data-bs-toggle="modal"
+                          data-bs-target="#modalDeleteCollection{{ c.id }}">
+                    Supprimer
+                  </button>
+                </div>
+              </div>
+
+              <h3 class="h6 mb-2">Livres</h3>
+              {% if c.collectionBooks is empty %}
+                <div class="text-muted small mb-3">Aucun livre dans cette collection.</div>
+              {% else %}
+                <div class="list-group mb-3">
+                  {% for link in c.collectionBooks %}
+                    <div class="list-group-item">
+                      <div class="d-flex flex-column flex-md-row gap-2 align-items-md-center justify-content-between">
+                        <div>
+                          <div class="fw-semibold">{{ link.book.title }}</div>
+                          <div class="text-muted small">Ajouté le {{ link.addedAt|date('d/m/Y') }}</div>
+                        </div>
+
+                        <form method="post" action="{{ path('app_profile_remove_item') }}" class="d-inline">
+                          <input type="hidden" name="type" value="book">
+                          <input type="hidden" name="linkId" value="{{ link.id }}">
+                          <input type="hidden" name="_token" value="{{ csrf_token('remove_item_' ~ link.id) }}">
+                          <button type="submit" class="btn btn-sm btn-outline-danger"
+                                  onclick="return confirm('Retirer cet élément de la collection ?');">
+                            Retirer
+                          </button>
+                        </form>
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+
+              <h3 class="h6 mb-2">Films</h3>
+              {% if c.collectionMovies is empty %}
+                <div class="text-muted small">Aucun film dans cette collection.</div>
+              {% else %}
+                <div class="list-group">
+                  {% for link in c.collectionMovies %}
+                    <div class="list-group-item">
+                      <div class="d-flex flex-column flex-md-row gap-2 align-items-md-center justify-content-between">
+                        <div>
+                          <div class="fw-semibold">{{ link.movie.title }}</div>
+                          <div class="text-muted small">Ajouté le {{ link.addedAt|date('d/m/Y') }}</div>
+                        </div>
+
+                        <form method="post" action="{{ path('app_profile_remove_item') }}" class="d-inline">
+                          <input type="hidden" name="type" value="movie">
+                          <input type="hidden" name="linkId" value="{{ link.id }}">
+                          <input type="hidden" name="_token" value="{{ csrf_token('remove_item_' ~ link.id) }}">
+                          <button type="submit" class="btn btn-sm btn-outline-danger"
+                                  onclick="return confirm('Retirer cet élément de la collection ?');">
+                            Retirer
+                          </button>
+                        </form>
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+
+            </div>
+          </div>
+        </div>
+
+        {% include 'profile/collections/modals/_collection_edit.html.twig' with { c: c } %}
+        {% include 'profile/collections/modals/_collection_delete.html.twig' with { c: c } %}
+
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>

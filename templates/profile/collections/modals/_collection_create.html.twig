@@ -1,0 +1,31 @@
+{% embed 'components/_modal.html.twig' with {
+  id: 'modalCreateCollection',
+  title: 'Nouvelle collection',
+  action: path('app_profile_create_collection'),
+  csrf_id: 'create_collection',
+  submit_label: 'Créer',
+  submit_class: 'btn-primary'
+} %}
+  {% block body %}
+    <div class="mb-3">
+      <label class="form-label">Nom</label>
+      <input class="form-control" name="name" type="text" required maxlength="150"
+             placeholder="Ex : Mes films préférés">
+    </div>
+
+    <div class="mb-0">
+      <label class="form-label">Description</label>
+      <textarea class="form-control" name="description" rows="4" maxlength="2000"
+                placeholder="Décris rapidement cette collection (optionnel)"></textarea>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Type de collection</label>
+      <select class="form-select" name="mediaType" required>
+        <option value="" selected disabled>Choisir…</option>
+        <option value="book">Livres</option>
+        <option value="movie">Films</option>
+      </select>
+    </div>
+  {% endblock %}
+{% endembed %}

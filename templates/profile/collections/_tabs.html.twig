@@ -1,0 +1,47 @@
+<h2 class="h5 mb-3">Mes collections</h2>
+
+<ul class="nav nav-tabs" role="tablist">
+  <li class="nav-item" role="presentation">
+    <button class="nav-link active"
+            data-bs-toggle="tab"
+            data-bs-target="#tab-unlisted"
+            type="button"
+            role="tab">
+      Non répertorié
+      <span class="badge text-bg-secondary ms-1">
+        {{ (unlistedBookLinks|default([])|length) + (unlistedMovieLinks|default([])|length) }}
+      </span>
+    </button>
+  </li>
+
+  <li class="nav-item" role="presentation">
+    <button class="nav-link"
+            data-bs-toggle="tab"
+            data-bs-target="#tab-collections"
+            type="button"
+            role="tab">
+      Collections
+      <span class="badge text-bg-secondary ms-1">{{ collections|default([])|length }}</span>
+    </button>
+  </li>
+
+  <li class="nav-item" role="presentation">
+    <button class="nav-link"
+            id="wishlist"
+            data-bs-toggle="tab"
+            data-bs-target="#tab-wishlist"
+            type="button"
+            role="tab">
+      Liste d'envie
+      <span class="badge text-bg-secondary ms-1">
+        {{ (wishlistBookLinks|default([])|length) + (wishlistMovieLinks|default([])|length) }}
+      </span>
+    </button>
+  </li>
+</ul>
+
+<div class="tab-content pt-3">
+  {% include 'profile/collections/tabs/_unlisted.html.twig' %}
+  {% include 'profile/collections/tabs/_collections.html.twig' %}
+  {% include 'profile/collections/tabs/_wishlist.html.twig' %}
+</div>
