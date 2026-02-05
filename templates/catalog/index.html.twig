@@ -35,6 +35,53 @@
     </form>
   </section>
 
+    <section class="mt-4 mb-5">
+      <div class="card shadow-sm border-0">
+          <div class="card-body">
+              <h2 class="h5 mb-4 text-center">Comment ça marche</h2>
+
+              <div class="row text-center">
+                  <div class="col-md-4 mb-3">
+                      <div class="mb-2 fs-2 text-primary">
+                          <i class="bi bi-search"></i>
+                      </div>
+                      <h3 class="h6">Rechercher une œuvre</h3>
+                      <p class="text-muted mb-0">
+                          Je recherche un livre ou un film à partir des bases de données partenaires.
+                      </p>
+                  </div>
+
+                  <div class="col-md-4 mb-3">
+                      <div class="mb-2 fs-2 text-success">
+                          <i class="bi bi-plus-circle"></i>
+                      </div>
+                      <h3 class="h6">Ajouter à ma collection</h3>
+                      <p class="text-muted mb-0">
+                          J’ajoute une œuvre à mon espace personnel pour la retrouver facilement.
+                      </p>
+                  </div>
+
+                  <div class="col-md-4 mb-3">
+                      <div class="mb-2 fs-2 text-warning">
+                          <i class="bi bi-collection"></i>
+                      </div>
+                      <h3 class="h6">Organiser et suivre</h3>
+                      <p class="text-muted mb-0">
+                          Je classe mes œuvres, je commente et je gère mes collections depuis mon profil.
+                      </p>
+                  </div>
+              </div>
+
+              {% if not app.user %}
+                  <div class="alert alert-info mt-4 mb-0 text-center">
+                      <strong>Astuce :</strong> créez un compte pour sauvegarder vos œuvres et accéder à votre collection personnelle.
+                  </div>
+              {% endif %}
+          </div>
+      </div>
+  </section>
+
+
   <section class="mt-card p-3">
     <div class="row g-4">
 
