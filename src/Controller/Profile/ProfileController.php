@@ -86,6 +86,36 @@ final class ProfileController extends AbstractController
     }
 
     /**
+     * Je modifie l'email de l'utilisateur connecte.
+     */
+    #[Route('/email', name: 'app_profile_update_email', methods: ['POST'])]
+    public function updateEmail(
+        Request $request,
+        ProfileService $profileService
+    ): RedirectResponse {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        if (!$this->isCsrfTokenValid('update_email', (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException();
+        }
+
+        /** @var User $user */
+        $user = $this->getUser();
+
+        $email = (string) $request->request->get('email', '');
+        $email = trim($email);
+
+        try {
+            $profileService->updateUserEmail($user, $email);
+            $this->addFlash('success', 'Email mis à jour.');
+        } catch (\InvalidArgumentException $e) {
+            $this->addFlash('danger', $e->getMessage());
+        }
+
+        return $this->redirectToRoute('app_profile', ['section' => 'info']);
+    }
+
+    /**
      * Je supprime la photo de profil de l'utilisateur.
      */
     #[Route('/remove-picture', name: 'app_profile_remove_picture', methods: ['POST'])]
@@ -134,7 +164,7 @@ final class ProfileController extends AbstractController
             $profilePictureFile->move($uploadDir, $newFilename);
             $this->deleteProfilePictureFile($user);
             $user->setProfilePicture('uploads/profiles/' . $newFilename);
-        } catch (FileException $e) {
+        } catch (FileException) {
             $this->addFlash('danger', 'Erreur lors de l\'upload de la photo.');
         }
     }

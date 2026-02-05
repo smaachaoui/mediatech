@@ -4,29 +4,50 @@ namespace App\Form;
 
 use App\Entity\User;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Email;
 use Symfony\Component\Validator\Constraints\File;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Regex;
 
-/**
- * Je gere le formulaire de modification du profil utilisateur.
- */
-class ProfileEditType extends AbstractType
+final class ProfileEditType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('pseudo', TextType::class, [
-                'label' => 'Pseudo',
+            ->add('email', EmailType::class, [
+                'label' => 'Email',
+                'attr' => [
+                    'autocomplete' => 'email',
+                    'placeholder' => 'exemple@mail.com',
+                ],
                 'constraints' => [
                     new NotBlank([
-                        'message' => 'Le pseudo est obligatoire.',
+                        'message' => 'Veuillez saisir un email.',
+                    ]),
+                    new Email([
+                        'message' => 'Veuillez saisir un email valide.',
+                    ]),
+                    new Length([
+                        'max' => 180,
+                        'maxMessage' => 'L’email ne peut pas dépasser {{ limit }} caractères.',
+                    ]),
+                ],
+            ])
+            ->add('pseudo', TextType::class, [
+                'label' => 'Pseudo',
+                'attr' => [
+                    'autocomplete' => 'nickname',
+                ],
+                'constraints' => [
+                    new NotBlank([
+                        'message' => 'Veuillez saisir un pseudo.',
                     ]),
                     new Length([
                         'min' => 3,
@@ -36,27 +57,21 @@ class ProfileEditType extends AbstractType
                     ]),
                     new Regex([
                         'pattern' => '/^[a-zA-Z0-9_-]+$/',
-                        'message' => 'Le pseudo ne peut contenir que des lettres, chiffres, tirets et underscores.',
+                        'message' => 'Utilisez uniquement des lettres, chiffres, "_" ou "-".',
                     ]),
-                ],
-                'attr' => [
-                    'class' => 'form-control',
-                    'placeholder' => 'Votre pseudo',
                 ],
             ])
             ->add('biography', TextareaType::class, [
                 'label' => 'Biographie',
                 'required' => false,
+                'attr' => [
+                    'rows' => 4,
+                ],
                 'constraints' => [
                     new Length([
                         'max' => 500,
                         'maxMessage' => 'La biographie ne peut pas dépasser {{ limit }} caractères.',
                     ]),
-                ],
-                'attr' => [
-                    'class' => 'form-control',
-                    'rows' => 4,
-                    'placeholder' => 'Parlez-nous de vous...',
                 ],
             ])
             ->add('profilePictureFile', FileType::class, [
@@ -72,13 +87,8 @@ class ProfileEditType extends AbstractType
                             'image/gif',
                             'image/webp',
                         ],
-                        'mimeTypesMessage' => 'Formats acceptés : JPG, PNG, GIF, WebP.',
-                        'maxSizeMessage' => 'La photo ne doit pas dépasser 2 Mo.',
+                        'mimeTypesMessage' => 'Veuillez uploader une image valide (JPG, PNG, GIF, WebP).',
                     ]),
-                ],
-                'attr' => [
-                    'class' => 'form-control',
-                    'accept' => 'image/jpeg,image/png,image/gif,image/webp',
                 ],
             ]);
     }

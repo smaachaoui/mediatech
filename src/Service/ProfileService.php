@@ -6,6 +6,7 @@ use App\Entity\Collection;
 use App\Entity\CollectionBook;
 use App\Entity\CollectionMovie;
 use App\Entity\User;
+use App\Repository\UserRepository;
 use App\Repository\CollectionBookRepository;
 use App\Repository\CollectionMovieRepository;
 use App\Repository\CollectionRepository;
@@ -22,6 +23,8 @@ final class ProfileService
         private readonly CollectionBookRepository $collectionBookRepository,
         private readonly CollectionMovieRepository $collectionMovieRepository,
         private readonly EntityManagerInterface $em,
+        private readonly UserRepository $userRepository,
+
     ) {}
 
     public function getProfileData(User $user, string $section): array
@@ -470,4 +473,30 @@ final class ProfileService
             $this->em->flush();
         }
     }
+
+    public function updateUserEmail(User $user, string $email): void
+    {
+        $email = trim($email);
+
+        if ($email === '') {
+            throw new \InvalidArgumentException('Veuillez saisir un email.');
+        }
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            throw new \InvalidArgumentException('Email invalide.');
+        }
+
+        if (mb_strtolower($email) === mb_strtolower((string) $user->getEmail())) {
+            return;
+        }
+
+        $existing = $this->userRepository->findOneBy(['email' => $email]);
+        if ($existing && $existing->getId() !== $user->getId()) {
+            throw new \InvalidArgumentException('Cet email est déjà utilisé.');
+        }
+
+        $user->setEmail($email);
+        $this->em->flush();
+    }
+
 }
