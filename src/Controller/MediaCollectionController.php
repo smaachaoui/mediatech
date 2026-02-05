@@ -30,6 +30,7 @@ final class MediaCollectionController extends AbstractController
             tokenPrefix: 'add_media',
             addCallback: static fn (User $user) => $library->addToDefaultCollection($user, $kind, $id),
             successMessage: 'Ajouté à "Non répertorié".|/profile?section=collections#tab-unlisted|Voir',
+            movedMessage: 'Déplacé vers "Non répertorié".|/profile?section=collections#tab-unlisted|Voir',
             alreadyMessage: 'Déjà présent dans "Non répertorié".|/profile?section=collections#tab-unlisted|Voir',
             invalidAuthMessage: 'Connectez-vous pour ajouter à votre collection.',
             errorLogMessage: 'Erreur ajout Non répertorié',
@@ -53,6 +54,7 @@ final class MediaCollectionController extends AbstractController
             tokenPrefix: 'add_wishlist',
             addCallback: static fn (User $user) => $library->addToWishlistCollection($user, $kind, $id),
             successMessage: "Ajouté à votre liste d'envie.|/profile?section=collections#tab-wishlist|Voir",
+            movedMessage: "Déplacé vers votre liste d'envie.|/profile?section=collections#tab-wishlist|Voir",
             alreadyMessage: "Déjà présent dans votre liste d'envie.|/profile?section=collections#tab-wishlist|Voir",
             invalidAuthMessage: 'Connectez-vous pour ajouter à votre liste d’envie.',
             errorLogMessage: 'Erreur ajout wishlist',
@@ -63,7 +65,7 @@ final class MediaCollectionController extends AbstractController
     /**
      * Je centralise la logique d'ajout en collection (CSRF, auth, flash, redirect).
      *
-     * @param callable(User): bool $addCallback Je retourne true si le media etait deja present, false sinon.
+     * @param callable(User): string $addCallback Je retourne un resultat ADD_RESULT_*.
      */
     private function handleAdd(
         string $kind,
@@ -73,6 +75,7 @@ final class MediaCollectionController extends AbstractController
         string $tokenPrefix,
         callable $addCallback,
         string $successMessage,
+        string $movedMessage,
         string $alreadyMessage,
         string $invalidAuthMessage,
         string $errorLogMessage,
@@ -100,12 +103,15 @@ final class MediaCollectionController extends AbstractController
         }
 
         try {
-            $already = (bool) $addCallback($user);
+            $result = (string) $addCallback($user);
 
-            $this->addFlash(
-                $already ? 'info' : 'success',
-                $already ? $alreadyMessage : $successMessage
-            );
+            if ($result === LibraryManager::ADD_RESULT_ALREADY) {
+                $this->addFlash('info', $alreadyMessage);
+            } elseif ($result === LibraryManager::ADD_RESULT_MOVED) {
+                $this->addFlash('success', $movedMessage);
+            } else {
+                $this->addFlash('success', $successMessage);
+            }
         } catch (\Throwable $e) {
             $logger->error($errorLogMessage, [
                 'kind' => $kind,

@@ -16,6 +16,10 @@ final class LibraryManager
     private const DEFAULT_COLLECTION_NAME = 'Non répertorié';
     private const WISHLIST_COLLECTION_NAME = 'Liste d\'envie';
 
+    public const ADD_RESULT_ADDED = 'added';
+    public const ADD_RESULT_ALREADY = 'already';
+    public const ADD_RESULT_MOVED = 'moved';
+
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly GoogleBooksService $googleBooks,
@@ -33,17 +37,17 @@ final class LibraryManager
     }
 
     /**
-     * @return bool true si déjà présent, false si nouvel ajout
+     * @return self::ADD_RESULT_*
      */
-    public function addToDefaultCollection(User $user, string $kind, string $externalId): bool
+    public function addToDefaultCollection(User $user, string $kind, string $externalId): string
     {
         return $this->addToSystemCollection($user, $kind, $externalId, self::DEFAULT_COLLECTION_NAME);
     }
 
     /**
-     * @return bool true si déjà présent, false si nouvel ajout
+     * @return self::ADD_RESULT_*
      */
-    public function addToWishlistCollection(User $user, string $kind, string $externalId): bool
+    public function addToWishlistCollection(User $user, string $kind, string $externalId): string
     {
         return $this->addToSystemCollection($user, $kind, $externalId, self::WISHLIST_COLLECTION_NAME);
     }
@@ -51,9 +55,14 @@ final class LibraryManager
     /**
      * Je centralise l'ajout d'un média dans une collection système ("Non répertorié" ou "Liste d'envie").
      *
-     * @return bool true si déjà présent, false si nouvel ajout
+     * Règles de robustesse :
+     * - Je ne peux pas ajouter deux fois le même media à une même collection.
+     * - Un media ne peut pas être à la fois dans "Non répertorié" et dans "Liste d'envie".
+     *   Si j'ajoute un media à l'une, je le retire automatiquement de l'autre.
+     *
+     * @return self::ADD_RESULT_*
      */
-    private function addToSystemCollection(User $user, string $kind, string $externalId, string $systemCollectionName): bool
+    private function addToSystemCollection(User $user, string $kind, string $externalId, string $systemCollectionName): string
     {
         $kind = trim($kind);
         $externalId = trim($externalId);
@@ -67,13 +76,38 @@ final class LibraryManager
 
         $collection = $this->getOrCreateSystemCollection($user, $systemCollectionName);
 
+        $otherName = $systemCollectionName === self::DEFAULT_COLLECTION_NAME
+            ? self::WISHLIST_COLLECTION_NAME
+            : self::DEFAULT_COLLECTION_NAME;
+        $otherCollection = $this->getOrCreateSystemCollection($user, $otherName);
+
         if ($kind === 'book') {
             $book = $this->getOrCreateBookFromApi($externalId);
-            return $this->attachBook($collection, $book);
+
+            return $this->em->wrapInTransaction(function () use ($collection, $otherCollection, $book): string {
+                $moved = $this->detachBook($otherCollection, $book);
+                $already = $this->attachBook($collection, $book);
+
+                if ($already) {
+                    return self::ADD_RESULT_ALREADY;
+                }
+
+                return $moved ? self::ADD_RESULT_MOVED : self::ADD_RESULT_ADDED;
+            });
         }
 
         $movie = $this->getOrCreateMovieFromApi((int) $externalId);
-        return $this->attachMovie($collection, $movie);
+
+        return $this->em->wrapInTransaction(function () use ($collection, $otherCollection, $movie): string {
+            $moved = $this->detachMovie($otherCollection, $movie);
+            $already = $this->attachMovie($collection, $movie);
+
+            if ($already) {
+                return self::ADD_RESULT_ALREADY;
+            }
+
+            return $moved ? self::ADD_RESULT_MOVED : self::ADD_RESULT_ADDED;
+        });
     }
 
     private function getOrCreateSystemCollection(User $user, string $name): Collection
@@ -198,6 +232,9 @@ final class LibraryManager
         return null;
     }
 
+    /**
+     * @return bool true si déjà présent, false si nouvel ajout
+     */
     private function attachBook(Collection $collection, Book $book): bool
     {
         $link = new CollectionBook();
@@ -214,6 +251,34 @@ final class LibraryManager
         }
     }
 
+    /**
+     * Je retire un livre d'une collection donnée si le lien existe.
+     *
+     * @return bool true si je l'ai effectivement retiré, false sinon.
+     */
+    private function detachBook(Collection $collection, Book $book): bool
+    {
+        $repo = $this->em->getRepository(CollectionBook::class);
+
+        /** @var CollectionBook|null $link */
+        $link = $repo->findOneBy([
+            'collection' => $collection,
+            'book' => $book,
+        ]);
+
+        if (!$link instanceof CollectionBook) {
+            return false;
+        }
+
+        $this->em->remove($link);
+        $this->em->flush();
+
+        return true;
+    }
+
+    /**
+     * @return bool true si déjà présent, false si nouvel ajout
+     */
     private function attachMovie(Collection $collection, Movie $movie): bool
     {
         $link = new CollectionMovie();
@@ -228,5 +293,30 @@ final class LibraryManager
             $this->em->detach($link);
             return true;
         }
+    }
+
+    /**
+     * Je retire un film d'une collection donnée si le lien existe.
+     *
+     * @return bool true si je l'ai effectivement retiré, false sinon.
+     */
+    private function detachMovie(Collection $collection, Movie $movie): bool
+    {
+        $repo = $this->em->getRepository(CollectionMovie::class);
+
+        /** @var CollectionMovie|null $link */
+        $link = $repo->findOneBy([
+            'collection' => $collection,
+            'movie' => $movie,
+        ]);
+
+        if (!$link instanceof CollectionMovie) {
+            return false;
+        }
+
+        $this->em->remove($link);
+        $this->em->flush();
+
+        return true;
     }
 }
