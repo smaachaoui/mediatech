@@ -1,15 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
 use App\Repository\RatingRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: RatingRepository::class)]
 #[ORM\Table(name: 'rating')]
 #[ORM\UniqueConstraint(name: 'uniq_rating_user_collection', columns: ['user_id', 'collection_id'])]
+#[UniqueEntity(
+    fields: ['user', 'collection'],
+    message: "Vous avez déjà noté cette collection."
+)]
 class Rating
 {
     #[ORM\Id]
@@ -29,20 +36,20 @@ class Rating
     )]
     private ?int $value = null;
 
-    #[ORM\Column]
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     #[Assert\NotNull]
     private \DateTimeImmutable $createdAt;
 
-    #[ORM\Column(nullable: true)]
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\ManyToOne(inversedBy: 'ratings')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     #[Assert\NotNull(message: "L'utilisateur est obligatoire pour une note.")]
     private ?User $user = null;
 
     #[ORM\ManyToOne(inversedBy: 'ratings')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     #[Assert\NotNull(message: "La collection est obligatoire pour une note.")]
     private ?Collection $collection = null;
 
@@ -64,6 +71,7 @@ class Rating
     public function setValue(int $value): static
     {
         $this->value = $value;
+        $this->touch();
 
         return $this;
     }
@@ -117,5 +125,10 @@ class Rating
         $this->collection = $collection;
 
         return $this;
+    }
+
+    private function touch(): void
+    {
+        $this->updatedAt = new \DateTimeImmutable();
     }
 }
