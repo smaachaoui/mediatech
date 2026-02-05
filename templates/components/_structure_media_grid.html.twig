@@ -6,9 +6,9 @@
   {% set title = item.title %}
   {% set imageUrl = item.thumbnail %}
   {% set authors = item.authors ?? [] %}
-  {% set authorLine = authors is not empty ? authors|join(', ') : 'Auteur : —' %}
+  {% set authorLine = authors is not empty ? authors|join(', ') : 'Auteur inconnu' %}
   {% set year = item.publishedDate ? item.publishedDate|slice(0, 4) : null %}
-  {% set metaLine = year ? (authorLine ~ ' • ' ~ year) : authorLine %}
+  {% set metaLine = year ? (authorLine ~ ' - ' ~ year) : authorLine %}
   {% set showPath = path('app_book_show', { id: id }) %}
   {% set mediaLabel = 'Livre' %}
 {% else %}
@@ -16,7 +16,7 @@
   {% set title = item.title %}
   {% set imageUrl = item.poster %}
   {% set year = item.releaseDate ? item.releaseDate|slice(0, 4) : null %}
-  {% set metaLine = year ? ('Année : ' ~ year) : 'Année : —' %}
+  {% set metaLine = year ? ('Sortie : ' ~ year) : 'Sortie inconnue' %}
   {% set showPath = path('app_movie_show', { id: id }) %}
   {% set mediaLabel = 'Film' %}
 {% endif %}
@@ -68,7 +68,7 @@
             <input type="hidden" name="_token" value="{{ csrf_token(tokenId) }}">
             <input type="hidden" name="redirectTo" value="{{ app.request.uri }}">
             <button type="submit" class="btn btn-primary btn-sm w-100">
-              Ajouter à ma collection
+              Ajouter a ma collection
             </button>
           </form>
 
@@ -76,9 +76,21 @@
             <input type="hidden" name="_token" value="{{ csrf_token(wishlistTokenId) }}">
             <input type="hidden" name="redirectTo" value="{{ app.request.uri }}">
             <button type="submit" class="btn btn-outline-primary btn-sm w-100">
-              Ajouter à ma liste d’envie
+              Ajouter a ma liste d'envie
             </button>
           </form>
+        {% else %}
+          <a href="{{ path('app_login') }}" 
+             class="btn btn-primary btn-sm w-100"
+             title="Vous devez etre connecte pour ajouter ce media a votre collection">
+            Ajouter a ma collection
+          </a>
+
+          <a href="{{ path('app_login') }}" 
+             class="btn btn-outline-primary btn-sm w-100"
+             title="Vous devez etre connecte pour ajouter ce media a votre liste d'envie">
+            Ajouter a ma liste d'envie
+          </a>
         {% endif %}
 
         <a href="{{ showPath }}" class="btn btn-outline-secondary btn-sm w-100">

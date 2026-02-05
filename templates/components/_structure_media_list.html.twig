@@ -61,11 +61,11 @@
         <div class="small text-muted mb-2">
           {% if authorLine %}
             {{ authorLine }}
-            {% if year %} &bull; {{ year }}{% endif %}
+            {% if year %} - {{ year }}{% endif %}
           {% elseif year %}
             {{ year }}
           {% else %}
-            &mdash;
+            -
           {% endif %}
         </div>
 
@@ -93,10 +93,22 @@
                 + Envies
               </button>
             </form>
+          {% else %}
+            <a href="{{ path('app_login') }}" 
+               class="btn btn-primary btn-sm"
+               title="Vous devez etre connecte pour ajouter ce media a votre collection">
+              + Collection
+            </a>
+
+            <a href="{{ path('app_login') }}" 
+               class="btn btn-outline-primary btn-sm"
+               title="Vous devez etre connecte pour ajouter ce media a votre liste d'envie">
+              + Envies
+            </a>
           {% endif %}
 
           <a href="{{ showPath }}" class="btn btn-outline-secondary btn-sm">
-            Détails
+            Details
           </a>
         </div>
 
