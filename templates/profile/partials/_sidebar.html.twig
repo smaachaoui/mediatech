@@ -3,26 +3,26 @@
 {% block dashboard_sidebar_nav %}
 <nav class="list-group">
     <a class="list-group-item list-group-item-action {{ section == 'info' ? 'active' : '' }}"
-       href="{{ path('app_profile', { section: 'info' }) }}">
+       href="{{ path('app_profile', { section: 'info' }) }}" data-loader="true">
         Informations personnelles
     </a>
 
     <a class="list-group-item list-group-item-action {{ section == 'collections' ? 'active' : '' }}"
-       href="{{ path('app_profile', { section: 'collections' }) }}">
+       href="{{ path('app_profile', { section: 'collections' }) }}" data-loader="true">
         Mes collections
     </a>
 
     <a class="list-group-item list-group-item-action {{ section == 'comments' ? 'active' : '' }}"
-       href="{{ path('app_profile', { section: 'comments' }) }}">
+       href="{{ path('app_profile', { section: 'comments' }) }}" data-loader="true">
         Mes commentaires
     </a>
 
     <a class="list-group-item list-group-item-action {{ section == 'support' ? 'active' : '' }}"
-       href="{{ path('app_profile', { section: 'support' }) }}">
+       href="{{ path('app_profile', { section: 'support' }) }}" data-loader="true">
         Support
     </a>
 
-    <a class="list-group-item list-group-item-action text-danger" href="{{ path('app_logout') }}">
+    <a class="list-group-item list-group-item-action text-danger" href="{{ path('app_logout') }}" data-loader="true">
         Déconnexion
     </a>
 </nav>
