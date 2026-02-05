@@ -39,6 +39,8 @@
                 <input type="hidden" name="_token" value="{{ csrf_token('remove_item_' ~ link.id) }}">
                 <input type="hidden" name="type" value="book">
                 <input type="hidden" name="linkId" value="{{ link.id }}">
+                <input type="hidden" name="origin" value="unlisted">
+
                 <button class="btn btn-outline-danger btn-sm" type="submit"
                         onclick="return confirm('Retirer cet élément de “Non répertorié” ?');">
                   Retirer
@@ -80,6 +82,7 @@
                 <input type="hidden" name="_token" value="{{ csrf_token('remove_item_' ~ link.id) }}">
                 <input type="hidden" name="type" value="movie">
                 <input type="hidden" name="linkId" value="{{ link.id }}">
+                <input type="hidden" name="origin" value="unlisted">
                 <button class="btn btn-outline-danger btn-sm" type="submit"
                         onclick="return confirm('Retirer cet élément de “Non répertorié” ?');">
                   Retirer

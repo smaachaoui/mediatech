@@ -310,38 +310,49 @@ final class ProfileService
 
     public function removeItemFromCollection(User $user, string $type, int $linkId): void
     {
-        $type = trim($type);
-
-        if ($type === 'book') {
-            $link = $this->em->getRepository(CollectionBook::class)->find($linkId);
-        } elseif ($type === 'movie') {
-            $link = $this->em->getRepository(CollectionMovie::class)->find($linkId);
-        } else {
-            throw new \InvalidArgumentException('Type non supporté.');
+        if (!in_array($type, ['book', 'movie'], true)) {
+            throw new \InvalidArgumentException('Type de média invalide.');
         }
 
-        if (!$link) {
+        if ($linkId <= 0) {
+            throw new \InvalidArgumentException('Identifiant invalide.');
+        }
+
+        if ($type === 'book') {
+            /** @var CollectionBook|null $link */
+            $link = $this->em->getRepository(CollectionBook::class)->find($linkId);
+
+            if (!$link instanceof CollectionBook) {
+                throw new \RuntimeException('Élément introuvable.');
+            }
+
+            $collection = $link->getCollection();
+            if (!$collection || $collection->getUser()?->getId() !== $user->getId()) {
+                throw new \RuntimeException('Accès refusé.');
+            }
+
+            $this->em->remove($link);
+            $this->em->flush();
+
+            return;
+        }
+
+        /** @var CollectionMovie|null $link */
+        $link = $this->em->getRepository(CollectionMovie::class)->find($linkId);
+
+        if (!$link instanceof CollectionMovie) {
             throw new \RuntimeException('Élément introuvable.');
         }
 
         $collection = $link->getCollection();
-        if (!$collection) {
-            throw new \RuntimeException('Collection introuvable.');
-        }
-
-        if ($collection->getUser()?->getId() !== $user->getId()) {
-            throw new AccessDeniedException('Accès interdit.');
-        }
-
-        if ($collection->getScope() === Collection::SCOPE_SYSTEM) {
-            throw new \RuntimeException('Impossible de retirer un élément de “Non répertorié” via cette action.');
+        if (!$collection || $collection->getUser()?->getId() !== $user->getId()) {
+            throw new \RuntimeException('Accès refusé.');
         }
 
         $this->em->remove($link);
         $this->em->flush();
-
-        $this->clearCoverIfNoLongerValid($collection);
     }
+    
 
     public function deleteUserCollection(User $user, int $collectionId): void
     {

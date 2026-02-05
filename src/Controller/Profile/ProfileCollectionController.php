@@ -184,7 +184,22 @@ final class ProfileCollectionController extends AbstractController
 
         $this->profileService->removeItemFromCollection($user, $type, $linkId);
 
-        $this->addFlash('success', 'Élément retiré de la collection.');
+        $origin = (string) $request->request->get('origin', '');
+
+        try {
+            $this->profileService->removeItemFromCollection($user, $type, $linkId);
+
+            if ($origin === 'unlisted') {
+                $this->addFlash('success', 'Élément retiré de votre onglet “Non répertorié”.');
+            } elseif ($origin === 'wishlist') {
+                $this->addFlash('success', 'Élément retiré de votre onglet “Liste d\'envie”.');
+            } else {
+                $this->addFlash('success', 'Élément retiré de la collection.');
+            }
+        } catch (\Throwable) {
+            $this->addFlash('danger', 'Impossible de retirer cet élément.');
+        }
+
 
         return $this->redirectToRoute('app_profile', ['section' => 'collections']);
     }
