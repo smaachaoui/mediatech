@@ -9,8 +9,11 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: CollectionRepository::class)]
+#[ORM\Table(name: 'collection', uniqueConstraints: [new ORM\UniqueConstraint(name: 'uniq_collection_user_name', columns: ['user_id', 'name'])])]
+#[UniqueEntity(fields: ['user', 'name'], message: 'Vous avez déjà une collection avec ce nom.')]
 #[Assert\Callback('validatePublishing')]
 class Collection
 {
