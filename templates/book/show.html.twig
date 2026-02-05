@@ -4,118 +4,133 @@
 
 {% block body %}
 <div class="container py-4">
+    <div class="row g-4">
 
-  <div class="row g-4">
+        {# COLONNE GAUCHE : COVER + ACTIONS #}
+        <div class="col-12 col-md-4 col-lg-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    {% if book.thumbnail %}
+                        <img src="{{ book.thumbnail }}" class="img-fluid rounded-3 border" alt="{{ book.title }}">
+                    {% else %}
+                        <div class="d-flex align-items-center justify-content-center bg-body-tertiary border rounded-3" style="height: 360px;">
+                            <span class="text-muted">Aucune couverture</span>
+                        </div>
+                    {% endif %}
 
-    {# COLONNE GAUCHE : COVER + ACTIONS #}
-    <div class="col-12 col-md-4 col-lg-3">
-      <div class="card border-0 shadow-sm">
-        <div class="card-body">
-          {% if book.thumbnail %}
-            <img src="{{ book.thumbnail }}" class="img-fluid rounded-3 border" alt="{{ book.title }}">
-          {% else %}
-            <div class="d-flex align-items-center justify-content-center bg-body-tertiary border rounded-3" style="height: 360px;">
-              <span class="text-muted">Aucune couverture</span>
+                    <div class="mt-3 d-grid gap-2">
+                        <form method="post" action="{{ path('app_media_add_to_default', { kind: 'book', id: book.id }) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('add_media_book_' ~ book.id) }}">
+                            <button class="btn btn-primary" type="submit">Ajouter à ma collection</button>
+                        </form>
+
+                        {% set q = app.request.query.get('q') %}
+                        {% set type = app.request.query.get('type') %}
+
+                        {% if q %}
+                            <a
+                                class="btn btn-link text-decoration-none px-0"
+                                href="{{ path('app_catalog', { q: q, type: type }) }}"
+                            >
+                                ← Retour aux résultats
+                            </a>
+                        {% endif %}
+
+                        <a class="btn btn-link text-decoration-none px-0" href="{{ path('app_catalog') }}">
+                            ← Retour au catalogue
+                        </a>
+                    </div>
+                </div>
             </div>
-          {% endif %}
-
-          <div class="mt-3 d-grid gap-2">
-            <form method="post" action="{{ path('app_media_add_to_default', { kind: 'book', id: book.id }) }}">
-              <input type="hidden" name="_token" value="{{ csrf_token('add_media_book_' ~ book.id) }}">
-              <button class="btn btn-primary" type="submit">Ajouter à ma collection</button>
-            </form>
-
-
-            <a class="btn btn-link text-decoration-none px-0" href="{{ path('app_catalog', { q: book.title, type: 'books' }) }}">
-              ← Retour au catalogue
-            </a>
-          </div>
         </div>
-      </div>
+
+        {# COLONNE DROITE : TITRE + DESCRIPTION + DÉTAILS #}
+        <div class="col-12 col-md-8 col-lg-9">
+
+            <div class="mb-3">
+                <h1 class="h3 mb-0">{{ book.title }}</h1>
+            </div>
+
+            {# DESCRIPTION #}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-3 p-md-4">
+                    <h2 class="h5 mb-3">Description</h2>
+                    <div class="text-muted">
+                        {{ book.description ? book.description|striptags|e|nl2br : 'Aucune description.' }}
+                    </div>
+                </div>
+            </div>
+
+            {# DÉTAILS #}
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-3 p-md-4">
+                    <h2 class="h6 text-uppercase text-muted mb-3">Détails</h2>
+
+                    <div class="row g-3">
+
+                        <div class="col-12 col-lg-6">
+                            <div class="d-flex justify-content-between align-items-center border rounded-3 p-3 bg-white h-100">
+                                <span class="text-muted">Auteur(s)</span>
+                                <span class="fw-semibold text-end">
+                                    {% if book.authors is not empty %}
+                                        {{ book.authors|join(', ') }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-lg-6">
+                            <div class="d-flex justify-content-between align-items-center border rounded-3 p-3 bg-white h-100">
+                                <span class="text-muted">Éditeur</span>
+                                <span class="fw-semibold text-end">{{ book.publisher ?: '—' }}</span>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-lg-6">
+                            <div class="d-flex justify-content-between align-items-center border rounded-3 p-3 bg-white h-100">
+                                <span class="text-muted">Parution</span>
+                                <span class="fw-semibold text-end">
+                                    {{ book.publishedDate ? book.publishedDate|slice(0,10) : '—' }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-lg-6">
+                            <div class="d-flex justify-content-between align-items-center border rounded-3 p-3 bg-white h-100">
+                                <span class="text-muted">Pages</span>
+                                <span class="fw-semibold">{{ book.pageCount ?: '—' }}</span>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-lg-6">
+                            <div class="d-flex justify-content-between align-items-center border rounded-3 p-3 bg-white h-100">
+                                <span class="text-muted">Genre</span>
+                                <span class="fw-semibold text-end">
+                                    {% if book.categories is defined and book.categories is not empty %}
+                                        {{ book.categories|join(', ') }}
+                                    {% elseif book.genres is defined and book.genres is not empty %}
+                                        {{ book.genres|join(', ') }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-lg-6">
+                            <div class="d-flex justify-content-between align-items-center border rounded-3 p-3 bg-white h-100">
+                                <span class="text-muted">ISBN</span>
+                                <span class="fw-semibold">{{ book.isbn ?: '—' }}</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
     </div>
-
-    {# COLONNE DROITE : TITRE + DESCRIPTION + DÉTAILS EN DESSOUS #}
-    <div class="col-12 col-md-8 col-lg-9">
-
-      <div class="mb-3">
-        <h1 class="h3 mb-0">{{ book.title }}</h1>
-      </div>
-
-      {# DESCRIPTION #}
-      <div class="card border-0 shadow-sm mb-4">
-        <div class="card-body p-3 p-md-4">
-          <h2 class="h5 mb-3">Description</h2>
-          <div class="text-muted">
-            {{ book.description ? book.description|striptags|e|nl2br : 'Aucune description.' }}
-          </div>
-        </div>
-      </div>
-
-      {# DÉTAILS (EN DESSOUS DE LA DESCRIPTION) #}
-      <div class="card border-0 shadow-sm">
-        <div class="card-body p-3 p-md-4">
-          <h2 class="h6 text-uppercase text-muted mb-3">Détails</h2>
-
-          <div class="row g-3">
-
-            <div class="col-12 col-lg-6">
-              <div class="d-flex justify-content-between align-items-center border rounded-3 p-3 bg-white h-100">
-                <span class="text-muted">Auteur(s)</span>
-                <span class="fw-semibold text-end">
-                  {% if book.authors is not empty %}
-                    {{ book.authors|join(', ') }}
-                  {% else %}
-                    —
-                  {% endif %}
-                </span>
-              </div>
-            </div>
-
-            <div class="col-12 col-lg-6">
-              <div class="d-flex justify-content-between align-items-center border rounded-3 p-3 bg-white h-100">
-                <span class="text-muted">Éditeur</span>
-                <span class="fw-semibold text-end">{{ book.publisher ?: '—' }}</span>
-              </div>
-            </div>
-
-            <div class="col-12 col-lg-6">
-              <div class="d-flex justify-content-between align-items-center border rounded-3 p-3 bg-white h-100">
-                <span class="text-muted">Parution</span>
-                <span class="fw-semibold text-end">
-                  {{ book.publishedDate ? book.publishedDate|slice(0,10) : '—' }}
-                </span>
-              </div>
-            </div>
-
-            <div class="col-12 col-lg-6">
-              <div class="d-flex justify-content-between align-items-center border rounded-3 p-3 bg-white h-100">
-                <span class="text-muted">Pages</span>
-                <span class="fw-semibold">{{ book.pageCount ?: '—' }}</span>
-              </div>
-            </div>
-
-            <div class="col-12 col-lg-6">
-              <div class="d-flex justify-content-between align-items-center border rounded-3 p-3 bg-white h-100">
-                <span class="text-muted">ISBN</span>
-                <span class="fw-semibold">{{ book.isbn ?: '—' }}</span>
-              </div>
-            </div>
-
-            {# Optionnel : champ "Collection" ou "Genre" si tu l’as #}
-            {# 
-            <div class="col-12 col-lg-6">
-              <div class="d-flex justify-content-between align-items-center border rounded-3 p-3 bg-white h-100">
-                <span class="text-muted">Collection</span>
-                <span class="fw-semibold">{{ book.collection ?: '—' }}</span>
-              </div>
-            </div>
-            #}
-
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
 </div>
 {% endblock %}
