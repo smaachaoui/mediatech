@@ -142,14 +142,8 @@ final class LibraryManager
         return $collection;
     }
 
-    private function getOrCreateBookFromApi(string $googleBooksId): Book
+        private function getOrCreateBookFromApi(string $googleBooksId): Book
     {
-        $googleBooksId = trim($googleBooksId);
-
-        if ($googleBooksId === '') {
-            throw new \InvalidArgumentException('Google Books id cannot be empty.');
-        }
-
         $repo = $this->em->getRepository(Book::class);
 
         /** @var Book|null $book */
@@ -160,31 +154,35 @@ final class LibraryManager
 
         $data = $this->googleBooks->getById($googleBooksId);
 
-        if (empty($data) || !isset($data['id'], $data['title'])) {
-            throw new \RuntimeException('Livre introuvable (Google Books).');
-        }
-
         $book = new Book();
-        $book->setGoogleBooksId((string) $data['id']);
-        $book->setTitle((string) $data['title']);
+        $book->setGoogleBooksId((string) ($data['id'] ?? $googleBooksId));
+        $book->setTitle((string) ($data['title'] ?? 'Sans titre'));
 
         $authors = $data['authors'] ?? [];
         if (is_array($authors) && !empty($authors)) {
             $book->setAuthor(implode(', ', array_map('strval', $authors)));
         }
 
-        $book->setPublisher(isset($data['publisher']) ? (string) $data['publisher'] : null);
+        $book->setPublisher($data['publisher'] ?? null);
         $book->setPageCount(isset($data['pageCount']) ? (int) $data['pageCount'] : null);
-        $book->setIsbn(isset($data['isbn']) ? (string) $data['isbn'] : null);
-        $book->setCoverImage(isset($data['thumbnail']) ? (string) $data['thumbnail'] : null);
-        $book->setSynopsis(isset($data['description']) ? (string) $data['description'] : null);
+        $book->setIsbn($data['isbn'] ?? null);
+        $book->setSynopsis($data['description'] ?? null);
         $book->setPublicationDate($this->parseFlexibleDate($data['publishedDate'] ?? null));
+
+        
+        $thumbnail = $data['thumbnail'] ?? null;
+        if (is_string($thumbnail) && $thumbnail !== '') {
+            $book->setCoverImage($thumbnail);
+        } else {
+            $book->setCoverImage(null);
+        }
 
         $this->em->persist($book);
         $this->em->flush();
 
         return $book;
     }
+
 
     private function getOrCreateMovieFromApi(int $tmdbId): Movie
     {

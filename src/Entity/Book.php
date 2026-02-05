@@ -28,12 +28,12 @@ class Book
     /*
      * Je stocke l'URL ou le chemin de l'image de couverture si j'en ai une.
      */
-    #[ORM\Column(length: 500, nullable: true)]
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Assert\Url(message: "L'URL de couverture n'est pas valide.")]
     #[Assert\Length(
-        max: 500,
+        max: 2048,
         maxMessage: "L'URL de couverture ne peut pas dépasser {{ limit }} caractères."
     )]
-    #[Assert\Url(message: "L'URL de couverture n'est pas valide.")]
     private ?string $coverImage = null;
 
     #[ORM\Column(length: 255, nullable: true)]

@@ -44,12 +44,12 @@ class Collection
     )]
     private ?string $name = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Assert\Url(message: "L'URL de couverture n'est pas valide.")]
     #[Assert\Length(
-        max: 255,
+        max: 2048,
         maxMessage: "L'URL de couverture ne peut pas dépasser {{ limit }} caractères."
     )]
-    #[Assert\Url(message: "L'URL de couverture n'est pas valide.")]
     private ?string $coverImage = null;
 
     #[ORM\Column(length: 60, nullable: true)]

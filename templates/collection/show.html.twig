@@ -205,9 +205,11 @@
                           <div class="card border rounded-3 h-100 overflow-hidden">
                             <div class="ratio ratio-2x3 bg-light">
                               {% if book.coverImage %}
-                                <img src="{{ book.coverImage }}" class="w-100 h-100 object-fit-cover" alt="">
+                                <img src="{{ book.coverImage }}" class="img-fluid rounded" alt="{{ book.title }}">
                               {% else %}
-                                <div class="d-flex align-items-center justify-content-center text-muted small">Aucune image</div>
+                                <div class="d-flex align-items-center justify-content-center bg-body-tertiary rounded" style="height: 280px;">
+                                    <span class="text-muted">Aucune couverture</span>
+                                </div>
                               {% endif %}
                             </div>
                             <div class="card-body">
