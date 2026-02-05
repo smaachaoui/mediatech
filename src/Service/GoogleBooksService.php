@@ -235,15 +235,25 @@ final class GoogleBooksService
      * @param array<string, mixed> $info
      * @return array<string, mixed>
      */
+
     private function mapItem(array $row, array $info, ?string $fallbackId = null): array
     {
-        $thumbnail = null;
+        $id = (string) ($row['id'] ?? $fallbackId ?? '');
 
+        $thumbnail = null;
         if (isset($info['imageLinks']) && is_array($info['imageLinks'])) {
             $thumb = $info['imageLinks']['thumbnail'] ?? null;
+            $small = $info['imageLinks']['smallThumbnail'] ?? null;
+
             if (is_string($thumb) && $thumb !== '') {
-                $thumbnail = str_replace('http://', 'https://', $thumb);
+                $thumbnail = $this->normalizeBookCoverUrl($id, $thumb);
+            } elseif (is_string($small) && $small !== '') {
+                $thumbnail = $this->normalizeBookCoverUrl($id, $small);
             }
+        }
+
+        if ($thumbnail === null && $id !== '') {
+            $thumbnail = $this->buildStableGoogleBooksCoverUrl($id);
         }
 
         $authors = $info['authors'] ?? [];
@@ -257,7 +267,7 @@ final class GoogleBooksService
         }
 
         return [
-            'id' => (string) ($row['id'] ?? $fallbackId ?? ''),
+            'id' => $id,
             'title' => (string) ($info['title'] ?? 'Sans titre'),
             'authors' => $authors,
             'publisher' => isset($info['publisher']) ? (string) $info['publisher'] : null,
@@ -269,6 +279,40 @@ final class GoogleBooksService
             'categories' => $categories,
         ];
     }
+
+    private function normalizeBookCoverUrl(string $googleBooksId, string $url): ?string
+    {
+        $url = trim($url);
+        if ($url === '') {
+            return null;
+        }
+
+        $url = str_replace('http://', 'https://', $url);
+
+        // Si c’est déjà une URL Google Books "content", je la remplace par une version stable.
+        if (str_contains($url, 'books.google.') && str_contains($url, '/books/content')) {
+            if ($googleBooksId !== '') {
+                return $this->buildStableGoogleBooksCoverUrl($googleBooksId);
+            }
+        }
+
+        // Si c’est une URL tokenisée (imgtk), je préfère aussi une URL stable.
+        if ($googleBooksId !== '' && str_contains($url, 'imgtk=')) {
+            return $this->buildStableGoogleBooksCoverUrl($googleBooksId);
+        }
+
+        return $url;
+    }
+
+    private function buildStableGoogleBooksCoverUrl(string $googleBooksId): string
+    {
+        return sprintf(
+            'https://books.google.com/books/content?id=%s&printsec=frontcover&img=1&zoom=1&source=gbs_api',
+            urlencode($googleBooksId)
+        );
+    }
+
+
 
     /**
      * @param mixed $ids
