@@ -59,17 +59,25 @@ final class SecurityHeadersSubscriber implements EventSubscriberInterface
             return;
         }
 
+        $cdnJsDelivr = 'https://cdn.jsdelivr.net';
+        $googleFontsCss = 'https://fonts.googleapis.com';
+        $googleFontsFiles = 'https://fonts.gstatic.com';
+        $tmdbApi = 'https://api.themoviedb.org';
+        $tmdbImages = 'https://image.tmdb.org';
+        $googleApis = 'https://www.googleapis.com';
+        $openLibraryCovers = 'https://covers.openlibrary.org';
+
         $policy = implode('; ', [
             "default-src 'self'",
             "base-uri 'self'",
             "object-src 'none'",
             "frame-ancestors 'none'",
             "form-action 'self'",
-            "img-src 'self' data: https:",
-            "font-src 'self' data: https:",
-            "style-src 'self' 'unsafe-inline' https:",
-            "script-src 'self' 'unsafe-inline' https:",
-            "connect-src 'self' https:",
+            "img-src 'self' data: {$tmdbImages} {$openLibraryCovers}",
+            "font-src 'self' data: {$googleFontsFiles}",
+            "style-src 'self' 'unsafe-inline' {$cdnJsDelivr} {$googleFontsCss}",
+            "script-src 'self' 'unsafe-inline' {$cdnJsDelivr}",
+            "connect-src 'self' {$tmdbApi} {$googleApis}",
         ]);
 
         if ($this->kernel->getEnvironment() === 'prod') {
