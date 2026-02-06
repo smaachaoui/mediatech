@@ -1,4 +1,4 @@
-<div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+<div class="d-flex justify-content-between align-items-start gap-3 mb-3 flex-wrap">
   <div>
     <h1 class="h3 mb-1">Collections</h1>
     <div class="text-muted">Gestion des collections utilisateur (publication et visibilité).</div>
@@ -31,9 +31,9 @@
           <thead>
           <tr class="text-muted small">
             <th>Nom</th>
-            <th>Auteur</th>
-            <th>Type</th>
-            <th>Éléments</th>
+            <th class="d-none d-md-table-cell">Auteur</th>
+            <th class="d-none d-lg-table-cell">Type</th>
+            <th class="d-none d-lg-table-cell">Éléments</th>
             <th>Statut</th>
             <th class="text-end">Actions</th>
           </tr>
@@ -48,9 +48,13 @@
                 <div class="text-muted small">
                   Créée le {{ c.createdAt ? c.createdAt|date('d/m/Y') : '—' }}
                 </div>
+                {# Infos visibles uniquement sur mobile #}
+                <div class="d-md-none text-muted small mt-1">
+                  Par {{ c.user ? (c.user.pseudo ?? c.user.email) : '—' }}
+                </div>
               </td>
 
-              <td>
+              <td class="d-none d-md-table-cell">
                 {% if c.user %}
                   {{ c.user.pseudo ?? c.user.email }}
                 {% else %}
@@ -58,11 +62,11 @@
                 {% endif %}
               </td>
 
-              <td>
+              <td class="d-none d-lg-table-cell">
                 {{ c.mediaType == 'book' ? 'Livres' : (c.mediaType == 'movie' ? 'Films' : 'Mixte') }}
               </td>
 
-              <td>{{ itemsCount }}</td>
+              <td class="d-none d-lg-table-cell">{{ itemsCount }}</td>
 
               <td>
                 {% if c.isPublished %}
@@ -73,25 +77,23 @@
               </td>
 
               <td class="text-end">
-                <div class="d-inline-flex gap-2">
+                <div class="d-inline-flex gap-2 flex-wrap justify-content-end">
                   {% if c.isPublished %}
                     <a class="btn btn-outline-secondary btn-sm"
-                       href="{{ path('app_collection_show', { id: c.id }) }}">
-                      Voir
+                       href="{{ path('app_collection_show', { id: c.id }) }}"
+                       target="_blank">
+                      <i class="bi bi-eye"></i>
+                      <span class="d-none d-sm-inline">Voir</span>
                     </a>
                   {% endif %}
 
-                  <a class="btn btn-outline-secondary btn-sm"
-                     href="{{ path('admin_collections_edit', { id: c.id }) }}">
-                    Modifier
-                  </a>
-
                   <button
                     type="button"
-                    class="btn btn-outline-danger btn-sm"
+                    class="btn btn-outline-secondary btn-sm"
                     data-bs-toggle="modal"
-                    data-bs-target="#deleteCollectionModal_{{ c.id }}">
-                    Supprimer
+                    data-bs-target="#editCollectionModal_{{ c.id }}">
+                    <i class="bi bi-pencil"></i>
+                    <span class="d-none d-sm-inline">Modifier</span>
                   </button>
 
                   <button
@@ -99,10 +101,50 @@
                     class="btn btn-outline-primary btn-sm"
                     data-bs-toggle="modal"
                     data-bs-target="#togglePublishCollectionModal_{{ c.id }}">
-                    {{ c.isPublished ? 'Dépublier' : 'Publier' }}
+                    <i class="bi bi-{{ c.isPublished ? 'eye-slash' : 'eye' }}"></i>
+                    <span class="d-none d-sm-inline">{{ c.isPublished ? 'Dépublier' : 'Publier' }}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    class="btn btn-outline-danger btn-sm"
+                    data-bs-toggle="modal"
+                    data-bs-target="#deleteCollectionModal_{{ c.id }}">
+                    <i class="bi bi-trash"></i>
+                    <span class="d-none d-sm-inline">Supprimer</span>
                   </button>
                 </div>
 
+                {# MODAL D'ÉDITION (nouvelle) #}
+                {% embed 'components/_modal.html.twig' with {
+                  id: 'editCollectionModal_' ~ c.id,
+                  title: 'Modifier la collection',
+                  action: path('admin_collections_update', { id: c.id }),
+                  csrf_id: 'admin_edit_collection_' ~ c.id,
+                  submit_label: 'Enregistrer',
+                  submit_class: 'btn-primary'
+                } %}
+                  {% block body %}
+                    <div class="mb-3">
+                      <label class="form-label">Nom</label>
+                      <input class="form-control" name="name" type="text" required maxlength="150"
+                             value="{{ c.name }}">
+                    </div>
+
+                    <div class="mb-3">
+                      <label class="form-label">Genre</label>
+                      <input type="text" class="form-control" name="genre" value="{{ c.genre ?? '' }}" 
+                             placeholder="Fantasy, Action, Romance...">
+                    </div>
+
+                    <div class="mb-0">
+                      <label class="form-label">Description</label>
+                      <textarea class="form-control" name="description" rows="4" maxlength="2000">{{ c.description }}</textarea>
+                    </div>
+                  {% endblock %}
+                {% endembed %}
+
+                {# MODAL DE SUPPRESSION #}
                 {% include 'components/_modal.html.twig' with {
                   id: 'deleteCollectionModal_' ~ c.id,
                   title: 'Supprimer la collection',
@@ -120,6 +162,7 @@
                   '
                 } %}
 
+                {# MODAL DE PUBLICATION/DÉPUBLICATION #}
                 {% include 'components/_modal.html.twig' with {
                   id: 'togglePublishCollectionModal_' ~ c.id,
                   title: (c.isPublished ? 'Dépublier la collection' : 'Publier la collection'),

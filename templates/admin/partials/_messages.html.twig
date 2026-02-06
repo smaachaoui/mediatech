@@ -1,0 +1,182 @@
+<div class="d-flex justify-content-between align-items-start gap-3 mb-3 flex-wrap">
+  <div>
+    <h1 class="h3 mb-1">Messages de contact</h1>
+    <div class="text-muted">Messages envoyés via le formulaire de contact.</div>
+  </div>
+  
+  {% if unreadCount > 0 %}
+    <div class="badge bg-danger fs-6">{{ unreadCount }} non lu{{ unreadCount > 1 ? 's' : '' }}</div>
+  {% endif %}
+</div>
+
+<div class="d-flex flex-wrap gap-2 mb-3">
+  <a class="btn btn-outline-secondary btn-sm {{ filter == 'all' ? 'active' : '' }}"
+     href="{{ path('admin_messages_index', { read: 'all' }) }}">
+    Tous
+  </a>
+  <a class="btn btn-outline-secondary btn-sm {{ filter == 'unread' ? 'active' : '' }}"
+     href="{{ path('admin_messages_index', { read: 'unread' }) }}">
+    Non lus
+  </a>
+  <a class="btn btn-outline-secondary btn-sm {{ filter == 'read' ? 'active' : '' }}"
+     href="{{ path('admin_messages_index', { read: 'read' }) }}">
+    Lus
+  </a>
+</div>
+
+<div class="card border rounded-3">
+  <div class="card-body">
+
+    {% if messages is empty %}
+      <div class="text-muted">Aucun message.</div>
+    {% else %}
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead>
+          <tr class="text-muted small">
+            <th>Statut</th>
+            <th>Nom</th>
+            <th>Email</th>
+            <th>Sujet</th>
+            <th>Date</th>
+            <th class="text-end">Actions</th>
+          </tr>
+          </thead>
+          <tbody>
+          {% for msg in messages %}
+            <tr class="{{ not msg.isRead ? 'table-warning' : '' }}">
+              <td>
+                {% if msg.isRead %}
+                  <span class="badge text-bg-secondary">Lu</span>
+                {% else %}
+                  <span class="badge text-bg-warning">Non lu</span>
+                {% endif %}
+              </td>
+
+              <td class="fw-semibold">{{ msg.name }}</td>
+
+              <td>
+                <a href="mailto:{{ msg.email }}" class="text-decoration-none">
+                  {{ msg.email }}
+                </a>
+              </td>
+
+              <td>{{ msg.subject }}</td>
+
+              <td class="text-muted small">
+                {{ msg.createdAt|date('d/m/Y H:i') }}
+              </td>
+
+              <td class="text-end">
+                <div class="d-inline-flex gap-2 flex-wrap">
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary btn-sm"
+                    data-bs-toggle="modal"
+                    data-bs-target="#viewMessageModal_{{ msg.id }}">
+                    Voir
+                  </button>
+
+                  {% if not msg.isRead %}
+                    <form method="post" action="{{ path('admin_messages_mark_read', { id: msg.id }) }}" class="d-inline">
+                      <input type="hidden" name="_token" value="{{ csrf_token('mark_read_' ~ msg.id) }}">
+                      <button type="submit" class="btn btn-outline-success btn-sm">
+                        Marquer lu
+                      </button>
+                    </form>
+                  {% endif %}
+
+                  <button
+                    type="button"
+                    class="btn btn-outline-danger btn-sm"
+                    data-bs-toggle="modal"
+                    data-bs-target="#deleteMessageModal_{{ msg.id }}">
+                    Supprimer
+                  </button>
+                </div>
+
+                {# Modal de visualisation du message #}
+                {% embed 'components/_modal.html.twig' with {
+                  id: 'viewMessageModal_' ~ msg.id,
+                  title: 'Message de ' ~ msg.name,
+                  size: 'lg'
+                } %}
+                  {% block body %}
+                    <div class="mb-3">
+                      <div class="fw-semibold text-muted small">De</div>
+                      <div>{{ msg.name }} <span class="text-muted">&lt;{{ msg.email }}&gt;</span></div>
+                    </div>
+
+                    <div class="mb-3">
+                      <div class="fw-semibold text-muted small">Sujet</div>
+                      <div>{{ msg.subject }}</div>
+                    </div>
+
+                    <div class="mb-3">
+                      <div class="fw-semibold text-muted small">Date</div>
+                      <div>{{ msg.createdAt|date('d/m/Y à H:i') }}</div>
+                    </div>
+
+                    {% if msg.user %}
+                      <div class="mb-3">
+                        <div class="fw-semibold text-muted small">Utilisateur connecté</div>
+                        <div>{{ msg.user.pseudo ?? msg.user.email }}</div>
+                      </div>
+                    {% endif %}
+
+                    <div class="mb-0">
+                      <div class="fw-semibold text-muted small mb-2">Message</div>
+                      <div class="border rounded p-3 bg-light">
+                        {{ msg.message|nl2br }}
+                      </div>
+                    </div>
+                  {% endblock %}
+
+                  {% block footer %}
+                    <a href="mailto:{{ msg.email }}?subject=Re: {{ msg.subject|url_encode }}" 
+                       class="btn btn-primary">
+                      <i class="bi bi-reply"></i> Répondre par email
+                    </a>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                  {% endblock %}
+                {% endembed %}
+
+                {# Modal de suppression #}
+                {% include 'components/_modal.html.twig' with {
+                  id: 'deleteMessageModal_' ~ msg.id,
+                  title: 'Supprimer le message',
+                  body: '
+                    <p>Voulez-vous vraiment supprimer le message de <strong>' ~ msg.name|e ~ '</strong> ?</p>
+                    <p class="text-danger mb-0">Cette action est définitive.</p>
+                  ',
+                  footer: '
+                    <form method="post" action="' ~ path('admin_messages_delete', { id: msg.id }) ~ '">
+                      <input type="hidden" name="_token" value="' ~ csrf_token('delete_message_' ~ msg.id) ~ '">
+                      <button type="submit" class="btn btn-danger">
+                        Supprimer définitivement
+                      </button>
+                    </form>
+                  '
+                } %}
+
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% if totalPages is defined and totalPages > 1 %}
+        <div class="mt-3">
+          {% include 'components/_nav_pagination.html.twig' with {
+            route: 'admin_messages_index',
+            page: page,
+            totalPages: totalPages,
+            query: { read: filter }
+          } %}
+        </div>
+      {% endif %}
+    {% endif %}
+
+  </div>
+</div>

@@ -529,6 +529,214 @@ a:not(.btn):focus::after {
   background: #e9ecef;
 }
 
+/* ========================================
+   ADMINISTRATION - Responsive
+   ======================================== */
+
+/* Sidebar admin responsive */
+@media (max-width: 991px) {
+  /* Sur tablette et mobile, la sidebar devient pleine largeur en haut */
+  .dashboard-sidebar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: white;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #dee2e6;
+    margin-bottom: 1rem;
+  }
+
+  /* Navigation en ligne sur mobile */
+  .list-group-flush {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+  }
+
+  .list-group-item {
+    border: 1px solid #dee2e6 !important;
+    border-radius: 0.375rem !important;
+    flex-shrink: 0;
+    white-space: nowrap;
+    padding: 0.5rem 1rem;
+  }
+
+  /* Badge aligné sur mobile */
+  .list-group-item .badge {
+    margin-left: 0.5rem;
+  }
+}
+
+/* Tables responsive - amélioration de l'affichage */
+@media (max-width: 767px) {
+  /* Réduire le padding des cellules sur mobile */
+  .table-responsive .table td,
+  .table-responsive .table th {
+    padding: 0.5rem;
+    font-size: 0.875rem;
+  }
+
+  /* Boutons plus compacts sur mobile */
+  .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  /* Icônes seules sur mobile */
+  .btn-sm i {
+    margin: 0 !important;
+  }
+
+  /* Badges plus petits */
+  .badge {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+  }
+}
+
+/* Actions groupées responsive */
+@media (max-width: 575px) {
+  /* Empiler les boutons d'actions verticalement sur très petit écran */
+  .d-inline-flex.gap-2 {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .d-inline-flex.gap-2 .btn {
+    width: 100%;
+  }
+}
+
+/* Header avec titre et badge responsive */
+.d-flex.justify-content-between.align-items-start {
+  align-items: center !important;
+}
+
+@media (max-width: 575px) {
+  .d-flex.justify-content-between.align-items-start {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 0.75rem;
+  }
+}
+
+/* Filtres responsive */
+.d-flex.flex-wrap.gap-2 {
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 575px) {
+  .d-flex.flex-wrap.gap-2 .btn {
+    flex-grow: 1;
+  }
+}
+
+/* Badge de notification dans la sidebar */
+.list-group-item-action .badge.float-end {
+  position: relative;
+  float: none !important;
+  margin-left: 0.5rem;
+}
+
+/* Icônes dans la sidebar */
+.list-group-item-action i {
+  width: 1.25rem;
+  text-align: center;
+}
+
+@media (max-width: 991px) {
+  /* Sur mobile, cacher le texte et garder juste les icônes */
+  .list-group-item-action span:not(.badge) {
+    display: none;
+  }
+
+  .list-group-item-action i {
+    margin: 0 !important;
+  }
+}
+
+/* Modal responsive */
+@media (max-width: 575px) {
+  .modal-dialog {
+    margin: 0.5rem;
+  }
+
+  .modal-body {
+    padding: 1rem;
+  }
+
+  .modal-footer {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .modal-footer .btn {
+    width: 100%;
+  }
+}
+
+/* Messages admin - statut visuel */
+.table-warning {
+  background-color: rgba(255, 193, 7, 0.1) !important;
+  border-left: 3px solid #ffc107;
+}
+
+/* Améliorer l'affichage des emails sur mobile */
+@media (max-width: 767px) {
+  .table-responsive a[href^="mailto:"] {
+    word-break: break-all;
+    font-size: 0.75rem;
+  }
+}
+
+/* Card responsive */
+.card {
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 575px) {
+  .card-body {
+    padding: 1rem;
+  }
+}
+
+/* Pagination responsive */
+@media (max-width: 575px) {
+  .pagination {
+    font-size: 0.875rem;
+  }
+
+  .page-link {
+    padding: 0.375rem 0.75rem;
+  }
+}
+
+/* Amélioration du tableau - scroll horizontal doux */
+.table-responsive {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Badge flottant dans la sidebar */
+@media (min-width: 992px) {
+  .list-group-item-action .badge.float-end {
+    float: right !important;
+  }
+}
+
+/* Améliorer la lisibilité des titres sur mobile */
+@media (max-width: 575px) {
+  h1.h3 {
+    font-size: 1.5rem;
+  }
+
+  .text-muted {
+    font-size: 0.875rem;
+  }
+}
+
 /* Responsive : ajuster la grille sur mobile */
 @media (max-width: 575px) {
   .cover-selection-grid {

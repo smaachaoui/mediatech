@@ -7,22 +7,35 @@
 
   <a class="list-group-item list-group-item-action {{ current == 'overview' ? 'active' : '' }}"
      href="{{ path('admin_dashboard') }}">
-    Vue d'ensemble
+    <i class="bi bi-speedometer2 me-2"></i>
+    <span>Vue d'ensemble</span>
   </a>
 
   <a class="list-group-item list-group-item-action {{ current == 'collections' ? 'active' : '' }}"
      href="{{ path('admin_collections_index') }}">
-    Collections
+    <i class="bi bi-collection me-2"></i>
+    <span>Collections</span>
   </a>
 
   <a class="list-group-item list-group-item-action {{ current == 'comments' ? 'active' : '' }}"
      href="{{ path('admin_comments_index') }}">
-    Commentaires
+    <i class="bi bi-chat-dots me-2"></i>
+    <span>Commentaires</span>
   </a>
 
   <a class="list-group-item list-group-item-action {{ current == 'users' ? 'active' : '' }}"
      href="{{ path('admin_users_index') }}">
-    Utilisateurs
+    <i class="bi bi-people me-2"></i>
+    <span>Utilisateurs</span>
+  </a>
+
+  <a class="list-group-item list-group-item-action {{ current == 'messages' ? 'active' : '' }}"
+     href="{{ path('admin_messages_index') }}">
+    <i class="bi bi-envelope me-2"></i>
+    <span>Messages</span>
+    {% if unreadCount is defined and unreadCount > 0 %}
+      <span class="badge bg-danger float-end">{{ unreadCount }}</span>
+    {% endif %}
   </a>
 
 </nav>
