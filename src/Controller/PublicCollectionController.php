@@ -100,6 +100,7 @@ final class PublicCollectionController extends AbstractController
             'ratingCount' => (int) ($ratingStats['count'] ?? 0),
             'comments' => $comments,
             'userRating' => $userRating instanceof Rating ? $userRating : null,
+            'userRatingValue' => $userRating instanceof Rating ? $userRating->getValue() : null,
         ]);
     }
 }
