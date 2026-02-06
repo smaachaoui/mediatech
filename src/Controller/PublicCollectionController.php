@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller;
 
 use App\Entity\Collection;
+use App\Entity\Rating;
+use App\Entity\User;
 use App\Repository\CollectionRepository;
 use App\Repository\CommentRepository;
 use App\Repository\RatingRepository;
@@ -61,13 +65,13 @@ final class PublicCollectionController extends AbstractController
     ): Response {
         $collection = $collectionRepository->find($id);
 
-        if (!$collection) {
+        if (!$collection instanceof Collection) {
             throw $this->createNotFoundException('Collection introuvable.');
         }
 
         if (
             !$collection->isPublished()
-            || $collection->getVisibility() !== 'public'
+            || $collection->getVisibility() !== Collection::VISIBILITY_PUBLIC
             || $collection->getScope() !== Collection::SCOPE_USER
         ) {
             throw $this->createNotFoundException('Collection introuvable.');
@@ -75,28 +79,27 @@ final class PublicCollectionController extends AbstractController
 
         $ratingStats = $ratingRepository->getStatsForCollection($collection);
         $comments = $commentRepository->findLatestByCollection($collection, 20);
-        $userRatingValue = null;
 
-            $viewer = $this->getUser();
-            if ($viewer instanceof \App\Entity\User) {
-                $userRating = $ratingRepository->findOneBy([
-                    'collection' => $collection,
-                    'user' => $viewer,
-                ]);
+        /*
+         * Je recupere la note du visiteur si il est connecte.
+         * Je m'en sers pour masquer le formulaire de note dans le template.
+         */
+        $userRating = null;
 
-                if ($userRating) {
-                    $userRatingValue = $userRating->getValue();
-                }
-            }
-
+        $viewer = $this->getUser();
+        if ($viewer instanceof User) {
+            $userRating = $ratingRepository->findOneBy([
+                'collection' => $collection,
+                'user' => $viewer,
+            ]);
+        }
 
         return $this->render('collection/show.html.twig', [
             'collection' => $collection,
-            'ratingAvg' => $ratingStats['avg'],
-            'ratingCount' => $ratingStats['count'],
+            'ratingAvg' => (float) ($ratingStats['avg'] ?? 0),
+            'ratingCount' => (int) ($ratingStats['count'] ?? 0),
             'comments' => $comments,
-            'userRatingValue' => $userRatingValue,
-
+            'userRating' => $userRating instanceof Rating ? $userRating : null,
         ]);
     }
 }
