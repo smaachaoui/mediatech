@@ -20,3 +20,4 @@
 ###< symfony/phpunit-bridge ###
 /public/uploads/profiles/*
 !/public/uploads/profiles/.gitkeep
+dump_mediatech_complet.sql
