@@ -1,10 +1,49 @@
 <div class="tab-pane fade show active" id="tab-unlisted" role="tabpanel">
 
   {% if (unlistedBookLinks|default([]) is empty) and (unlistedMovieLinks|default([]) is empty) %}
-    <div class="alert alert-success mb-0">Vous n'avez encore rien dans “Non répertorié”</div>
+    <div class="alert alert-success mb-0">Vous n'avez encore rien dans "Non répertorié"</div>
   {% else %}
     <div class="alert alert-info small">
-      Pour ranger un titre : choisis une collection puis clique sur “Déplacer”.
+      Pour ranger un ou plusieurs titres : coche les cases, choisis une collection puis clique sur "Déplacer la sélection".
+    </div>
+
+    {# FORMULAIRE GLOBAL POUR DÉPLACEMENT MULTIPLE #}
+    <div class="card border rounded-3 mb-3 bg-light">
+      <div class="card-body">
+        <form id="bulkMoveForm" method="post" action="{{ path('app_profile_move_multiple_items') }}">
+          <input type="hidden" name="_token" value="{{ csrf_token('move_multiple_items') }}">
+          
+          <div class="row g-2 align-items-center">
+            <div class="col-12 col-md-auto">
+              <button type="button" id="selectAllBtn" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-check-square"></i> Tout sélectionner
+              </button>
+              <button type="button" id="deselectAllBtn" class="btn btn-sm btn-outline-secondary" style="display:none;">
+                <i class="bi bi-square"></i> Tout désélectionner
+              </button>
+            </div>
+            
+            <div class="col-12 col-md">
+              <div class="d-flex gap-2 align-items-center">
+                <span class="text-nowrap small">
+                  <strong id="selectedCount">0</strong> sélectionné(s)
+                </span>
+                
+                <select class="form-select form-select-sm" name="collectionId" id="bulkCollectionSelect" required>
+                  <option value="" selected disabled>Déplacer vers…</option>
+                  {% for c in collections|default([]) %}
+                    <option value="{{ c.id }}">{{ c.name }}</option>
+                  {% endfor %}
+                </select>
+                
+                <button type="submit" class="btn btn-primary btn-sm text-nowrap" id="bulkMoveBtn" disabled>
+                  <i class="bi bi-arrow-right-circle"></i> Déplacer la sélection
+                </button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
     </div>
 
     <div class="list-group">
@@ -12,40 +51,60 @@
       {# LIVRES #}
       {% for link in unlistedBookLinks|default([]) %}
         <div class="list-group-item">
-          <div class="d-flex flex-column flex-md-row gap-2 align-items-md-center justify-content-between">
-            <div>
-              <div class="fw-semibold">{{ link.book.title }}</div>
-              <div class="text-muted small">Livre · ajouté le {{ link.addedAt|date('d/m/Y') }}</div>
+          <div class="d-flex gap-3 align-items-start">
+            
+            {# CHECKBOX DE SÉLECTION #}
+            <div class="form-check mt-1">
+              <input 
+                class="form-check-input item-checkbox" 
+                type="checkbox" 
+                name="items[]" 
+                value="book:{{ link.id }}" 
+                id="item-book-{{ link.id }}"
+                form="bulkMoveForm"
+              >
             </div>
 
-            <div class="d-flex flex-column flex-md-row gap-2">
+            <div class="flex-grow-1">
+              <div class="d-flex flex-column flex-md-row gap-2 align-items-md-center justify-content-between">
+                <div>
+                  <label for="item-book-{{ link.id }}" class="fw-semibold mb-0 cursor-pointer">
+                    {{ link.book.title }}
+                  </label>
+                  <div class="text-muted small">Livre · ajouté le {{ link.addedAt|date('d/m/Y') }}</div>
+                </div>
 
-              <form method="post" action="{{ path('app_profile_move_item') }}" class="d-flex gap-2">
-                <input type="hidden" name="_token" value="{{ csrf_token('move_item_' ~ link.id) }}">
-                <input type="hidden" name="type" value="book">
-                <input type="hidden" name="linkId" value="{{ link.id }}">
+                <div class="d-flex flex-column flex-md-row gap-2">
 
-                <select class="form-select form-select-sm" name="collectionId" required>
-                  <option value="" selected disabled>Déplacer vers…</option>
-                  {% for c in collections|default([]) %}
-                    <option value="{{ c.id }}">{{ c.name }}</option>
-                  {% endfor %}
-                </select>
+                  {# FORMULAIRE INDIVIDUEL (conservé pour compatibilité) #}
+                  <form method="post" action="{{ path('app_profile_move_item') }}" class="d-flex gap-2">
+                    <input type="hidden" name="_token" value="{{ csrf_token('move_item_' ~ link.id) }}">
+                    <input type="hidden" name="type" value="book">
+                    <input type="hidden" name="linkId" value="{{ link.id }}">
 
-                <button class="btn btn-primary btn-sm" type="submit">Déplacer</button>
-              </form>
+                    <select class="form-select form-select-sm" name="collectionId" required>
+                      <option value="" selected disabled>Déplacer vers…</option>
+                      {% for c in collections|default([]) %}
+                        <option value="{{ c.id }}">{{ c.name }}</option>
+                      {% endfor %}
+                    </select>
 
-              <form method="post" action="{{ path('app_profile_remove_item') }}">
-                <input type="hidden" name="_token" value="{{ csrf_token('remove_item_' ~ link.id) }}">
-                <input type="hidden" name="type" value="book">
-                <input type="hidden" name="linkId" value="{{ link.id }}">
-                <input type="hidden" name="origin" value="unlisted">
-                <button class="btn btn-outline-danger btn-sm" type="submit"
-                        onclick="return confirm('Retirer cet élément de “Non répertorié” ?');">
-                  Retirer
-                </button>
-              </form>
+                    <button class="btn btn-primary btn-sm" type="submit">Déplacer</button>
+                  </form>
 
+                  <form method="post" action="{{ path('app_profile_remove_item') }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('remove_item_' ~ link.id) }}">
+                    <input type="hidden" name="type" value="book">
+                    <input type="hidden" name="linkId" value="{{ link.id }}">
+                    <input type="hidden" name="origin" value="unlisted">
+                    <button class="btn btn-outline-danger btn-sm" type="submit"
+                            onclick="return confirm('Retirer cet élément de "Non répertorié" ?');">
+                      Retirer
+                    </button>
+                  </form>
+
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -54,40 +113,60 @@
       {# FILMS #}
       {% for link in unlistedMovieLinks|default([]) %}
         <div class="list-group-item">
-          <div class="d-flex flex-column flex-md-row gap-2 align-items-md-center justify-content-between">
-            <div>
-              <div class="fw-semibold">{{ link.movie.title }}</div>
-              <div class="text-muted small">Film · ajouté le {{ link.addedAt|date('d/m/Y') }}</div>
+          <div class="d-flex gap-3 align-items-start">
+            
+            {# CHECKBOX DE SÉLECTION #}
+            <div class="form-check mt-1">
+              <input 
+                class="form-check-input item-checkbox" 
+                type="checkbox" 
+                name="items[]" 
+                value="movie:{{ link.id }}" 
+                id="item-movie-{{ link.id }}"
+                form="bulkMoveForm"
+              >
             </div>
 
-            <div class="d-flex flex-column flex-md-row gap-2">
+            <div class="flex-grow-1">
+              <div class="d-flex flex-column flex-md-row gap-2 align-items-md-center justify-content-between">
+                <div>
+                  <label for="item-movie-{{ link.id }}" class="fw-semibold mb-0 cursor-pointer">
+                    {{ link.movie.title }}
+                  </label>
+                  <div class="text-muted small">Film · ajouté le {{ link.addedAt|date('d/m/Y') }}</div>
+                </div>
 
-              <form method="post" action="{{ path('app_profile_move_item') }}" class="d-flex gap-2">
-                <input type="hidden" name="_token" value="{{ csrf_token('move_item_' ~ link.id) }}">
-                <input type="hidden" name="type" value="movie">
-                <input type="hidden" name="linkId" value="{{ link.id }}">
+                <div class="d-flex flex-column flex-md-row gap-2">
 
-                <select class="form-select form-select-sm" name="collectionId" required>
-                  <option value="" selected disabled>Déplacer vers…</option>
-                  {% for c in collections|default([]) %}
-                    <option value="{{ c.id }}">{{ c.name }}</option>
-                  {% endfor %}
-                </select>
+                  {# FORMULAIRE INDIVIDUEL (conservé pour compatibilité) #}
+                  <form method="post" action="{{ path('app_profile_move_item') }}" class="d-flex gap-2">
+                    <input type="hidden" name="_token" value="{{ csrf_token('move_item_' ~ link.id) }}">
+                    <input type="hidden" name="type" value="movie">
+                    <input type="hidden" name="linkId" value="{{ link.id }}">
 
-                <button class="btn btn-primary btn-sm" type="submit">Déplacer</button>
-              </form>
+                    <select class="form-select form-select-sm" name="collectionId" required>
+                      <option value="" selected disabled>Déplacer vers…</option>
+                      {% for c in collections|default([]) %}
+                        <option value="{{ c.id }}">{{ c.name }}</option>
+                      {% endfor %}
+                    </select>
 
-              <form method="post" action="{{ path('app_profile_remove_item') }}">
-                <input type="hidden" name="_token" value="{{ csrf_token('remove_item_' ~ link.id) }}">
-                <input type="hidden" name="type" value="movie">
-                <input type="hidden" name="linkId" value="{{ link.id }}">
-                <input type="hidden" name="origin" value="unlisted">
-                <button class="btn btn-outline-danger btn-sm" type="submit"
-                        onclick="return confirm('Retirer cet élément de “Non répertorié” ?');">
-                  Retirer
-                </button>
-              </form>
+                    <button class="btn btn-primary btn-sm" type="submit">Déplacer</button>
+                  </form>
 
+                  <form method="post" action="{{ path('app_profile_remove_item') }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('remove_item_' ~ link.id) }}">
+                    <input type="hidden" name="type" value="movie">
+                    <input type="hidden" name="linkId" value="{{ link.id }}">
+                    <input type="hidden" name="origin" value="unlisted">
+                    <button class="btn btn-outline-danger btn-sm" type="submit"
+                            onclick="return confirm('Retirer cet élément de "Non répertorié" ?');">
+                      Retirer
+                    </button>
+                  </form>
+
+                </div>
+              </div>
             </div>
           </div>
         </div>

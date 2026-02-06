@@ -52,6 +52,82 @@ final class ProfileCollectionController extends AbstractController
     }
 
     /**
+     * Je deplace plusieurs elements non repertories vers une collection.
+     */
+    #[Route('/move-multiple', name: 'app_profile_move_multiple_items', methods: ['POST'])]
+    public function moveMultipleItems(Request $request): RedirectResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        $collectionId = (int) $request->request->get('collectionId');
+        $items = $request->request->all('items'); // Récupère un tableau d'items
+
+        if ($collectionId <= 0) {
+            $this->addFlash('danger', 'Veuillez sélectionner une collection de destination.');
+            return $this->redirectToRoute('app_profile', ['section' => 'collections']);
+        }
+
+        if (empty($items) || !is_array($items)) {
+            $this->addFlash('warning', 'Aucun élément sélectionné.');
+            return $this->redirectToRoute('app_profile', ['section' => 'collections']);
+        }
+
+        if (!$this->isCsrfTokenValid('move_multiple_items', (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException();
+        }
+
+        /** @var User $user */
+        $user = $this->getUser();
+
+        $movedCount = 0;
+        $errors = 0;
+
+        // Parcourir chaque item sélectionné et le déplacer
+        foreach ($items as $item) {
+            // Format attendu: "type:linkId" (ex: "movie:123" ou "book:456")
+            $parts = explode(':', $item);
+            if (count($parts) !== 2) {
+                continue;
+            }
+
+            $type = $parts[0];
+            $linkId = (int) $parts[1];
+
+            if ($linkId <= 0 || !in_array($type, ['book', 'movie'], true)) {
+                continue;
+            }
+
+            try {
+                $this->profileService->moveUnlistedItemToCollection($user, $type, $linkId, $collectionId);
+                $movedCount++;
+            } catch (\Throwable) {
+                $errors++;
+            }
+        }
+
+        // Messages de confirmation
+        if ($movedCount > 0) {
+            $this->addFlash(
+                'success',
+                sprintf('%d élément%s déplacé%s avec succès.', $movedCount, $movedCount > 1 ? 's' : '', $movedCount > 1 ? 's' : '')
+            );
+        }
+
+        if ($errors > 0) {
+            $this->addFlash(
+                'warning',
+                sprintf('%d élément%s n\'a pas pu être déplacé.', $errors, $errors > 1 ? 's n\'ont' : '')
+            );
+        }
+
+        if ($movedCount === 0 && $errors === 0) {
+            $this->addFlash('warning', 'Aucun élément valide sélectionné.');
+        }
+
+        return $this->redirectToRoute('app_profile', ['section' => 'collections']);
+    }
+
+    /**
      * Je cree une nouvelle collection.
      */
     #[Route('/create', name: 'app_profile_create_collection', methods: ['POST'])]
