@@ -38,29 +38,55 @@
 
     {% if coverChoices is not empty %}
       <div class="mb-3">
-        <label class="form-label">Couverture</label>
+        <label class="form-label fw-semibold">Image de couverture</label>
+        <div class="small text-muted mb-3">Choisissez une image parmi les médias de votre collection</div>
 
-        <div class="d-flex flex-wrap gap-2">
-          <label class="border rounded p-2" style="cursor:pointer;">
+        <div class="cover-selection-grid">
+          
+          {# Option : Ne pas modifier (uniquement en édition) #}
+          <label class="cover-option">
             <input type="radio" name="coverImage" value="__keep__" checked>
-            <span class="small text-muted">Ne pas modifier</span>
+            <div class="cover-card">
+              <div class="cover-placeholder">
+                <i class="bi bi-arrow-clockwise fs-1 text-muted"></i>
+              </div>
+              <div class="cover-label">
+                <i class="bi bi-check-circle text-primary"></i>
+                Ne pas modifier
+              </div>
+            </div>
           </label>
 
-          <label class="border rounded p-2" style="cursor:pointer;">
+          {# Option : Aucune couverture #}
+          <label class="cover-option">
             <input type="radio" name="coverImage" value="__none__" {{ c.coverImage is empty ? 'checked' : '' }}>
-            <span class="small text-muted">Supprimer</span>
+            <div class="cover-card">
+              <div class="cover-placeholder">
+                <i class="bi bi-image fs-1 text-muted"></i>
+              </div>
+              <div class="cover-label">
+                <i class="bi bi-x-circle text-muted"></i>
+                Laisser vide
+              </div>
+            </div>
           </label>
 
+          {# Images disponibles #}
           {% for url in coverChoices %}
-            <label class="border rounded p-2" style="cursor:pointer;">
+            <label class="cover-option">
               <input type="radio" name="coverImage" value="{{ url }}" {{ c.coverImage == url ? 'checked' : '' }}>
-              <img src="{{ url }}" alt="" style="height:70px;width:auto;display:block;">
+              <div class="cover-card">
+                <div class="cover-image-wrapper">
+                  <img src="{{ url }}" alt="Couverture">
+                </div>
+                <div class="cover-label">
+                  <i class="bi bi-check-circle text-success"></i>
+                  Sélectionner
+                </div>
+              </div>
             </label>
           {% endfor %}
-        </div>
 
-        <div class="form-text">
-          Je ne propose que les couvertures issues des médias déjà ajoutés.
         </div>
       </div>
     {% endif %}
