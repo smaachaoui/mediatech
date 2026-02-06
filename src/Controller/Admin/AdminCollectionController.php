@@ -133,6 +133,47 @@ final class AdminCollectionController extends AbstractController
         ]);
     }
 
+    /**
+     * Je mets à jour une collection via la modal (admin).
+     */
+    #[Route('/{id}/update', name: 'admin_collections_update', requirements: ['id' => '\d+'], methods: ['POST'])]
+    public function update(
+        int $id,
+        Request $request,
+        CollectionRepository $collectionRepository,
+        EntityManagerInterface $em
+    ): Response {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        $collection = $collectionRepository->find($id);
+        if (!$collection) {
+            throw $this->createNotFoundException();
+        }
+
+        if (!$this->isCsrfTokenValid('admin_edit_collection_' . $id, (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $name = (string) $request->request->get('name', '');
+        $genre = $request->request->get('genre');
+        $description = $request->request->get('description');
+
+        if (trim($name) === '') {
+            $this->addFlash('danger', 'Le nom de la collection est obligatoire.');
+            return $this->redirectToRoute('admin_collections_index');
+        }
+
+        $collection->setName($name);
+        $collection->setGenre(is_string($genre) && trim($genre) !== '' ? $genre : null);
+        $collection->setDescription(is_string($description) && trim($description) !== '' ? $description : null);
+
+        $em->flush();
+
+        $this->addFlash('success', 'Collection modifiée avec succès.');
+
+        return $this->redirectToRoute('admin_collections_index');
+    }
+
     #[Route('/{id}/delete', name: 'admin_collections_delete', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function delete(
         int $id,

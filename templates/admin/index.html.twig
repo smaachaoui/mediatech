@@ -3,7 +3,10 @@
 {% block title %}Administration{% endblock %}
 
 {% block dashboard_sidebar %}
-  {% include 'admin/partials/_sidebar.html.twig' with { section: section } %}
+  {% include 'admin/partials/_sidebar.html.twig' with { 
+    section: section,
+    unreadCount: unreadCount ?? 0
+  } %}
 {% endblock %}
 
 {% block dashboard_content %}
@@ -17,6 +20,8 @@
     {% include 'admin/partials/_collections.html.twig' %}
   {% elseif current == 'users' %}
     {% include 'admin/partials/_users.html.twig' %}
+  {% elseif current == 'messages' %}
+    {% include 'admin/partials/_messages.html.twig' %}
   {% else %}
     {% include 'admin/partials/_overview.html.twig' %}
   {% endif %}
