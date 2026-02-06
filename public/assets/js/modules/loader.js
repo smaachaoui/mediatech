@@ -1,138 +1,168 @@
 /**
- * Je gère le loader global de l'application.
+ * LOADER GLOBAL - Gestion automatique du loader de chargement
+ * Module ES6
  */
 
-const DEFAULT_MESSAGE = 'Chargement…';
-
-function getLoaderEl() {
-  return document.getElementById('global-loader');
-}
-
-function setMessage(el, message) {
-  const text = el.querySelector('.global-loader__text');
-  if (text) {
-    text.textContent = message || DEFAULT_MESSAGE;
+export function initLoader() {
+  // Référence au loader
+  const loader = document.getElementById('globalLoader');
+  
+  if (!loader) {
+    console.warn('Le loader global (#globalLoader) est introuvable dans le DOM.');
+    return;
   }
-}
 
-export function showLoader(message) {
-  const el = getLoaderEl();
-  if (!el) return;
+  // Délai minimum d'affichage du loader (pour éviter les flashs)
+  const MIN_DISPLAY_TIME = 800;
+  let loaderStartTime = null;
 
-  setMessage(el, message);
-  el.classList.add('is-active');
-  el.setAttribute('aria-hidden', 'false');
-}
+  /**
+   * Affiche le loader
+   */
+  function showLoader() {
+    loaderStartTime = Date.now();
+    loader.classList.add('is-active');
+    loader.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
 
-export function hideLoader() {
-  const el = getLoaderEl();
-  if (!el) return;
+  /**
+   * Masque le loader (avec délai minimum)
+   */
+  function hideLoader() {
+    const elapsed = Date.now() - (loaderStartTime || 0);
+    const remainingTime = Math.max(0, MIN_DISPLAY_TIME - elapsed);
 
-  el.classList.remove('is-active');
-  el.setAttribute('aria-hidden', 'true');
-}
+    setTimeout(() => {
+      loader.classList.remove('is-active');
+      loader.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    }, remainingTime);
+  }
 
-function isModifiedClick(event) {
-  return event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0;
-}
+  /**
+   * Vérifie si un lien doit déclencher le loader
+   */
+  function shouldShowLoaderForLink(link) {
+    const href = link.getAttribute('href');
+    
+    if (!href || href === '#' || href.startsWith('#')) {
+      return false;
+    }
 
-function isExternalLink(a) {
-  try {
-    const url = new URL(a.href, window.location.href);
-    return url.origin !== window.location.origin;
-  } catch (e) {
+    if (link.hasAttribute('data-no-loader')) {
+      return false;
+    }
+
+    if (link.getAttribute('target') === '_blank') {
+      return false;
+    }
+
+    if (link.hasAttribute('download')) {
+      return false;
+    }
+
+    // Vérifier si c'est un lien externe
+    try {
+      const linkUrl = new URL(href, window.location.origin);
+      if (linkUrl.origin !== window.location.origin) {
+        return false;
+      }
+    } catch (e) {
+      return false;
+    }
+
     return true;
   }
+
+  /**
+   * Vérifie si un formulaire doit déclencher le loader
+   */
+  function shouldShowLoaderForForm(form) {
+    if (form.hasAttribute('data-no-loader')) {
+      return false;
+    }
+
+    if (form.getAttribute('target') === '_blank') {
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Gestion des clics sur les liens
+   */
+  document.addEventListener('click', function(e) {
+    const link = e.target.closest('a');
+    
+    if (link && shouldShowLoaderForLink(link)) {
+      showLoader();
+    }
+  }, true);
+
+  /**
+   * Gestion de la soumission des formulaires
+   */
+  document.addEventListener('submit', function(e) {
+    const form = e.target;
+    
+    if (form && shouldShowLoaderForForm(form)) {
+      showLoader();
+    }
+  }, true);
+
+  /**
+   * Masquer le loader quand la page est complètement chargée
+   */
+  window.addEventListener('load', function() {
+    hideLoader();
+  });
+
+  /**
+   * Masquer le loader si la page devient visible
+   */
+  window.addEventListener('pageshow', function(e) {
+    if (e.persisted) {
+      hideLoader();
+    }
+  });
+
+  /**
+   * Afficher le loader lors de la navigation avec popstate
+   */
+  window.addEventListener('popstate', function() {
+    showLoader();
+  });
+
+  /**
+   * Masquer le loader si on quitte la page et qu'on revient
+   */
+  document.addEventListener('visibilitychange', function() {
+    if (!document.hidden) {
+      setTimeout(hideLoader, 100);
+    }
+  });
+
+  /**
+   * Sécurité : masquer le loader après 30 secondes max
+   */
+  let safetyTimeout;
+  const originalShowLoader = showLoader;
+  showLoader = function() {
+    originalShowLoader();
+    clearTimeout(safetyTimeout);
+    safetyTimeout = setTimeout(() => {
+      console.warn('Le loader est affiché depuis plus de 30 secondes, masquage forcé.');
+      hideLoader();
+    }, 30000);
+  };
+
+  // Masquer le loader au chargement initial
+  hideLoader();
+
+  console.log('Loader global initialisé avec succès');
 }
 
-function shouldIgnoreLink(a) {
-  const href = a.getAttribute('href') || '';
-
-  if (!href || href === '#') return true;
-  if (href.startsWith('#')) return true;
-  if (href.startsWith('javascript:')) return true;
-  if (href.startsWith('mailto:') || href.startsWith('tel:')) return true;
-  if ((a.getAttribute('target') || '').toLowerCase() === '_blank') return true;
-  if (a.hasAttribute('download')) return true;
-  if (a.hasAttribute('data-bs-toggle')) return true;
-  if (a.getAttribute('data-no-loader') === '1') return true;
-  if (a.classList.contains('no-loader')) return true;
-  if (isExternalLink(a)) return true;
-
-  return false;
-}
-
-function getFormMessage(form) {
-  const action = (form.getAttribute('action') || '').toLowerCase();
-  const formId = (form.getAttribute('id') || '').toLowerCase();
-
-  if (action.includes('login') || formId.includes('login')) return 'Connexion en cours…';
-  if (action.includes('register') || formId.includes('register')) return 'Création du compte…';
-  if (action.includes('reset-password') || action.includes('reset_password')) return 'Traitement en cours…';
-  if (action.includes('contact')) return 'Envoi du message…';
-  if (action.includes('profile')) return 'Mise à jour du profil…';
-  if (action.includes('collection')) return 'Mise à jour de la collection…';
-  if (action.includes('comment')) return 'Publication du commentaire…';
-  if (action.includes('search') || action.includes('catalog')) return 'Recherche en cours…';
-  if (action.includes('media') && action.includes('add')) return 'Ajout en cours…';
-  if (action.includes('wishlist')) return 'Mise à jour de la liste…';
-  if (action.includes('admin')) return 'Traitement administrateur…';
-
-  return 'Traitement en cours…';
-}
-
-function getLinkMessage(a) {
-  const href = (a.getAttribute('href') || '').toLowerCase();
-
-  if (href.includes('login')) return 'Accès à la connexion…';
-  if (href.includes('register')) return 'Accès à l\'inscription…';
-  if (href.includes('profile')) return 'Chargement du profil…';
-  if (href.includes('admin')) return 'Accès à l\'administration…';
-  if (href.includes('catalog')) return 'Chargement du catalogue…';
-  if (href.includes('collection')) return 'Chargement de la collection…';
-  if (href.includes('book') || href.includes('movie')) return 'Chargement du média…';
-
-  return DEFAULT_MESSAGE;
-}
-
-export function initGlobalLoader() {
-  window.addEventListener('pageshow', () => hideLoader());
-
-  document.addEventListener(
-    'submit',
-    (event) => {
-      const form = event.target;
-      if (!(form instanceof HTMLFormElement)) return;
-
-      if (form.getAttribute('data-no-loader') === '1' || form.classList.contains('no-loader')) return;
-      if (!form.checkValidity()) return;
-
-      const submitBtn = form.querySelector('[type="submit"]');
-      if (submitBtn instanceof HTMLButtonElement || submitBtn instanceof HTMLInputElement) {
-        submitBtn.disabled = true;
-      }
-
-      showLoader(getFormMessage(form));
-    },
-    true
-  );
-
-  document.addEventListener(
-    'click',
-    (event) => {
-      if (isModifiedClick(event)) return;
-
-      const target = event.target;
-      if (!(target instanceof Element)) return;
-
-      const a = target.closest('a');
-      if (!a) return;
-      if (shouldIgnoreLink(a)) return;
-
-      showLoader(getLinkMessage(a));
-    },
-    true
-  );
-
-  document.addEventListener('shown.bs.modal', () => hideLoader());
-}
+// Export par défaut
+export default initLoader;
