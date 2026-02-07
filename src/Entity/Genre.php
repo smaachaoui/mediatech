@@ -21,13 +21,6 @@ class Genre
     #[ORM\Column(length: 10)]
     private ?string $type = null;
 
-    #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'favoriteGenres')]
-    private Collection $usersWhoFavorited;
-
-    public function __construct()
-    {
-        $this->usersWhoFavorited = new ArrayCollection();
-    }
 
     public function getId(): ?int
     {
@@ -58,30 +51,5 @@ class Genre
         return $this;
     }
 
-    /**
-     * @return Collection<int, User>
-     */
-    public function getUsersWhoFavorited(): Collection
-    {
-        return $this->usersWhoFavorited;
-    }
-
-    public function addUsersWhoFavorited(User $usersWhoFavorited): static
-    {
-        if (!$this->usersWhoFavorited->contains($usersWhoFavorited)) {
-            $this->usersWhoFavorited->add($usersWhoFavorited);
-            $usersWhoFavorited->addFavoriteGenre($this);
-        }
-
-        return $this;
-    }
-
-    public function removeUsersWhoFavorited(User $usersWhoFavorited): static
-    {
-        if ($this->usersWhoFavorited->removeElement($usersWhoFavorited)) {
-            $usersWhoFavorited->removeFavoriteGenre($this);
-        }
-
-        return $this;
-    }
+    
 }
