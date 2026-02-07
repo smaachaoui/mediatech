@@ -13,19 +13,78 @@
              placeholder="Ex : Mes films préférés">
     </div>
 
-    <div class="mb-0">
-      <label class="form-label">Description</label>
-      <textarea class="form-control" name="description" rows="4" maxlength="2000"
-                placeholder="Décris rapidement cette collection (optionnel)"></textarea>
-    </div>
-
     <div class="mb-3">
       <label class="form-label">Type de collection</label>
-      <select class="form-select" name="mediaType" required>
+      <select class="form-select" name="mediaType" id="createCollectionMediaType" required>
         <option value="" selected disabled>Choisir…</option>
         <option value="book">Livres</option>
         <option value="movie">Films</option>
       </select>
     </div>
+
+    {# Champ Genre dynamique #}
+    <div class="mb-3">
+      <label class="form-label">Genre</label>
+      <select class="form-select" name="genre" id="createCollectionGenre" disabled>
+        <option value="">Sélectionnez d'abord le type</option>
+      </select>
+      <small class="form-text text-muted">Choisissez d'abord le type de collection</small>
+    </div>
+
+    <div class="mb-0">
+      <label class="form-label">Description</label>
+      <textarea class="form-control" name="description" rows="4" maxlength="2000"
+                placeholder="Décris rapidement cette collection (optionnel)"></textarea>
+    </div>
+  {% endblock %}
+
+  {% block footer_extra %}
+    <script>
+      /*
+       * Je charge dynamiquement les genres selon le type de media selectionne.
+       */
+      (function() {
+        const mediaTypeSelect = document.getElementById('createCollectionMediaType');
+        const genreSelect = document.getElementById('createCollectionGenre');
+
+        /*
+         * J'ai recupere les genres depuis le controller.
+         * Ils sont injectes dans le template sous forme de variables Twig.
+         */
+        const bookGenres = {{ bookGenres|default([])|json_encode|raw }};
+        const movieGenres = {{ movieGenres|default([])|json_encode|raw }};
+
+        if (!mediaTypeSelect || !genreSelect) return;
+
+        mediaTypeSelect.addEventListener('change', function() {
+          const mediaType = this.value;
+          
+          genreSelect.innerHTML = '<option value="">Sélectionnez un genre (optionnel)</option>';
+          genreSelect.disabled = false;
+
+          let genres = [];
+          if (mediaType === 'book') {
+            genres = bookGenres;
+          } else if (mediaType === 'movie') {
+            genres = movieGenres;
+          }
+
+          /*
+           * Je remplis le select avec les genres disponibles.
+           */
+          genres.forEach(function(genre) {
+            const option = document.createElement('option');
+            option.value = genre.name;
+            option.textContent = genre.name;
+            genreSelect.appendChild(option);
+          });
+
+          if (genres.length === 0) {
+            genreSelect.innerHTML = '<option value="">Aucun genre disponible</option>';
+            genreSelect.disabled = true;
+          }
+        });
+      })();
+    </script>
   {% endblock %}
 {% endembed %}

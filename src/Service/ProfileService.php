@@ -11,6 +11,7 @@ use App\Repository\CollectionBookRepository;
 use App\Repository\CollectionMovieRepository;
 use App\Repository\CollectionRepository;
 use App\Repository\CommentRepository;
+use App\Repository\GenreRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
@@ -24,6 +25,7 @@ final class ProfileService
         private readonly CollectionMovieRepository $collectionMovieRepository,
         private readonly EntityManagerInterface $em,
         private readonly UserRepository $userRepository,
+        private readonly GenreRepository $genreRepository,
 
     ) {}
 
@@ -53,6 +55,25 @@ final class ProfileService
 
         $collections = $this->collectionRepository->findForUserExcluding($user, $unlistedCollection->getId());
 
+        /*
+        * Je recupere tous les genres disponibles pour alimenter
+        * les selects de genre dans les modales de creation/edition.
+        */
+        $bookGenresEntities = $this->genreRepository->findBookGenres();
+        $movieGenresEntities = $this->genreRepository->findMovieGenres();
+
+        $bookGenres = array_map(fn($genre) => [
+            'id' => $genre->getId(),
+            'name' => $genre->getName(),
+            'type' => $genre->getType(),
+        ], $bookGenresEntities);
+
+        $movieGenres = array_map(fn($genre) => [
+            'id' => $genre->getId(),
+            'name' => $genre->getName(),
+            'type' => $genre->getType(),
+        ], $movieGenresEntities);
+
         return [
             'collections' => $collections,
 
@@ -63,6 +84,9 @@ final class ProfileService
             'wishlistCollection' => $wishlistCollection,
             'wishlistBookLinks' => $wishlistBookLinks,
             'wishlistMovieLinks' => $wishlistMovieLinks,
+
+            'bookGenres' => $bookGenres,      // ← NOUVEAU
+            'movieGenres' => $movieGenres,    // ← NOUVEAU
         ];
     }
 

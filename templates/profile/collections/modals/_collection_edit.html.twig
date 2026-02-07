@@ -91,9 +91,31 @@
       </div>
     {% endif %}
 
+    {# Champ Genre - Liste deroulante #}
     <div class="mb-3">
       <label class="form-label">Genre</label>
-      <input type="text" class="form-control" name="genre" value="{{ c.genre ?? '' }}" placeholder="Fantasy, Action, Romance...">
+      <select class="form-select" name="genre" id="editCollectionGenre{{ c.id }}">
+        <option value="">Aucun genre spécifique</option>
+        
+        {# 
+          Je charge les genres selon le type de collection.
+          Les variables bookGenres et movieGenres sont passees depuis le controller.
+        #}
+        {% if c.mediaType == 'book' and bookGenres is defined %}
+          {% for genre in bookGenres %}
+            <option value="{{ genre.name }}" {{ c.genre == genre.name ? 'selected' : '' }}>
+              {{ genre.name }}
+            </option>
+          {% endfor %}
+        {% elseif c.mediaType == 'movie' and movieGenres is defined %}
+          {% for genre in movieGenres %}
+            <option value="{{ genre.name }}" {{ c.genre == genre.name ? 'selected' : '' }}>
+              {{ genre.name }}
+            </option>
+          {% endfor %}
+        {% endif %}
+      </select>
+      <small class="form-text text-muted">Le genre aide à classer et filtrer votre collection</small>
     </div>
 
     <div class="mb-0">

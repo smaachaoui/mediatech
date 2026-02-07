@@ -55,6 +55,7 @@
             <button type="submit" class="btn {{ submit_class|default('btn-primary') }}">
               {{ submit_label|default('Valider') }}
             </button>
+            {% block footer %}{% endblock %}
           </div>
         </form>
 
@@ -87,3 +88,6 @@
     </div>
   </div>
 </div>
+
+{# Bloc pour scripts JavaScript additionnels (à placer après la modal) #}
+{% block footer_extra %}{% endblock %}
