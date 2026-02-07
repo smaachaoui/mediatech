@@ -58,8 +58,9 @@ final class GoogleBooksService
             $result = ['items' => [], 'total' => 0];
         }
 
+        $isEmpty = empty($result['items']);
         $item->set($result);
-        $item->expiresAfter(self::TTL_SEARCH);
+        $item->expiresAfter($isEmpty ? 120 : self::TTL_SEARCH);
         $this->cache->save($item);
 
         return $result;
@@ -111,9 +112,11 @@ final class GoogleBooksService
                 'startIndex' => $startIndex,
             ]);
 
+            $isEmpty = empty($fallback['items']);
             $item->set($fallback);
-            $item->expiresAfter(self::TTL_NEWEST);
+            $item->expiresAfter($isEmpty ? 300 : self::TTL_NEWEST);
             $this->cache->save($item);
+
 
             return $fallback;
         } catch (TransportExceptionInterface|\RuntimeException) {
