@@ -3,329 +3,366 @@
 {% block title %}Catalogue | MediaTech{% endblock %}
 
 {% block body %}
+  <div class="d-flex flex-column gap-3">
+    <section class="mt-card p-3">
+      <h1 class="h5 mb-3 text-center mt-section-title">Vous cherchez un livre ou un film ?</h1>
 
-<div class="d-flex flex-column gap-3">
+      <form method="get" action="{{ path('app_catalog') }}" class="row g-2 align-items-center">
+        <div class="col-12 col-md">
+          <div class="input-group">
+            <span class="input-group-text" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
+              </svg>
+            </span>
 
-  <section class="mt-card p-3">
-    <h1 class="h5 mb-3 text-center mt-section-title">Vous cherchez un livre ou un film ?</h1>
-
-    <form method="get" action="{{ path('app_catalog') }}" class="row g-2 align-items-center">
-      <div class="col-12 col-md">
-        <div class="input-group">
-          <span class="input-group-text" aria-hidden="true">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-              <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
-            </svg>
-          </span>
-          <input
-            type="search"
-            name="q"
-            value="{{ q|default('') }}"
-            class="form-control"
-            placeholder="Titre, auteur, réalisateur..."
-          >
+            <input
+              type="search"
+              name="q"
+              value="{{ q|default('') }}"
+              class="form-control"
+              placeholder="Titre, auteur, réalisateur..."
+            >
+          </div>
         </div>
-      </div>
 
-      <input type="hidden" name="type" value="{{ type|default('all') }}">
+        <input type="hidden" name="type" value="{{ type|default('all') }}">
 
-      <div class="col-12 col-md-auto">
-        <button class="btn btn-primary w-100" type="submit">Rechercher</button>
-      </div>
-    </form>
-  </section>
+        <div class="col-12 col-md-auto">
+          <button class="btn btn-primary w-100" type="submit">Rechercher</button>
+        </div>
+      </form>
+    </section>
 
     <section class="mt-4 mb-5">
       <div class="card shadow-sm border-0">
-          <div class="card-body">
-              <h2 class="h5 mb-4 text-center">Comment ça marche</h2>
+        <div class="card-body">
+          <h2 class="h5 mb-4 text-center">Comment ça marche</h2>
 
-              <div class="row text-center">
-                  <div class="col-md-4 mb-3">
-                      <div class="mb-2 fs-2 text-primary">
-                          <i class="bi bi-search"></i>
-                      </div>
-                      <h3 class="h6">Rechercher une œuvre</h3>
-                      <p class="text-muted mb-0">
-                          Je recherche un livre ou un film à partir des bases de données partenaires.
-                      </p>
-                  </div>
-
-                  <div class="col-md-4 mb-3">
-                      <div class="mb-2 fs-2 text-success">
-                          <i class="bi bi-plus-circle"></i>
-                      </div>
-                      <h3 class="h6">Ajouter à ma collection</h3>
-                      <p class="text-muted mb-0">
-                          J’ajoute une œuvre à mon espace personnel pour la retrouver facilement.
-                      </p>
-                  </div>
-
-                  <div class="col-md-4 mb-3">
-                      <div class="mb-2 fs-2 text-warning">
-                          <i class="bi bi-collection"></i>
-                      </div>
-                      <h3 class="h6">Organiser et suivre</h3>
-                      <p class="text-muted mb-0">
-                          Je classe mes œuvres, je commente et je gère mes collections depuis mon profil.
-                      </p>
-                  </div>
+          <div class="row text-center">
+            <div class="col-md-4 mb-3">
+              <div class="mb-2 fs-2 text-primary">
+                <i class="bi bi-search"></i>
               </div>
-
-              {% if not app.user %}
-                  <div class="alert alert-info mt-4 mb-0 text-center">
-                      <strong>Astuce :</strong> créez un compte pour sauvegarder vos œuvres et accéder à votre collection personnelle.
-                  </div>
-              {% endif %}
-          </div>
-      </div>
-  </section>
-
-
-  <section class="mt-card p-3">
-    <div class="row g-4">
-
-      <aside class="col-12 col-lg-3">
-        <div class="mt-surface-2 border rounded-3 p-3">
-          <h2 class="h6 mb-3 mt-section-title">Filtrer</h2>
-
-          <form method="get" action="{{ path('app_catalog') }}" id="filterForm">
-            <div class="mb-3">
-              <label class="form-label small fw-semibold">Type de média</label>
-              <select class="form-select" name="type" onchange="this.form.submit()">
-                <option value="all" {{ type == 'all' ? 'selected' : '' }}>Tout afficher</option>
-                <option value="book" {{ type == 'book' ? 'selected' : '' }}>Livres uniquement</option>
-                <option value="movie" {{ type == 'movie' ? 'selected' : '' }}>Films uniquement</option>
-              </select>
+              <h3 class="h6">Rechercher une œuvre</h3>
+              <p class="text-muted mb-0">
+                Je recherche un livre ou un film à partir des bases de données partenaires.
+              </p>
             </div>
 
-            {% if q is defined and q %}
-              <input type="hidden" name="q" value="{{ q }}">
-            {% endif %}
+            <div class="col-md-4 mb-3">
+              <div class="mb-2 fs-2 text-success">
+                <i class="bi bi-plus-circle"></i>
+              </div>
+              <h3 class="h6">Ajouter à ma collection</h3>
+              <p class="text-muted mb-0">
+                J’ajoute une œuvre à mon espace personnel pour la retrouver facilement.
+              </p>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <div class="mb-2 fs-2 text-warning">
+                <i class="bi bi-collection"></i>
+              </div>
+              <h3 class="h6">Organiser et suivre</h3>
+              <p class="text-muted mb-0">
+                Je classe mes œuvres, je commente et je gère mes collections depuis mon profil.
+              </p>
+            </div>
+          </div>
+
+          {% if not app.user %}
+            <div class="alert alert-info mt-4 mb-0 text-center">
+              <strong>Astuce :</strong> créez un compte pour sauvegarder vos œuvres et accéder à votre collection personnelle.
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </section>
+
+    <section class="mt-card p-3">
+      <div class="row g-4">
+        <aside class="col-12 col-lg-3">
+          <div class="mt-surface-2 border rounded-3 p-3">
+            <h2 class="h6 mb-3 mt-section-title">Filtrer</h2>
+
+            <form method="get" action="{{ path('app_catalog') }}" id="filterForm">
+              <div class="mb-3">
+                <label class="form-label small fw-semibold">Type de média</label>
+                <select class="form-select" name="type" onchange="this.form.submit()">
+                  <option value="all" {{ type == 'all' ? 'selected' : '' }}>Tout afficher</option>
+                  <option value="book" {{ type == 'book' ? 'selected' : '' }}>Livres uniquement</option>
+                  <option value="movie" {{ type == 'movie' ? 'selected' : '' }}>Films uniquement</option>
+                </select>
+              </div>
+
+              {# Filtrage par genre #}
+              {% if type != 'all' %}
+                <div class="mb-3">
+                  <label class="form-label small fw-semibold">Genre</label>
+                  <select class="form-select form-select-sm" name="genre" onchange="this.form.submit()">
+                    <option value="" {{ (genre|default('')) == '' ? 'selected' : '' }}>Tous les genres</option>
+
+                    {% if type == 'book' and bookGenres is defined %}
+                      {% for bookGenre in bookGenres %}
+                        <option value="{{ bookGenre.name }}" {{ genre == bookGenre.name ? 'selected' : '' }}>
+                          {{ bookGenre.name }}
+                        </option>
+                      {% endfor %}
+                    {% endif %}
+
+                    {% if type == 'movie' and movieGenres is defined %}
+                      {% for movieGenre in movieGenres %}
+                        <option value="{{ movieGenre.name }}" {{ genre == movieGenre.name ? 'selected' : '' }}>
+                          {{ movieGenre.name }}
+                        </option>
+                      {% endfor %}
+                    {% endif %}
+                  </select>
+                </div>
+              {% endif %}
+
+              {% if q is defined and q %}
+                <input type="hidden" name="q" value="{{ q }}">
+              {% endif %}
+
+              <hr class="my-3">
+
+              <div class="d-grid gap-2">
+                <a class="btn btn-outline-primary btn-sm" href="{{ path('app_catalog') }}">
+                  Réinitialiser les filtres
+                </a>
+              </div>
+            </form>
 
             <hr class="my-3">
 
-            <div class="d-grid gap-2">
-              <a class="btn btn-outline-primary btn-sm" href="{{ path('app_catalog') }}">
-                Réinitialiser les filtres
-              </a>
+            <div class="mb-2">
+              <label class="form-label small fw-semibold">Affichage</label>
             </div>
-          </form>
 
-          <hr class="my-3">
+            <div class="btn-group w-100" role="group" aria-label="Mode d'affichage">
+              <button
+                type="button"
+                class="btn btn-outline-primary btn-sm active"
+                id="btnGrid"
+                onclick="setViewMode('grid')"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5zm6.5.5A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5zM1 10.5A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5zm6.5.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5z" />
+                </svg>
+                Grille
+              </button>
 
-          <div class="mb-2">
-            <label class="form-label small fw-semibold">Affichage</label>
+              <button
+                type="button"
+                class="btn btn-outline-primary btn-sm"
+                id="btnList"
+                onclick="setViewMode('list')"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                  <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5" />
+                </svg>
+                Liste
+              </button>
+            </div>
           </div>
-          <div class="btn-group w-100" role="group" aria-label="Mode d'affichage">
-            <button type="button" class="btn btn-outline-primary btn-sm active" id="btnGrid" onclick="setViewMode('grid')">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5zm6.5.5A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5zM1 10.5A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5zm6.5.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5z"/>
-              </svg>
-              Grille
-            </button>
-            <button type="button" class="btn btn-outline-primary btn-sm" id="btnList" onclick="setViewMode('list')">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5"/>
-              </svg>
-              Liste
-            </button>
-          </div>
+        </aside>
 
-        </div>
-      </aside>
+        <div class="col-12 col-lg-9">
+          {% set books = books|default([]) %}
+          {% set movies = movies|default([]) %}
+          {% set hasAny = (books|length) + (movies|length) > 0 %}
 
-      <div class="col-12 col-lg-9">
+          {% if not hasAny %}
+            {% include 'components/_state_empty.html.twig' with {
+              title: q ? 'Aucun résultat' : 'Catalogue',
+              message: q ? 'Essayez de modifier votre recherche ou vos filtres.' : 'Aucun élément à afficher pour le moment.'
+            } %}
+          {% else %}
+            {% if type == 'all' %}
+              {% if books is not empty %}
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <h3 class="h6 mb-0 mt-section-title">
+                    Livres
+                    <span class="badge mt-badge-count ms-1">{{ books|length }}</span>
+                  </h3>
 
-        {% set books = books|default([]) %}
-        {% set movies = movies|default([]) %}
-        {% set hasAny = (books|length) + (movies|length) > 0 %}
+                  <a
+                    href="{{ path('app_catalog', q ? { q: q, type: 'book', genre: genre } : { type: 'book', genre: genre }) }}"
+                    class="btn btn-outline-primary btn-sm"
+                  >
+                    Voir tous les livres
+                  </a>
+                </div>
 
-        {% if not hasAny %}
-          {% include 'components/_state_empty.html.twig' with {
-            title: q ? 'Aucun résultat' : 'Catalogue',
-            message: q ? 'Essayez de modifier votre recherche ou vos filtres.' : 'Aucun élément à afficher pour le moment.'
-          } %}
+                <div class="row g-3 mb-4 view-grid" id="booksGridView">
+                  {% for book in books %}
+                    <div class="col-6 col-md-4 col-xl-3">
+                      {% include 'components/_structure_media_grid.html.twig' with { item: book, kind: 'book' } only %}
+                    </div>
+                  {% endfor %}
+                </div>
 
-        {% else %}
+                <div class="d-flex flex-column gap-2 mb-4 view-list d-none" id="booksListView">
+                  {% for book in books %}
+                    {% include 'components/_structure_media_list.html.twig' with { item: book, kind: 'book' } only %}
+                  {% endfor %}
+                </div>
+              {% endif %}
 
-          {% if type == 'all' %}
+              {% if movies is not empty %}
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <h3 class="h6 mb-0 mt-section-title">
+                    Films
+                    <span class="badge mt-badge-count ms-1">{{ movies|length }}</span>
+                  </h3>
 
-            {% if books is not empty %}
+                  <a
+                    href="{{ path('app_catalog', q ? { q: q, type: 'movie', genre: genre } : { type: 'movie', genre: genre }) }}"
+                    class="btn btn-outline-primary btn-sm"
+                  >
+                    Voir tous les films
+                  </a>
+                </div>
+
+                <div class="row g-3 view-grid" id="moviesGridView">
+                  {% for movie in movies %}
+                    <div class="col-6 col-md-4 col-xl-3">
+                      {% include 'components/_structure_media_grid.html.twig' with { item: movie, kind: 'movie' } only %}
+                    </div>
+                  {% endfor %}
+                </div>
+
+                <div class="d-flex flex-column gap-2 view-list d-none" id="moviesListView">
+                  {% for movie in movies %}
+                    {% include 'components/_structure_media_list.html.twig' with { item: movie, kind: 'movie' } only %}
+                  {% endfor %}
+                </div>
+              {% endif %}
+
+            {% elseif type == 'book' %}
               <div class="d-flex justify-content-between align-items-center mb-3">
                 <h3 class="h6 mb-0 mt-section-title">
                   Livres
-                  <span class="badge mt-badge-count ms-1">{{ books|length }}</span>
+                  {% if totalBooks is defined and totalBooks > 0 %}
+                    <span class="badge mt-badge-count ms-1">
+                      {{ totalBooks }} résultat{{ totalBooks > 1 ? 's' : '' }}
+                    </span>
+                  {% endif %}
                 </h3>
-                <a href="{{ path('app_catalog', q ? { q: q, type: 'book' } : { type: 'book' }) }}" class="btn btn-outline-primary btn-sm">
-                  Voir tous les livres
-                </a>
               </div>
 
-              <div class="row g-3 mb-4 view-grid" id="booksGridView">
-                {% for book in books %}
-                  <div class="col-6 col-md-4 col-xl-3">
-                    {% include 'components/_structure_media_grid.html.twig' with { item: book, kind: 'book' } only %}
-                  </div>
-                {% endfor %}
-              </div>
+              {% if books is empty %}
+                {% include 'components/_state_empty.html.twig' with {
+                  title: 'Aucun livre trouvé',
+                  message: 'Essayez de modifier votre recherche.'
+                } %}
+              {% else %}
+                <div class="row g-3 mb-4 view-grid" id="booksGridView">
+                  {% for book in books %}
+                    <div class="col-6 col-md-4 col-xl-3">
+                      {% include 'components/_structure_media_grid.html.twig' with { item: book, kind: 'book' } only %}
+                    </div>
+                  {% endfor %}
+                </div>
 
-              <div class="d-flex flex-column gap-2 mb-4 view-list d-none" id="booksListView">
-                {% for book in books %}
-                  {% include 'components/_structure_media_list.html.twig' with { item: book, kind: 'book' } only %}
-                {% endfor %}
-              </div>
-            {% endif %}
+                <div class="d-flex flex-column gap-2 mb-4 view-list d-none" id="booksListView">
+                  {% for book in books %}
+                    {% include 'components/_structure_media_list.html.twig' with { item: book, kind: 'book' } only %}
+                  {% endfor %}
+                </div>
 
-            {% if movies is not empty %}
+                {% if totalPages is defined and totalPages > 1 %}
+                  {% include 'components/_nav_pagination.html.twig' with {
+                    route: 'app_catalog',
+                    page: page,
+                    totalPages: totalPages,
+                    query: q ? { type: 'book', q: q, genre: genre } : { type: 'book', genre: genre }
+                  } %}
+                {% endif %}
+              {% endif %}
+
+            {% elseif type == 'movie' %}
               <div class="d-flex justify-content-between align-items-center mb-3">
                 <h3 class="h6 mb-0 mt-section-title">
                   Films
-                  <span class="badge mt-badge-count ms-1">{{ movies|length }}</span>
+                  {% if totalMovies is defined and totalMovies > 0 %}
+                    <span class="badge mt-badge-count ms-1">
+                      {{ totalMovies }} résultat{{ totalMovies > 1 ? 's' : '' }}
+                    </span>
+                  {% endif %}
                 </h3>
-                <a href="{{ path('app_catalog', q ? { q: q, type: 'movie' } : { type: 'movie' }) }}" class="btn btn-outline-primary btn-sm">
-                  Voir tous les films
-                </a>
               </div>
 
-              <div class="row g-3 view-grid" id="moviesGridView">
-                {% for movie in movies %}
-                  <div class="col-6 col-md-4 col-xl-3">
-                    {% include 'components/_structure_media_grid.html.twig' with { item: movie, kind: 'movie' } only %}
-                  </div>
-                {% endfor %}
-              </div>
-
-              <div class="d-flex flex-column gap-2 view-list d-none" id="moviesListView">
-                {% for movie in movies %}
-                  {% include 'components/_structure_media_list.html.twig' with { item: movie, kind: 'movie' } only %}
-                {% endfor %}
-              </div>
-            {% endif %}
-
-          {% elseif type == 'book' %}
-
-            <div class="d-flex justify-content-between align-items-center mb-3">
-              <h3 class="h6 mb-0 mt-section-title">
-                Livres
-                {% if totalBooks is defined and totalBooks > 0 %}
-                  <span class="badge mt-badge-count ms-1">{{ totalBooks }} résultat{{ totalBooks > 1 ? 's' : '' }}</span>
-                {% endif %}
-              </h3>
-            </div>
-
-            {% if books is empty %}
-              {% include 'components/_state_empty.html.twig' with {
-                title: 'Aucun livre trouvé',
-                message: 'Essayez de modifier votre recherche.'
-              } %}
-            {% else %}
-              <div class="row g-3 mb-4 view-grid" id="booksGridView">
-                {% for book in books %}
-                  <div class="col-6 col-md-4 col-xl-3">
-                    {% include 'components/_structure_media_grid.html.twig' with { item: book, kind: 'book' } only %}
-                  </div>
-                {% endfor %}
-              </div>
-
-              <div class="d-flex flex-column gap-2 mb-4 view-list d-none" id="booksListView">
-                {% for book in books %}
-                  {% include 'components/_structure_media_list.html.twig' with { item: book, kind: 'book' } only %}
-                {% endfor %}
-              </div>
-
-              {% if totalPages is defined and totalPages > 1 %}
-                {% include 'components/_nav_pagination.html.twig' with {
-                  route: 'app_catalog',
-                  page: page,
-                  totalPages: totalPages,
-                  query: q ? { type: 'book', q: q } : { type: 'book' }
+              {% if movies is empty %}
+                {% include 'components/_state_empty.html.twig' with {
+                  title: 'Aucun film trouvé',
+                  message: 'Essayez de modifier votre recherche.'
                 } %}
+              {% else %}
+                <div class="row g-3 mb-4 view-grid" id="moviesGridView">
+                  {% for movie in movies %}
+                    <div class="col-6 col-md-4 col-xl-3">
+                      {% include 'components/_structure_media_grid.html.twig' with { item: movie, kind: 'movie' } only %}
+                    </div>
+                  {% endfor %}
+                </div>
+
+                <div class="d-flex flex-column gap-2 mb-4 view-list d-none" id="moviesListView">
+                  {% for movie in movies %}
+                    {% include 'components/_structure_media_list.html.twig' with { item: movie, kind: 'movie' } only %}
+                  {% endfor %}
+                </div>
+
+                {% if totalPages is defined and totalPages > 1 %}
+                  {% include 'components/_nav_pagination.html.twig' with {
+                    route: 'app_catalog',
+                    page: page,
+                    totalPages: totalPages,
+                    query: q ? { type: 'movie', q: q, genre: genre } : { type: 'movie', genre: genre }
+                  } %}
+                {% endif %}
               {% endif %}
             {% endif %}
-
-          {% else %}
-
-            <div class="d-flex justify-content-between align-items-center mb-3">
-              <h3 class="h6 mb-0 mt-section-title">
-                Films
-                {% if totalMovies is defined and totalMovies > 0 %}
-                  <span class="badge mt-badge-count ms-1">{{ totalMovies }} résultat{{ totalMovies > 1 ? 's' : '' }}</span>
-                {% endif %}
-              </h3>
-            </div>
-
-            {% if movies is empty %}
-              {% include 'components/_state_empty.html.twig' with {
-                title: 'Aucun film trouvé',
-                message: 'Essayez de modifier votre recherche.'
-              } %}
-            {% else %}
-              <div class="row g-3 mb-4 view-grid" id="moviesGridView">
-                {% for movie in movies %}
-                  <div class="col-6 col-md-4 col-xl-3">
-                    {% include 'components/_structure_media_grid.html.twig' with { item: movie, kind: 'movie' } only %}
-                  </div>
-                {% endfor %}
-              </div>
-
-              <div class="d-flex flex-column gap-2 mb-4 view-list d-none" id="moviesListView">
-                {% for movie in movies %}
-                  {% include 'components/_structure_media_list.html.twig' with { item: movie, kind: 'movie' } only %}
-                {% endfor %}
-              </div>
-
-              {% if totalPages is defined and totalPages > 1 %}
-                {% include 'components/_nav_pagination.html.twig' with {
-                  route: 'app_catalog',
-                  page: page,
-                  totalPages: totalPages,
-                  query: q ? { type: 'movie', q: q } : { type: 'movie' }
-                } %}
-              {% endif %}
-            {% endif %}
-
           {% endif %}
-
-        {% endif %}
-
+        </div>
       </div>
-    </div>
-  </section>
-
-</div>
-
+    </section>
+  </div>
 {% endblock %}
 
 {% block javascripts %}
-{{ parent() }}
-<script>
-  function setViewMode(mode) {
-    const btnGrid = document.getElementById('btnGrid');
-    const btnList = document.getElementById('btnList');
-    const gridViews = document.querySelectorAll('.view-grid');
-    const listViews = document.querySelectorAll('.view-list');
+  {{ parent() }}
 
-    if (mode === 'list') {
-      btnList.classList.add('active');
-      btnGrid.classList.remove('active');
-      gridViews.forEach(el => el.classList.add('d-none'));
-      listViews.forEach(el => el.classList.remove('d-none'));
-      localStorage.setItem('catalogViewMode', 'list');
-    } else {
+  <script>
+    function setViewMode(mode) {
+      const btnGrid = document.getElementById('btnGrid');
+      const btnList = document.getElementById('btnList');
+      const gridViews = document.querySelectorAll('.view-grid');
+      const listViews = document.querySelectorAll('.view-list');
+
+      if (mode === 'list') {
+        btnList.classList.add('active');
+        btnGrid.classList.remove('active');
+        gridViews.forEach((el) => el.classList.add('d-none'));
+        listViews.forEach((el) => el.classList.remove('d-none'));
+        localStorage.setItem('catalogViewMode', 'list');
+        return;
+      }
+
       btnGrid.classList.add('active');
       btnList.classList.remove('active');
-      gridViews.forEach(el => el.classList.remove('d-none'));
-      listViews.forEach(el => el.classList.add('d-none'));
+      gridViews.forEach((el) => el.classList.remove('d-none'));
+      listViews.forEach((el) => el.classList.add('d-none'));
       localStorage.setItem('catalogViewMode', 'grid');
     }
-  }
 
-  document.addEventListener('DOMContentLoaded', function() {
-    const savedMode = localStorage.getItem('catalogViewMode');
-    if (savedMode) {
-      setViewMode(savedMode);
-    }
-  });
-</script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const savedMode = localStorage.getItem('catalogViewMode');
+      if (savedMode) {
+        setViewMode(savedMode);
+      }
+    });
+  </script>
 {% endblock %}

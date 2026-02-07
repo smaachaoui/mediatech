@@ -37,6 +37,32 @@
               </select>
             </div>
 
+            {# Filtrage par genre - nouveau #}
+            {% if filters.type != 'all' %}
+              <div class="mb-3">
+                <label class="form-label small fw-semibold">Genre</label>
+                <select class="form-select form-select-sm" name="genre" onchange="this.form.submit()">
+                  <option value="" {{ filters.genre == '' ? 'selected' : '' }}>Tous les genres</option>
+                  
+                  {% if filters.type == 'book' and bookGenres is defined %}
+                    {% for bookGenre in bookGenres %}
+                      <option value="{{ bookGenre.name }}" {{ filters.genre == bookGenre.name ? 'selected' : '' }}>
+                        {{ bookGenre.name }}
+                      </option>
+                    {% endfor %}
+                  {% endif %}
+
+                  {% if filters.type == 'movie' and movieGenres is defined %}
+                    {% for movieGenre in movieGenres %}
+                      <option value="{{ movieGenre.name }}" {{ filters.genre == movieGenre.name ? 'selected' : '' }}>
+                        {{ movieGenre.name }}
+                      </option>
+                    {% endfor %}
+                  {% endif %}
+                </select>
+              </div>
+            {% endif %}
+
             <input type="hidden" name="page" value="1">
 
             <hr class="my-3">
@@ -116,7 +142,8 @@
                 totalPages: totalPages,
                 query: {
                   type: filters.type,
-                  sort: filters.sort
+                  sort: filters.sort,
+                  genre: filters.genre
                 }
               } %}
             </div>

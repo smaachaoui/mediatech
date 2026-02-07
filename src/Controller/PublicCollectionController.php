@@ -9,6 +9,7 @@ use App\Entity\Rating;
 use App\Entity\User;
 use App\Repository\CollectionRepository;
 use App\Repository\CommentRepository;
+use App\Repository\GenreRepository;
 use App\Repository\RatingRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,8 +19,11 @@ use Symfony\Component\Routing\Annotation\Route;
 final class PublicCollectionController extends AbstractController
 {
     #[Route('/collections', name: 'app_collections_public', methods: ['GET'])]
-    public function index(Request $request, CollectionRepository $collectionRepository): Response
-    {
+    public function index(
+        Request $request,
+        CollectionRepository $collectionRepository,
+        GenreRepository $genreRepository
+    ): Response {
         $mediaType = (string) $request->query->get('type', Collection::MEDIA_ALL);
         if (!in_array($mediaType, Collection::MEDIA_TYPES, true)) {
             $mediaType = Collection::MEDIA_ALL;
@@ -31,17 +35,39 @@ final class PublicCollectionController extends AbstractController
             $sort = 'new';
         }
 
+        $genre = trim((string) $request->query->get('genre', ''));
+
         $page = max(1, (int) $request->query->get('page', 1));
         $limit = 9;
 
-        $result = $collectionRepository->findPublicPublishedPaginated($mediaType, $sort, $page, $limit);
+        /*
+         * Je recupere les genres disponibles selon le type de media.
+         * Si type=all, je recupere livres et films.
+         * Sinon, uniquement le type selectionne.
+         */
+        $bookGenres = [];
+        $movieGenres = [];
+
+        if ($mediaType === Collection::MEDIA_ALL || $mediaType === Collection::MEDIA_BOOK) {
+            $bookGenres = $genreRepository->findBookGenres();
+        }
+
+        if ($mediaType === Collection::MEDIA_ALL || $mediaType === Collection::MEDIA_MOVIE) {
+            $movieGenres = $genreRepository->findMovieGenres();
+        }
+
+        /*
+         * Je recupere les collections filtrees par genre si necessaire.
+         * Le repository gere la logique de filtrage en base de donnees.
+         */
+        $result = $collectionRepository->findPublicPublishedPaginated($mediaType, $sort, $page, $limit, $genre);
 
         $total = (int) $result['total'];
         $totalPages = max(1, (int) ceil($total / $limit));
 
         if ($page > $totalPages) {
             $page = $totalPages;
-            $result = $collectionRepository->findPublicPublishedPaginated($mediaType, $sort, $page, $limit);
+            $result = $collectionRepository->findPublicPublishedPaginated($mediaType, $sort, $page, $limit, $genre);
         }
 
         return $this->render('collection/index.html.twig', [
@@ -52,7 +78,10 @@ final class PublicCollectionController extends AbstractController
             'filters' => [
                 'type' => $mediaType,
                 'sort' => $sort,
+                'genre' => $genre,
             ],
+            'bookGenres' => $bookGenres,
+            'movieGenres' => $movieGenres,
         ]);
     }
 
