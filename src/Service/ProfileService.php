@@ -15,6 +15,11 @@ use App\Repository\GenreRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
+/**
+ * Je centralise ici la logique métier liée au profil utilisateur.
+ * J'ai regroupé les actions sur les collections, les commentaires et les opérations courantes du profil
+ * pour éviter d'alourdir les contrôleurs et pour garder une logique réutilisable.
+ */
 final class ProfileService
 {
     public function __construct(
@@ -26,9 +31,18 @@ final class ProfileService
         private readonly EntityManagerInterface $em,
         private readonly UserRepository $userRepository,
         private readonly GenreRepository $genreRepository,
+    ) {
+    }
 
-    ) {}
-
+    /**
+     * Je retourne les données du profil en fonction de la section demandée.
+     * J'ai choisi un match pour garder un point d'entrée unique côté contrôleur et limiter les if/else.
+     *
+     * @param User   $user    Utilisateur authentifié.
+     * @param string $section Section du profil demandée.
+     *
+     * @return array<string, mixed>
+     */
     public function getProfileData(User $user, string $section): array
     {
         return match ($section) {
@@ -42,6 +56,15 @@ final class ProfileService
         };
     }
 
+    /**
+     * Je prépare toutes les données nécessaires à l'onglet "Collections" du profil.
+     * J'y inclus les collections système, les liens de médias, les collections utilisateur
+     * et les listes de genres utilisées dans les modales de création et d'édition.
+     *
+     * @param User $user Utilisateur authentifié.
+     *
+     * @return array<string, mixed>
+     */
     private function getCollectionsSectionData(User $user): array
     {
         $unlistedCollection = $this->libraryManager->getDefaultCollection($user);
@@ -55,20 +78,20 @@ final class ProfileService
 
         $collections = $this->collectionRepository->findForUserExcluding($user, $unlistedCollection->getId());
 
-        /*
-        * Je recupere tous les genres disponibles pour alimenter
-        * les selects de genre dans les modales de creation/edition.
-        */
+        /**
+         * Je récupère tous les genres disponibles afin d'alimenter les selects de genre
+         * dans les modales de création et d'édition.
+         */
         $bookGenresEntities = $this->genreRepository->findBookGenres();
         $movieGenresEntities = $this->genreRepository->findMovieGenres();
 
-        $bookGenres = array_map(fn($genre) => [
+        $bookGenres = array_map(static fn($genre) => [
             'id' => $genre->getId(),
             'name' => $genre->getName(),
             'type' => $genre->getType(),
         ], $bookGenresEntities);
 
-        $movieGenres = array_map(fn($genre) => [
+        $movieGenres = array_map(static fn($genre) => [
             'id' => $genre->getId(),
             'name' => $genre->getName(),
             'type' => $genre->getType(),
@@ -85,11 +108,20 @@ final class ProfileService
             'wishlistBookLinks' => $wishlistBookLinks,
             'wishlistMovieLinks' => $wishlistMovieLinks,
 
-            'bookGenres' => $bookGenres,      // ← NOUVEAU
-            'movieGenres' => $movieGenres,    // ← NOUVEAU
+            'bookGenres' => $bookGenres,
+            'movieGenres' => $movieGenres,
         ];
     }
 
+    /**
+     * Je retire un média de la liste d'envie.
+     * J'ai volontairement sécurisé l'action en vérifiant l'appartenance de l'élément à l'utilisateur
+     * et en forçant l'opération à ne s'appliquer qu'à la collection système "Liste d'envie".
+     *
+     * @param User   $user   Utilisateur authentifié.
+     * @param string $type   Type de média attendu, book ou movie.
+     * @param int    $linkId Identifiant du lien pivot à supprimer.
+     */
     public function removeItemFromWishlist(User $user, string $type, int $linkId): void
     {
         $type = trim($type);
@@ -123,6 +155,15 @@ final class ProfileService
         $this->em->flush();
     }
 
+    /**
+     * Je déplace un média depuis la liste d'envie vers une collection cible.
+     * J'ai choisi de déplacer le lien pivot (CollectionBook ou CollectionMovie) pour conserver l'historique d'ajout.
+     *
+     * @param User   $user               Utilisateur authentifié.
+     * @param string $type               Type de média attendu, book ou movie.
+     * @param int    $linkId             Identifiant du lien pivot à déplacer.
+     * @param int    $targetCollectionId Identifiant de la collection cible.
+     */
     public function moveWishlistItemToCollection(User $user, string $type, int $linkId, int $targetCollectionId): void
     {
         $type = trim($type);
@@ -185,12 +226,21 @@ final class ProfileService
     }
 
     /**
-     * Je crée une collection "utilisateur".
-     * mediaType attendu: book|movie (jamais all pour une collection user).
+     * Je crée une collection utilisateur.
+     * J'impose un mediaType strict pour éviter la création de collections ambiguës côté front.
      *
-     * Je n'impose pas la cover au moment de la création, car l'utilisateur choisit souvent
-     * une couverture une fois des médias ajoutés. Si coverImage est fourni, je le valide
-     * uniquement si la collection contient déjà des médias (rare au moment de la création).
+     * J'ai laissé la couverture optionnelle à la création car l'utilisateur choisit souvent une image
+     * après avoir ajouté des médias. Si une cover est fournie, je vérifie qu'elle correspond bien
+     * à un média présent dans la collection.
+     *
+     * @param User        $user        Utilisateur authentifié.
+     * @param string      $name        Nom de la collection.
+     * @param string|null $genre       Genre choisi par l'utilisateur.
+     * @param string|null $coverImage  URL de couverture.
+     * @param string|null $description Description de la collection.
+     * @param string      $mediaType   Type de médias acceptés, book ou movie.
+     *
+     * @return Collection
      */
     public function createUserCollection(
         User $user,
@@ -240,8 +290,14 @@ final class ProfileService
 
     /**
      * Je mets à jour une collection utilisateur.
-     * Je valide la cover: elle doit correspondre à un média présent dans la collection,
-     * ou être null (je ne change rien) / "__none__" (je supprime).
+     * J'ai prévu trois comportements pour la cover: null je ne touche pas, "__none__" je supprime, sinon je valide.
+     *
+     * @param User        $user         Utilisateur authentifié.
+     * @param int         $collectionId Identifiant de la collection.
+     * @param string      $name         Nouveau nom.
+     * @param string|null $genre        Nouveau genre.
+     * @param string|null $coverImage   Nouvelle couverture ou marqueur "__none__".
+     * @param string|null $description  Nouvelle description.
      */
     public function updateUserCollection(
         User $user,
@@ -290,8 +346,13 @@ final class ProfileService
     }
 
     /**
-     * Je publie / dépublie une collection utilisateur.
-     * Je bloque la publication si la collection est vide.
+     * Je publie ou je dépublie une collection utilisateur.
+     * J'ai bloqué la publication des collections vides pour éviter des pages publiques sans contenu.
+     *
+     * @param User $user         Utilisateur authentifié.
+     * @param int  $collectionId Identifiant de la collection.
+     *
+     * @return bool true si la collection devient publiée, false si elle est dépubliée.
      */
     public function togglePublishUserCollection(User $user, int $collectionId): bool
     {
@@ -332,6 +393,14 @@ final class ProfileService
         return false;
     }
 
+    /**
+     * Je retire un média d'une collection en supprimant le lien pivot correspondant.
+     * J'ai gardé des vérifications simples pour éviter de supprimer un élément appartenant à un autre utilisateur.
+     *
+     * @param User   $user   Utilisateur authentifié.
+     * @param string $type   Type de média attendu, book ou movie.
+     * @param int    $linkId Identifiant du lien pivot.
+     */
     public function removeItemFromCollection(User $user, string $type, int $linkId): void
     {
         if (!in_array($type, ['book', 'movie'], true)) {
@@ -376,8 +445,14 @@ final class ProfileService
         $this->em->remove($link);
         $this->em->flush();
     }
-    
 
+    /**
+     * Je supprime une collection utilisateur.
+     * J'interdis la suppression des collections système car elles structurent les fonctionnalités du profil.
+     *
+     * @param User $user         Utilisateur authentifié.
+     * @param int  $collectionId Identifiant de la collection.
+     */
     public function deleteUserCollection(User $user, int $collectionId): void
     {
         /** @var Collection|null $collection */
@@ -400,7 +475,12 @@ final class ProfileService
 
     /**
      * Je déplace un item depuis "Non répertorié" vers une collection cible.
-     * Je déplace le PIVOT (CollectionBook/CollectionMovie).
+     * Je déplace le pivot afin de conserver la date d'ajout et la cohérence des relations.
+     *
+     * @param User   $user               Utilisateur authentifié.
+     * @param string $type               Type de média attendu, book ou movie.
+     * @param int    $linkId             Identifiant du lien pivot.
+     * @param int    $targetCollectionId Identifiant de la collection cible.
      */
     public function moveUnlistedItemToCollection(User $user, string $type, int $linkId, int $targetCollectionId): void
     {
@@ -459,8 +539,11 @@ final class ProfileService
     }
 
     /**
-     * Je vérifie que la cover choisie correspond à un média présent dans la collection.
-     * Si coverImage est null, je considère "Auto" et je ne bloque pas.
+     * Je vérifie que la couverture choisie correspond à un média présent dans la collection.
+     * Si coverImage est null ou vide, je considère que l'utilisateur laisse le choix automatique.
+     *
+     * @param Collection  $collection Collection concernée.
+     * @param string|null $coverImage Couverture proposée.
      */
     private function assertCoverBelongsToCollection(Collection $collection, ?string $coverImage): void
     {
@@ -492,7 +575,9 @@ final class ProfileService
 
     /**
      * Je supprime la cover enregistrée si elle ne correspond plus à un média de la collection.
-     * Je fais ça après un retrait/déplacement pour éviter une cover cassée.
+     * J'ai ajouté cette vérification après un retrait ou un déplacement pour éviter une couverture cassée.
+     *
+     * @param Collection $collection Collection concernée.
      */
     private function clearCoverIfNoLongerValid(Collection $collection): void
     {
@@ -509,6 +594,13 @@ final class ProfileService
         }
     }
 
+    /**
+     * Je mets à jour l'email d'un utilisateur.
+     * J'ai ajouté des contrôles simples pour éviter les emails vides, invalides ou déjà utilisés.
+     *
+     * @param User   $user  Utilisateur authentifié.
+     * @param string $email Nouvel email.
+     */
     public function updateUserEmail(User $user, string $email): void
     {
         $email = trim($email);
@@ -533,5 +625,4 @@ final class ProfileService
         $user->setEmail($email);
         $this->em->flush();
     }
-
 }
