@@ -40,7 +40,7 @@
                 </td>
 
                 <td style="max-width: 300px;">
-                  <div class="text-truncate" title="{{ comment.content }}">
+                  <div class="text-truncate" title="{{ comment.content|e('html_attr') }}">
                     {{ comment.content|length > 100 ? comment.content|slice(0, 100) ~ '...' : comment.content }}
                   </div>
                 </td>

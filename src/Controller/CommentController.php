@@ -60,7 +60,18 @@ final class CommentController extends AbstractController
             return $this->redirectToRoute('app_collection_show', ['id' => $collection->getId()]);
         }
 
-        $content = trim((string) $request->request->get('comment_content', ''));
+        $contentRaw = (string) $request->request->get('comment_content', '');
+        $contentRaw = trim($contentRaw);
+
+        // Je supprime les balises HTML (donc <script>, <b>, etc.)
+        $content = trim(strip_tags($contentRaw));
+
+        // Si l’utilisateur a tenté de mettre du HTML, je peux soit accepter en nettoyant.
+        if ($contentRaw !== $content) {
+            $this->addFlash('danger', 'Le HTML n’est pas autorisé dans les commentaires.');
+            return $this->redirectToRoute('app_collection_show', ['id' => $collection->getId()]);
+        }
+
         if ($content === '') {
             $this->addFlash('danger', 'Le commentaire ne peut pas être vide.');
             return $this->redirectToRoute('app_collection_show', ['id' => $collection->getId()]);
@@ -70,6 +81,7 @@ final class CommentController extends AbstractController
             $this->addFlash('danger', 'Le commentaire est trop long (1000 caractères maximum).');
             return $this->redirectToRoute('app_collection_show', ['id' => $collection->getId()]);
         }
+
 
         $owner = $collection->getUser();
         $viewer = $this->getUser();
