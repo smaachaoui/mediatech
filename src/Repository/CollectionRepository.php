@@ -106,6 +106,74 @@ class CollectionRepository extends ServiceEntityRepository
         ];
     }
 
+    /**
+ * Je compte toutes les collections utilisateur (hors collections système).
+ */
+public function countUserCollections(): int
+{
+    return (int) $this->createQueryBuilder('c')
+        ->select('COUNT(c.id)')
+        ->andWhere('c.scope = :scope')
+        ->setParameter('scope', Collection::SCOPE_USER)
+        ->getQuery()
+        ->getSingleScalarResult();
+}
+
+/**
+ * Je compte les collections utilisateur qui sont publiées.
+ */
+public function countPublished(): int
+{
+    return (int) $this->createQueryBuilder('c')
+        ->select('COUNT(c.id)')
+        ->andWhere('c.scope = :scope')
+        ->andWhere('c.isPublished = :published')
+        ->setParameter('scope', Collection::SCOPE_USER)
+        ->setParameter('published', true)
+        ->getQuery()
+        ->getSingleScalarResult();
+}
+
+/**
+ * Je retourne une pagination des collections utilisateur (admin).
+ *
+ * @return array{items: Collection[], total: int}
+ */
+public function findUserCollectionsPaginated(?bool $published, int $page, int $limit): array
+{
+    $qb = $this->createQueryBuilder('c')
+        ->leftJoin('c.user', 'u')
+        ->addSelect('u')
+        ->andWhere('c.scope = :scope')
+        ->setParameter('scope', Collection::SCOPE_USER);
+
+    if ($published !== null) {
+        $qb->andWhere('c.isPublished = :published')
+            ->setParameter('published', $published);
+    }
+
+    $qb->orderBy('c.createdAt', 'DESC')
+        ->addOrderBy('c.id', 'DESC');
+
+    $countQb = clone $qb;
+    $total = (int) $countQb
+        ->select('COUNT(c.id)')
+        ->getQuery()
+        ->getSingleScalarResult();
+
+    $items = $qb
+        ->setFirstResult(($page - 1) * $limit)
+        ->setMaxResults($limit)
+        ->getQuery()
+        ->getResult();
+
+    return [
+        'items' => $items,
+        'total' => $total,
+    ];
+}
+
+
     public function findForUser(\App\Entity\User $user): array
     {
         return $this->createQueryBuilder('c')
