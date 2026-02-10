@@ -1,0 +1,56 @@
+/* ======================================
+   STYLES FORMULAIRE D'INSCRIPTION
+   ====================================== */
+
+/* Liste d'erreurs de formulaire Symfony */
+ul.form-error-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 0 0;
+}
+
+ul.form-error-list li {
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.25rem;
+}
+
+ul.form-error-list li::before {
+  content: "⚠";
+  flex-shrink: 0;
+  margin-top: 0.05rem;
+}
+
+/* Erreurs directes (span) */
+.form-error-message,
+span.form-error-message {
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  display: block;
+}
+
+/* Champs invalides avec bordure rouge */
+.form-control.is-invalid,
+.form-select.is-invalid,
+.form-check-input.is-invalid {
+  border-color: #dc3545;
+}
+
+.form-control.is-invalid:focus,
+.form-select.is-invalid:focus,
+.form-check-input.is-invalid:focus {
+  border-color: #dc3545;
+  box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+}
+
+/* Style Bootstrap pour la compatibilité */
+.invalid-feedback {
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: block;
+}

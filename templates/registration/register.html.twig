@@ -2,6 +2,10 @@
 
 {% block title %}Inscription{% endblock %}
 
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('assets/css/register-form.css') }}">
+{% endblock %}
+
 {% block body %}
 <div class="container py-5">
     <div class="row justify-content-center">
@@ -11,38 +15,33 @@
                     <h1 class="h3 mb-1 text-center">Créer un compte</h1>
                     <p class="text-muted text-center mb-4">Tu es nouveau ici ? rejoins-nous !</p>
 
-                    {# erreurs globales #}
-                    {% if form_errors(registrationForm) %}
-                        <div class="alert alert-danger">
-                            {{ form_errors(registrationForm) }}
-                        </div>
-                    {% endif %}
-
                     {{ form_start(registrationForm, { attr: { novalidate: 'novalidate' } }) }}
 
                         <div class="mb-3">
-                            {{ form_row(registrationForm.pseudo, {
-                                label: 'Pseudo',
-                                attr: { class: 'form-control', placeholder: 'Ex : Aragorn33', autocomplete: 'nickname' }
-                            }) }}
+                            {{ form_label(registrationForm.pseudo, 'Pseudo', { label_attr: { class: 'form-label' } }) }}
+                            {{ form_widget(registrationForm.pseudo, { attr: { class: 'form-control', placeholder: 'Ex : Aragorn33', autocomplete: 'nickname' } }) }}
+                            <div class="form-text text-muted small">
+                                Minimum 3 caractères, lettres, chiffres, points, tirets et underscores uniquement.
+                            </div>
+                            {{ form_errors(registrationForm.pseudo) }}
                         </div>
 
                         <div class="mb-3">
-                            {{ form_row(registrationForm.email, {
-                                label: 'Email',
-                                attr: { class: 'form-control', placeholder: 'exemple@mail.com', autocomplete: 'email' }
-                            }) }}
+                            {{ form_label(registrationForm.email, 'Email', { label_attr: { class: 'form-label' } }) }}
+                            {{ form_widget(registrationForm.email, { attr: { class: 'form-control', placeholder: 'exemple@mail.com', autocomplete: 'email' } }) }}
+                            {{ form_errors(registrationForm.email) }}
                         </div>
 
                         <div class="mb-3">
-                            {{ form_row(registrationForm.plainPassword, {
-                                label: 'Mot de passe',
-                                attr: { class: 'form-control', autocomplete: 'new-password' }
-                            }) }}
+                            {{ form_label(registrationForm.plainPassword, 'Mot de passe', { label_attr: { class: 'form-label' } }) }}
+                            {{ form_widget(registrationForm.plainPassword, { attr: { class: 'form-control', placeholder: 'Minimum 8 caractères', autocomplete: 'new-password' } }) }}
+                            <div class="form-text text-muted small">
+                                Le mot de passe doit contenir au moins 8 caractères avec une majuscule, une minuscule, un chiffre et un caractère spécial.
+                            </div>
+                            {{ form_errors(registrationForm.plainPassword) }}
                         </div>
 
                         <div class="form-check mb-3">
-                            {# form_row rend déjà label+input ; ici on force le rendu bootstrap check #}
                             {{ form_widget(registrationForm.agreeTerms, { attr: { class: 'form-check-input' } }) }}
                             {{ form_label(registrationForm.agreeTerms, "J'accepte les conditions d'utilisation", { label_attr: { class: 'form-check-label' } }) }}
                             {{ form_errors(registrationForm.agreeTerms) }}
