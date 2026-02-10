@@ -3,9 +3,11 @@
     <h1 class="h3 mb-1">Messages de contact</h1>
     <div class="text-muted">Messages envoyés via le formulaire de contact.</div>
   </div>
-  
+
   {% if unreadCount > 0 %}
-    <div class="badge bg-danger fs-6">{{ unreadCount }} non lu{{ unreadCount > 1 ? 's' : '' }}</div>
+    <div class="badge bg-danger fs-6">
+      {{ unreadCount }} non lu{{ unreadCount > 1 ? 's' : '' }}
+    </div>
   {% endif %}
 </div>
 
@@ -33,14 +35,14 @@
       <div class="table-responsive">
         <table class="table align-middle mb-0">
           <thead>
-          <tr class="text-muted small">
-            <th>Statut</th>
-            <th>Nom</th>
-            <th>Email</th>
-            <th>Sujet</th>
-            <th>Date</th>
-            <th class="text-end">Actions</th>
-          </tr>
+            <tr class="text-muted small">
+              <th>Statut</th>
+              <th>Nom</th>
+              <th>Email</th>
+              <th>Sujet</th>
+              <th>Date</th>
+              <th class="text-end">Actions</th>
+            </tr>
           </thead>
           <tbody>
           {% for msg in messages %}
@@ -78,7 +80,9 @@
                   </button>
 
                   {% if not msg.isRead %}
-                    <form method="post" action="{{ path('admin_messages_mark_read', { id: msg.id }) }}" class="d-inline">
+                    <form method="post"
+                          action="{{ path('admin_messages_mark_read', { id: msg.id }) }}"
+                          class="d-inline">
                       <input type="hidden" name="_token" value="{{ csrf_token('mark_read_' ~ msg.id) }}">
                       <button type="submit" class="btn btn-outline-success btn-sm">
                         Marquer lu
@@ -99,12 +103,15 @@
                 {% embed 'components/_modal.html.twig' with {
                   id: 'viewMessageModal_' ~ msg.id,
                   title: 'Message de ' ~ msg.name,
-                  size: 'lg'
+                  size: 'lg',
+                  use_blocks: true
                 } %}
                   {% block body %}
                     <div class="mb-3">
                       <div class="fw-semibold text-muted small">De</div>
-                      <div>{{ msg.name }} <span class="text-muted">&lt;{{ msg.email }}&gt;</span></div>
+                      <div>
+                        {{ msg.name }} <span class="text-muted">&lt;{{ msg.email }}&gt;</span>
+                      </div>
                     </div>
 
                     <div class="mb-3">
@@ -127,17 +134,19 @@
                     <div class="mb-0">
                       <div class="fw-semibold text-muted small mb-2">Message</div>
                       <div class="border rounded p-3 bg-light">
-                        {{ msg.message|nl2br }}
+                        {{ msg.message|e|nl2br }}
                       </div>
                     </div>
                   {% endblock %}
 
                   {% block footer %}
-                    <a href="mailto:{{ msg.email }}?subject=Re: {{ msg.subject|url_encode }}" 
+                    <a href="mailto:{{ msg.email }}?subject=Re: {{ msg.subject|url_encode }}"
                        class="btn btn-primary">
                       <i class="bi bi-reply"></i> Répondre par email
                     </a>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                      Fermer
+                    </button>
                   {% endblock %}
                 {% endembed %}
 
