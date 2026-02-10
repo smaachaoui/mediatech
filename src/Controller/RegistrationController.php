@@ -55,7 +55,7 @@ final class RegistrationController extends AbstractController
              */
             $this->addFlash(
                 'success',
-                'Bienvenue sur MediaTech ! Votre compte a bien été créé. Vous pouvez maintenant vous connecter.'
+                'Votre compte a bien été créé. Vous pouvez maintenant vous connecter.'
             );
 
             return $this->redirectToRoute('app_login');

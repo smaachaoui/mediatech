@@ -45,13 +45,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * Je stocke uniquement le mot de passe hashé.
      */
     #[ORM\Column]
-    #[Assert\NotBlank(message: "Le mot de passe est obligatoire.")]
-    #[Assert\Length(
-        min: 8,
-        max: 4096,
-        minMessage: "Le mot de passe doit contenir au moins {{ limit }} caractères."
-    )]
-    private ?string $password = null;
+    private ?string $password = null;   
+
 
     /*
      * J'ajoute un pseudo pour l'affichage public.
