@@ -130,6 +130,160 @@ final class GoogleBooksService
     }
 
     /**
+     * Je recherche des livres par sujet/genre avec normalisation intelligente.
+     * Google Books utilise des "subjects" varies, cette methode essaie plusieurs variantes
+     * pour maximiser les resultats.
+     *
+     * @return array{items: array<int, array<string, mixed>>, total: int}
+     */
+    public function searchBySubject(string $subject, int $limit = 12, int $page = 1, bool $newestFirst = false): array
+    {
+        $subject = trim($subject);
+        $limit = max(1, min($limit, 40));
+        $page = max(1, $page);
+        $startIndex = ($page - 1) * $limit;
+
+        if ($subject === '') {
+            return $this->newest('fiction', $limit, $page);
+        }
+
+        // Je cree des variantes du genre pour maximiser les correspondances
+        $variants = $this->createSubjectVariants($subject);
+
+        $cacheKey = 'gbooks.subject.v3.' . md5(implode('|', $variants) . '|' . $limit . '|' . $page . '|' . ($newestFirst ? '1' : '0'));
+
+        $item = $this->cache->getItem($cacheKey);
+        if ($item->isHit()) {
+            $cached = $item->get();
+            return is_array($cached) ? $cached : ['items' => [], 'total' => 0];
+        }
+
+        try {
+            // J'essaie d'abord avec la variante principale
+            $mainVariant = $variants[0];
+            
+            $queryParams = [
+                'q' => sprintf('subject:%s', $mainVariant),
+                'printType' => 'books',
+                'langRestrict' => 'fr',
+                'maxResults' => $limit,
+                'startIndex' => $startIndex,
+            ];
+
+            if ($newestFirst) {
+                $queryParams['orderBy'] = 'newest';
+            }
+
+            $result = $this->fetchListWithTotal($queryParams);
+
+            // Si j'ai assez de resultats, je retourne directement
+            if (count($result['items']) >= $limit || count($variants) === 1) {
+                $item->set($result);
+                $item->expiresAfter(self::TTL_SEARCH);
+                $this->cache->save($item);
+
+                return $result;
+            }
+
+            // Sinon, j'essaie avec les autres variantes pour completer
+            $allItems = $result['items'];
+            $seenIds = array_column($allItems, 'id');
+
+            foreach (array_slice($variants, 1) as $variant) {
+                if (count($allItems) >= $limit) {
+                    break;
+                }
+
+                $queryParams['q'] = sprintf('subject:%s', $variant);
+                $queryParams['maxResults'] = $limit - count($allItems);
+                $queryParams['startIndex'] = 0;
+
+                $additional = $this->fetchListWithTotal($queryParams);
+
+                // J'ajoute les nouveaux items en evitant les doublons
+                foreach ($additional['items'] as $book) {
+                    if (!in_array($book['id'], $seenIds, true)) {
+                        $allItems[] = $book;
+                        $seenIds[] = $book['id'];
+                        if (count($allItems) >= $limit) {
+                            break;
+                        }
+                    }
+                }
+            }
+
+            $finalResult = [
+                'items' => array_slice($allItems, 0, $limit),
+                'total' => $result['total'],
+            ];
+
+            $item->set($finalResult);
+            $item->expiresAfter(self::TTL_SEARCH);
+            $this->cache->save($item);
+
+            return $finalResult;
+        } catch (TransportExceptionInterface|\RuntimeException) {
+            $result = ['items' => [], 'total' => 0];
+            $item->set($result);
+            $item->expiresAfter(300);
+            $this->cache->save($item);
+
+            return $result;
+        }
+    }
+
+    /**
+     * Je cree des variantes d'un sujet pour ameliorer les correspondances.
+     * Google Books utilise des subjects varies, j'essaie plusieurs formulations.
+     *
+     * @return array<int, string>
+     */
+    private function createSubjectVariants(string $subject): array
+    {
+        $variants = [];
+
+        // Variante 1 : Le sujet tel quel
+        $variants[] = $subject;
+
+        // Variante 2 : Sans tirets ni underscores
+        $normalized = str_replace(['-', '_'], ' ', $subject);
+        $normalized = preg_replace('/\s+/', ' ', $normalized);
+        $normalized = trim($normalized);
+        if ($normalized !== $subject && $normalized !== '') {
+            $variants[] = $normalized;
+        }
+
+        // Variante 3 : Mappings specifiques pour les genres courants
+        $mappings = [
+            'science-fiction' => 'science fiction',
+            'science fiction' => 'fiction / science fiction',
+            'fantastique' => 'fantasy',
+            'policier' => 'mystery',
+            'thriller' => 'thriller',
+            'romance' => 'romance',
+            'horreur' => 'horror',
+            'aventure' => 'adventure',
+            'biographie' => 'biography',
+            'histoire' => 'history',
+            'poésie' => 'poetry',
+            'theatre' => 'drama',
+            'essai' => 'essays',
+            'jeunesse' => 'juvenile fiction',
+        ];
+
+        $lowerSubject = strtolower($subject);
+        if (isset($mappings[$lowerSubject])) {
+            $mapped = $mappings[$lowerSubject];
+            if (!in_array($mapped, $variants, true)) {
+                $variants[] = $mapped;
+            }
+        }
+
+        // Je retourne les variantes uniques
+        return array_values(array_unique($variants));
+    }
+
+    /**
      * Je recupere les details d'un livre via son ID Google Books.
      *
      * @return array<string, mixed>
