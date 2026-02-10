@@ -180,14 +180,14 @@ final class CatalogController extends AbstractController
     private function loadMoviesNowPlaying(TmdbService $tmdb, int $limit, int $page, string $genre = ''): array
     {
         try {
-            $result = $tmdb->nowPlaying($limit, $page);
-            
             /*
-             * Si un genre est specifie, je filtre les resultats cote client.
-             * TMDB ne permet pas de filtrer par genre sur nowPlaying.
+             * Si un genre est specifie, j'utilise /discover/movie pour filtrer cote API.
+             * Sinon, j'utilise nowPlaying classique.
              */
             if ($genre !== '') {
-                $result['items'] = $this->filterMoviesByGenre($result['items'], $genre);
+                $result = $tmdb->discoverByGenre($genre, $limit, $page);
+            } else {
+                $result = $tmdb->nowPlaying($limit, $page);
             }
             
             return $result['items'];
@@ -203,15 +203,15 @@ final class CatalogController extends AbstractController
     private function loadMoviesNowPlayingWithTotal(TmdbService $tmdb, int $limit, int $page, string $genre = ''): array
     {
         try {
-            $result = $tmdb->nowPlaying($limit, $page);
-            
+            /*
+             * Si un genre est specifie, j'utilise /discover/movie pour filtrer cote API.
+             * Cela permet d'obtenir beaucoup plus de resultats qu'un filtrage cote client.
+             */
             if ($genre !== '') {
-                $result['items'] = $this->filterMoviesByGenre($result['items'], $genre);
-                $result['total'] = count($result['items']);
-                $result['totalPages'] = max(1, (int) ceil($result['total'] / $limit));
+                return $tmdb->discoverByGenre($genre, $limit, $page);
             }
             
-            return $result;
+            return $tmdb->nowPlaying($limit, $page);
         } catch (\Throwable) {
             $this->addFlash('danger', 'Impossible de charger des films pour le moment.');
             return ['items' => [], 'total' => 0, 'totalPages' => 0];
