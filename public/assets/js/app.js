@@ -12,7 +12,7 @@ import { initHomeScroll } from './modules/home_scroll.js';
 // Import des nouveaux modules (extraction du JS inline)
 import { initViewToggle } from './modules/view-toggle.js';
 import { initGenreSelector } from './modules/genre-selector.js';
-import { initFormAutoSubmit } from './modules/form-auto-submit.js';
+import { initScrollPosition } from './modules/scroll-position.js';
 
 function initApp() {
   // Modules existants
@@ -25,7 +25,7 @@ function initApp() {
   // Nouveaux modules
   initViewToggle();
   initGenreSelector();
-  initFormAutoSubmit();
+  initScrollPosition();
 }
 
 if (document.readyState === 'loading') {

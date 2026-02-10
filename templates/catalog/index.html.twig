@@ -89,7 +89,7 @@
             <form method="get" action="{{ path('app_catalog') }}" id="filterForm">
               <div class="mb-3">
                 <label class="form-label small fw-semibold">Type de média</label>
-                <select class="form-select" name="type" data-auto-submit="true">
+                <select class="form-select" name="type">
                   <option value="all" {{ type == 'all' ? 'selected' : '' }}>Tout afficher</option>
                   <option value="book" {{ type == 'book' ? 'selected' : '' }}>Livres uniquement</option>
                   <option value="movie" {{ type == 'movie' ? 'selected' : '' }}>Films uniquement</option>
@@ -100,7 +100,7 @@
               {% if type != 'all' %}
                 <div class="mb-3">
                   <label class="form-label small fw-semibold">Genre</label>
-                  <select class="form-select form-select-sm" name="genre" data-auto-submit="true">
+                  <select class="form-select form-select-sm" name="genre">
                     <option value="" {{ (genre|default('')) == '' ? 'selected' : '' }}>Tous les genres</option>
 
                     {% if type == 'book' and bookGenres is defined %}
@@ -129,6 +129,9 @@
               <hr class="my-3">
 
               <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary btn-sm">
+                  Appliquer les filtres
+                </button>
                 <a class="btn btn-outline-primary btn-sm" href="{{ path('app_catalog') }}">
                   Réinitialiser les filtres
                 </a>

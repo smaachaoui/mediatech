@@ -21,7 +21,7 @@
           <form method="get" action="{{ path('app_collections_public') }}" id="filterForm">
             <div class="mb-3">
               <label class="form-label small fw-semibold">Type de média</label>
-              <select class="form-select" name="type" data-auto-submit="true">
+              <select class="form-select" name="type">
                 <option value="all" {{ filters.type == 'all' ? 'selected' : '' }}>Tout afficher</option>
                 <option value="book" {{ filters.type == 'book' ? 'selected' : '' }}>Livres uniquement</option>
                 <option value="movie" {{ filters.type == 'movie' ? 'selected' : '' }}>Films uniquement</option>
@@ -30,7 +30,7 @@
 
             <div class="mb-3">
               <label class="form-label small fw-semibold">Trier par</label>
-              <select class="form-select" name="sort" data-auto-submit="true">
+              <select class="form-select" name="sort">
                 <option value="new" {{ filters.sort == 'new' ? 'selected' : '' }}>Plus récentes</option>
                 <option value="old" {{ filters.sort == 'old' ? 'selected' : '' }}>Plus anciennes</option>
                 <option value="alpha" {{ filters.sort == 'alpha' ? 'selected' : '' }}>A à Z</option>
@@ -41,7 +41,7 @@
             {% if filters.type != 'all' %}
               <div class="mb-3">
                 <label class="form-label small fw-semibold">Genre</label>
-                <select class="form-select form-select-sm" name="genre" data-auto-submit="true">
+                <select class="form-select form-select-sm" name="genre">
                   <option value="" {{ filters.genre == '' ? 'selected' : '' }}>Tous les genres</option>
                   
                   {% if filters.type == 'book' and bookGenres is defined %}
@@ -68,6 +68,9 @@
             <hr class="my-3">
 
             <div class="d-grid gap-2">
+              <button type="submit" class="btn btn-primary btn-sm">
+                Appliquer les filtres
+              </button>
               <a class="btn btn-outline-secondary btn-sm" href="{{ path('app_collections_public') }}">
                 Réinitialiser les filtres
               </a>
