@@ -101,6 +101,15 @@
 
                         <div class="col-12 col-lg-6">
                             <div class="d-flex justify-content-between align-items-center border rounded-3 p-3 bg-white h-100">
+                                <span class="text-muted">Réalisateur</span>
+                                <span class="fw-semibold text-end">
+                                    {{ movie.director ?: '—' }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-lg-6">
+                            <div class="d-flex justify-content-between align-items-center border rounded-3 p-3 bg-white h-100">
                                 <span class="text-muted">TMDB</span>
                                 <span class="fw-semibold">{{ movie.id ?: '—' }}</span>
                             </div>

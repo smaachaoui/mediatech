@@ -49,27 +49,36 @@ class CollectionRepository extends ServiceEntityRepository
         }
 
         /*
-         * Si un genre est specifie, je filtre les collections qui contiennent
-         * au moins un livre ou un film du genre demande.
+         * Si un genre est specifie, je filtre les collections qui :
+         * 1. Ont directement le genre dans leur champ "genre" (collection.genre)
+         * 2. OU contiennent au moins un livre/film du genre demande (book.genre ou movie.genre)
+         * 
+         * Cette approche hybride permet de trouver les collections :
+         * - Soit par leur genre declaré à la création
+         * - Soit par le contenu effectif de médias qu'elles contiennent
          */
         if ($genre !== '') {
-            /*
-             * Je determine si je filtre sur les livres ou les films selon le mediaType.
-             * Si mediaType=all, je filtre sur les deux.
-             */
+            $genreConditions = [];
+            
+            // Condition 1 : Le genre de la collection elle-même
+            $genreConditions[] = 'LOWER(c.genre) = LOWER(:genre)';
+            
+            // Condition 2 : Les genres des médias contenus
             if ($mediaType === Collection::MEDIA_BOOK || $mediaType === Collection::MEDIA_ALL) {
                 $qb->leftJoin('c.collectionBooks', 'cb')
-                    ->leftJoin('cb.book', 'b')
-                    ->andWhere('LOWER(b.genre) = LOWER(:genre)')
-                    ->setParameter('genre', $genre);
+                    ->leftJoin('cb.book', 'b');
+                $genreConditions[] = 'LOWER(b.genre) = LOWER(:genre)';
             }
 
             if ($mediaType === Collection::MEDIA_MOVIE || $mediaType === Collection::MEDIA_ALL) {
                 $qb->leftJoin('c.collectionMovies', 'cm')
-                    ->leftJoin('cm.movie', 'm')
-                    ->andWhere('LOWER(m.genre) = LOWER(:genre)')
-                    ->setParameter('genre', $genre);
+                    ->leftJoin('cm.movie', 'm');
+                $genreConditions[] = 'LOWER(m.genre) = LOWER(:genre)';
             }
+
+            // Je combine toutes les conditions avec OR
+            $qb->andWhere(implode(' OR ', $genreConditions))
+                ->setParameter('genre', $genre);
 
             /*
              * J'ajoute DISTINCT pour eviter les doublons si une collection
