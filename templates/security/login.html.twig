@@ -14,12 +14,30 @@
                         Accède à ton espace MediaTech.
                     </p>
 
+                    {# ==============================
+                       FLASH MESSAGES (succès, info…)
+                       ============================== #}
+                    {% for label, messages in app.flashes %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+                            </div>
+                        {% endfor %}
+                    {% endfor %}
+
+                    {# ==============================
+                       ERREUR D'AUTHENTIFICATION
+                       ============================== #}
                     {% if error %}
                         <div class="alert alert-danger" role="alert">
                             Adresse email ou mot de passe incorrect.
                         </div>
                     {% endif %}
 
+                    {# ==============================
+                       UTILISATEUR DÉJÀ CONNECTÉ
+                       ============================== #}
                     {% if app.user %}
                         <div class="alert alert-info" role="alert">
                             Connecté en tant que <strong>{{ app.user.userIdentifier }}</strong>.
@@ -28,6 +46,7 @@
                     {% endif %}
 
                     <form method="post" novalidate>
+
                         <div class="mb-3">
                             <label for="username" class="form-label">Email</label>
                             <input
@@ -40,7 +59,6 @@
                                 required
                                 autofocus
                                 placeholder="exemple@mail.com"
-                                aria-describedby="emailHelp"
                             >
                         </div>
 
@@ -72,13 +90,12 @@
                             <a href="{{ path('app_register') }}">Créer un compte</a>
                         </div>
 
-                        {% if app.request.attributes.get('_route') is defined and app.request.attributes.get('_route') != 'app_forgot_password_request' %}
-                            <div class="text-center mt-2">
-                                <a href="{{ path('app_forgot_password_request') }}">
-                                    Mot de passe oublié ?
-                                </a>
-                            </div>
-                        {% endif %}
+                        <div class="text-center mt-2">
+                            <a href="{{ path('app_forgot_password_request') }}">
+                                Mot de passe oublié ?
+                            </a>
+                        </div>
+
                     </form>
 
                 </div>
