@@ -1,74 +1,88 @@
-{# templates/components/_modal.html.twig
+{# templates/components/_modal.html.twig #}
 
-   Ce composant supporte deux modes d'utilisation :
-
-   MODE 1 - Avec embed et blocs (pour les formulaires complexes) :
-   {% embed 'components/_modal.html.twig' with {
-     id: 'myModal',
-     title: 'Mon titre',
-     action: path('my_route'),
-     csrf_id: 'my_csrf_token',
-     submit_label: 'Valider',
-     submit_class: 'btn-primary'
-   } %}
-     {% block body %}
-       <p>Mon contenu ici</p>
-     {% endblock %}
-   {% endembed %}
-
-   MODE 2 - Avec include et variables (pour les confirmations simples) :
-   {% include 'components/_modal.html.twig' with {
-     id: 'myModal',
-     title: 'Mon titre',
-     body: '<p>Mon contenu HTML</p>',
-     footer: '<form>...</form>',
-     allow_raw_body: true,
-     allow_raw_footer: true
-   } %}
-#}
-
+{% set id = id ?? 'modal' %}
+{% set title = title ?? '' %}
 {% set size = size ?? '' %}
+{% set useBlocks = use_blocks|default(false) %}
+{% set useSymfonyForm = use_symfony_form|default(false) %}
+{% set dialogClass = 'modal-dialog modal-dialog-centered' ~ (size ? ' modal-' ~ size : '') %}
 
-<div class="modal fade" id="{{ id }}" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog {{ size }}">
+<div class="modal fade"
+     id="{{ id }}"
+     tabindex="-1"
+     aria-labelledby="{{ id }}Label"
+     aria-hidden="true">
+  <div class="{{ dialogClass }}">
     <div class="modal-content">
 
       <div class="modal-header">
-        <h5 class="modal-title">{{ title }}</h5>
+        <h5 class="modal-title" id="{{ id }}Label">{{ title }}</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
       </div>
 
-      {# MODE 1 : Utilisation avec embed et formulaire integre #}
-      {% if action is defined %}
-        <form method="post" action="{{ action }}">
+      {# ✅ MODE SYMFONY FORM : uniquement si demandé explicitement #}
+      {% if useSymfonyForm and form is defined %}
+        {{ form_start(form, { action: action|default(null), attr: form_attr|default({}) }) }}
           <div class="modal-body">
-            {% if csrf_id is defined %}
-              <input type="hidden" name="_token" value="{{ csrf_token(csrf_id) }}">
-            {% endif %}
-            {% block body %}{% endblock %}
+            {{ block('body') }}
           </div>
 
           <div class="modal-footer">
             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
               Annuler
             </button>
+
             <button type="submit" class="btn {{ submit_class|default('btn-primary') }}">
               {{ submit_label|default('Valider') }}
             </button>
-            {% block footer %}{% endblock %}
+
+            {{ block('footer') }}
+          </div>
+        {{ form_end(form) }}
+
+      {# MODE 1 : Modal avec formulaire "manuel" (action) #}
+      {% elseif action is defined %}
+        <form method="post" action="{{ action }}">
+          <div class="modal-body">
+            {% if csrf_id is defined %}
+              <input type="hidden" name="_token" value="{{ csrf_token(csrf_id) }}">
+            {% endif %}
+
+            {{ block('body') }}
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+              Annuler
+            </button>
+
+            <button type="submit" class="btn {{ submit_class|default('btn-primary') }}">
+              {{ submit_label|default('Valider') }}
+            </button>
+
+            {{ block('footer') }}
           </div>
         </form>
 
-      {# MODE 2 : Utilisation avec include et variables body/footer #}
-      {% else %}
-        {% set allowRawBody = allow_raw_body|default(false) %}
-        {% set allowRawFooter = allow_raw_footer|default(false) %}
-
+      {# MODE 1bis : Modal sans form, contenu via blocks (embed) #}
+      {% elseif useBlocks %}
         <div class="modal-body">
-          {% if allowRawBody %}
-            {{ body|default('')|raw }}
-          {% else %}
-            {{ body|default('')|e|nl2br }}
+          {{ block('body') }}
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+            Fermer
+          </button>
+
+          {{ block('footer') }}
+        </div>
+
+      {# MODE 2 : Modal avec variables body/footer #}
+      {% else %}
+        <div class="modal-body">
+          {% if body is defined %}
+            {{ body|raw }}
           {% endif %}
         </div>
 
@@ -77,10 +91,8 @@
             Annuler
           </button>
 
-          {% if allowRawFooter %}
-            {{ footer|default('')|raw }}
-          {% else %}
-            {{ footer|default('')|e|nl2br }}
+          {% if footer is defined %}
+            {{ footer|raw }}
           {% endif %}
         </div>
       {% endif %}
@@ -89,5 +101,5 @@
   </div>
 </div>
 
-{# Bloc pour scripts JavaScript additionnels (à placer après la modal) #}
-{% block footer_extra %}{% endblock %}
+{% block body %}{% endblock %}
+{% block footer %}{% endblock %}
