@@ -3,8 +3,6 @@
 {% set id = id ?? 'modal' %}
 {% set title = title ?? '' %}
 {% set size = size ?? '' %}
-{% set useBlocks = use_blocks|default(false) %}
-{% set useSymfonyForm = use_symfony_form|default(false) %}
 {% set dialogClass = 'modal-dialog modal-dialog-centered' ~ (size ? ' modal-' ~ size : '') %}
 
 <div class="modal fade"
@@ -20,35 +18,17 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
       </div>
 
-      {# ✅ MODE SYMFONY FORM : uniquement si demandé explicitement #}
-      {% if useSymfonyForm and form is defined %}
-        {{ form_start(form, { action: action|default(null), attr: form_attr|default({}) }) }}
-          <div class="modal-body">
-            {{ block('body') }}
-          </div>
-
-          <div class="modal-footer">
-            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-              Annuler
-            </button>
-
-            <button type="submit" class="btn {{ submit_class|default('btn-primary') }}">
-              {{ submit_label|default('Valider') }}
-            </button>
-
-            {{ block('footer') }}
-          </div>
-        {{ form_end(form) }}
-
-      {# MODE 1 : Modal avec formulaire "manuel" (action) #}
-      {% elseif action is defined %}
+      {# MODE avec formulaire (action définie) #}
+      {% if action is defined %}
         <form method="post" action="{{ action }}">
           <div class="modal-body">
             {% if csrf_id is defined %}
               <input type="hidden" name="_token" value="{{ csrf_token(csrf_id) }}">
             {% endif %}
 
-            {{ block('body') }}
+            {% if body is defined %}
+              {{ body|raw }}
+            {% endif %}
           </div>
 
           <div class="modal-footer">
@@ -60,25 +40,13 @@
               {{ submit_label|default('Valider') }}
             </button>
 
-            {{ block('footer') }}
+            {% if footer is defined %}
+              {{ footer|raw }}
+            {% endif %}
           </div>
         </form>
 
-      {# MODE 1bis : Modal sans form, contenu via blocks (embed) #}
-      {% elseif useBlocks %}
-        <div class="modal-body">
-          {{ block('body') }}
-        </div>
-
-        <div class="modal-footer">
-          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-            Fermer
-          </button>
-
-          {{ block('footer') }}
-        </div>
-
-      {# MODE 2 : Modal avec variables body/footer #}
+      {# MODE sans formulaire (affichage simple) #}
       {% else %}
         <div class="modal-body">
           {% if body is defined %}
@@ -88,7 +56,7 @@
 
         <div class="modal-footer">
           <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-            Annuler
+            Fermer
           </button>
 
           {% if footer is defined %}
@@ -100,6 +68,3 @@
     </div>
   </div>
 </div>
-
-{% block body %}{% endblock %}
-{% block footer %}{% endblock %}

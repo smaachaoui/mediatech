@@ -114,77 +114,96 @@
                     <span class="d-none d-sm-inline">Supprimer</span>
                   </button>
                 </div>
-
-                {# MODAL D'ÉDITION (nouvelle) #}
-                {% embed 'components/_modal.html.twig' with {
-                  id: 'editCollectionModal_' ~ c.id,
-                  title: 'Modifier la collection',
-                  action: path('admin_collections_update', { id: c.id }),
-                  csrf_id: 'admin_edit_collection_' ~ c.id,
-                  submit_label: 'Enregistrer',
-                  submit_class: 'btn-primary'
-                } %}
-                  {% block body %}
-                    <div class="mb-3">
-                      <label class="form-label">Nom</label>
-                      <input class="form-control" name="name" type="text" required maxlength="150"
-                             value="{{ c.name }}">
-                    </div>
-
-                    <div class="mb-3">
-                      <label class="form-label">Genre</label>
-                      <input type="text" class="form-control" name="genre" value="{{ c.genre ?? '' }}" 
-                             placeholder="Fantasy, Action, Romance...">
-                    </div>
-
-                    <div class="mb-0">
-                      <label class="form-label">Description</label>
-                      <textarea class="form-control" name="description" rows="4" maxlength="2000">{{ c.description }}</textarea>
-                    </div>
-                  {% endblock %}
-                {% endembed %}
-
-                {# MODAL DE SUPPRESSION #}
-                {% include 'components/_modal.html.twig' with {
-                  id: 'deleteCollectionModal_' ~ c.id,
-                  title: 'Supprimer la collection',
-                  body: '
-                    <p>Voulez-vous vraiment supprimer la collection <strong>' ~ c.name|e ~ '</strong> ?</p>
-                    <p class="text-danger mb-0">Cette action est définitive.</p>
-                  ',
-                  footer: '
-                    <form method="post" action="' ~ path('admin_collections_delete', { id: c.id }) ~ '">
-                      <input type="hidden" name="_token" value="' ~ csrf_token('admin_delete_collection_' ~ c.id) ~ '">
-                      <button type="submit" class="btn btn-danger">
-                        Supprimer définitivement
-                      </button>
-                    </form>
-                  '
-                } %}
-
-                {# MODAL DE PUBLICATION/DÉPUBLICATION #}
-                {% include 'components/_modal.html.twig' with {
-                  id: 'togglePublishCollectionModal_' ~ c.id,
-                  title: (c.isPublished ? 'Dépublier la collection' : 'Publier la collection'),
-                  body: '
-                    <p>Confirmer la modification de publication pour <strong>' ~ c.name|e ~ '</strong> ?</p>
-                  ',
-                  footer: '
-                    <form method="post" action="' ~ path('admin_collections_toggle_publish', { id: c.id }) ~ '">
-                      <input type="hidden" name="_token" value="' ~ csrf_token('admin_toggle_publish_collection_' ~ c.id) ~ '">
-                      <button type="submit" class="btn btn-primary">
-                        Confirmer
-                      </button>
-                    </form>
-                  '
-                } %}
-
               </td>
             </tr>
           {% endfor %}
           </tbody>
         </table>
       </div>
+
+      {# TOUTES LES MODALES EN DEHORS DU TABLEAU #}
+      {% for c in collections %}
+        {# MODAL D'ÉDITION - Utilise {% set %} au lieu de {% embed %} #}
+        {% set modalEditBody %}
+          <div class="mb-3">
+            <label class="form-label">Nom</label>
+            <input class="form-control" name="name" type="text" required maxlength="150"
+                   value="{{ c.name }}">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Type de média</label>
+            <select class="form-select" name="mediaType" required>
+              <option value="book" {{ c.mediaType == 'book' ? 'selected' : '' }}>Livres uniquement</option>
+              <option value="movie" {{ c.mediaType == 'movie' ? 'selected' : '' }}>Films uniquement</option>
+              <option value="all" {{ c.mediaType == 'all' ? 'selected' : '' }}>Livres et Films</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Genre</label>
+            <input type="text" class="form-control" name="genre" value="{{ c.genre ?? '' }}" 
+                   placeholder="Fantasy, Action, Romance...">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">URL de l'affiche</label>
+            <input type="url" class="form-control" name="coverImageUrl" value="{{ c.coverImageUrl ?? '' }}" 
+                   placeholder="https://example.com/image.jpg">
+            <div class="form-text">Lien direct vers une image (optionnel)</div>
+          </div>
+
+          <div class="mb-0">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" name="description" rows="4" maxlength="2000">{{ c.description }}</textarea>
+          </div>
+        {% endset %}
+
+        {% include 'components/_modal.html.twig' with {
+          id: 'editCollectionModal_' ~ c.id,
+          title: 'Modifier la collection',
+          action: path('admin_collections_update', { id: c.id }),
+          csrf_id: 'admin_edit_collection_' ~ c.id,
+          submit_label: 'Enregistrer',
+          submit_class: 'btn-primary',
+          body: modalEditBody
+        } %}
+
+        {# MODAL DE SUPPRESSION #}
+        {% include 'components/_modal.html.twig' with {
+          id: 'deleteCollectionModal_' ~ c.id,
+          title: 'Supprimer la collection',
+          body: '
+            <p>Voulez-vous vraiment supprimer la collection <strong>' ~ c.name|e ~ '</strong> ?</p>
+            <p class="text-danger mb-0">Cette action est définitive.</p>
+          ',
+          footer: '
+            <form method="post" action="' ~ path('admin_collections_delete', { id: c.id }) ~ '">
+              <input type="hidden" name="_token" value="' ~ csrf_token('admin_delete_collection_' ~ c.id) ~ '">
+              <button type="submit" class="btn btn-danger">
+                Supprimer définitivement
+              </button>
+            </form>
+          '
+        } %}
+
+        {# MODAL DE PUBLICATION/DÉPUBLICATION #}
+        {% include 'components/_modal.html.twig' with {
+          id: 'togglePublishCollectionModal_' ~ c.id,
+          title: (c.isPublished ? 'Dépublier la collection' : 'Publier la collection'),
+          body: '
+            <p>Confirmer la modification de publication pour <strong>' ~ c.name|e ~ '</strong> ?</p>
+          ',
+          footer: '
+            <form method="post" action="' ~ path('admin_collections_toggle_publish', { id: c.id }) ~ '">
+              <input type="hidden" name="_token" value="' ~ csrf_token('admin_toggle_publish_collection_' ~ c.id) ~ '">
+              <button type="submit" class="btn btn-primary">
+                Confirmer
+              </button>
+            </form>
+          '
+        } %}
+      {% endfor %}
 
       {% if totalPages is defined and totalPages > 1 %}
         <div class="mt-3">

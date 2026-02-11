@@ -1,126 +1,130 @@
-{% embed 'components/_modal.html.twig' with {
+{# Construire la liste des images de couverture disponibles #}
+{% set coverChoices = [] %}
+{% set seen = {} %}
+
+{% for link in c.collectionBooks %}
+  {% if link.book and link.book.coverImage %}
+    {% set url = link.book.coverImage %}
+    {% if seen[url] is not defined %}
+      {% set coverChoices = coverChoices|merge([url]) %}
+      {% set seen = seen|merge({ (url): true }) %}
+    {% endif %}
+  {% endif %}
+{% endfor %}
+
+{% for link in c.collectionMovies %}
+  {% if link.movie and link.movie.poster %}
+    {% set url = link.movie.poster %}
+    {% if seen[url] is not defined %}
+      {% set coverChoices = coverChoices|merge([url]) %}
+      {% set seen = seen|merge({ (url): true }) %}
+    {% endif %}
+  {% endif %}
+{% endfor %}
+
+{# Capturer le contenu du modal dans une variable #}
+{% set modalEditBody %}
+  <div class="mb-3">
+    <label class="form-label">Nom</label>
+    <input class="form-control" name="name" type="text" required maxlength="150"
+           value="{{ c.name }}">
+  </div>
+
+  {% if coverChoices is not empty %}
+    <div class="mb-3">
+      <label class="form-label fw-semibold">Image de couverture</label>
+      <div class="small text-muted mb-3">Choisissez une image parmi les médias de votre collection</div>
+
+      <div class="cover-selection-grid">
+        
+        {# Option : Ne pas modifier (uniquement en édition) #}
+        <label class="cover-option">
+          <input type="radio" name="coverImage" value="__keep__" checked>
+          <div class="cover-card">
+            <div class="cover-placeholder">
+              <i class="bi bi-arrow-clockwise fs-1 text-muted"></i>
+            </div>
+            <div class="cover-label">
+              <i class="bi bi-check-circle text-primary"></i>
+              Ne pas modifier
+            </div>
+          </div>
+        </label>
+
+        {# Option : Aucune couverture #}
+        <label class="cover-option">
+          <input type="radio" name="coverImage" value="__none__" {{ c.coverImage is empty ? 'checked' : '' }}>
+          <div class="cover-card">
+            <div class="cover-placeholder">
+              <i class="bi bi-image fs-1 text-muted"></i>
+            </div>
+            <div class="cover-label">
+              <i class="bi bi-x-circle text-muted"></i>
+              Laisser vide
+            </div>
+          </div>
+        </label>
+
+        {# Images disponibles #}
+        {% for url in coverChoices %}
+          <label class="cover-option">
+            <input type="radio" name="coverImage" value="{{ url }}" {{ c.coverImage == url ? 'checked' : '' }}>
+            <div class="cover-card">
+              <div class="cover-image-wrapper">
+                <img src="{{ url }}" alt="Couverture">
+              </div>
+              <div class="cover-label">
+                <i class="bi bi-check-circle text-success"></i>
+                Sélectionner
+              </div>
+            </div>
+          </label>
+        {% endfor %}
+
+      </div>
+    </div>
+  {% endif %}
+
+  {# Champ Genre - Liste deroulante #}
+  <div class="mb-3">
+    <label class="form-label">Genre</label>
+    <select class="form-select" name="genre" id="editCollectionGenre{{ c.id }}">
+      <option value="">Aucun genre spécifique</option>
+      
+      {# 
+        Je charge les genres selon le type de collection.
+        Les variables bookGenres et movieGenres sont passees depuis le controller.
+      #}
+      {% if c.mediaType == 'book' and bookGenres is defined %}
+        {% for genre in bookGenres %}
+          <option value="{{ genre.name }}" {{ c.genre == genre.name ? 'selected' : '' }}>
+            {{ genre.name }}
+          </option>
+        {% endfor %}
+      {% elseif c.mediaType == 'movie' and movieGenres is defined %}
+        {% for genre in movieGenres %}
+          <option value="{{ genre.name }}" {{ c.genre == genre.name ? 'selected' : '' }}>
+            {{ genre.name }}
+          </option>
+        {% endfor %}
+      {% endif %}
+    </select>
+    <small class="form-text text-muted">Le genre aide à classer et filtrer votre collection</small>
+  </div>
+
+  <div class="mb-0">
+    <label class="form-label">Description</label>
+    <textarea class="form-control" name="description" rows="4" maxlength="2000">{{ c.description }}</textarea>
+  </div>
+{% endset %}
+
+{# Afficher le modal avec le contenu capturé #}
+{% include 'components/_modal.html.twig' with {
   id: 'modalEditCollection' ~ c.id,
   title: 'Modifier la collection',
   action: path('app_profile_edit_collection', { id: c.id }),
   csrf_id: 'edit_collection_' ~ c.id,
   submit_label: 'Enregistrer',
-  submit_class: 'btn-primary'
+  submit_class: 'btn-primary',
+  body: modalEditBody
 } %}
-  {% block body %}
-    <div class="mb-3">
-      <label class="form-label">Nom</label>
-      <input class="form-control" name="name" type="text" required maxlength="150"
-             value="{{ c.name }}">
-    </div>
-
-    {% set coverChoices = [] %}
-    {% set seen = {} %}
-
-    {% for link in c.collectionBooks %}
-      {% if link.book and link.book.coverImage %}
-        {% set url = link.book.coverImage %}
-        {% if seen[url] is not defined %}
-          {% set coverChoices = coverChoices|merge([url]) %}
-          {% set seen = seen|merge({ (url): true }) %}
-        {% endif %}
-      {% endif %}
-    {% endfor %}
-
-    {% for link in c.collectionMovies %}
-      {% if link.movie and link.movie.poster %}
-        {% set url = link.movie.poster %}
-        {% if seen[url] is not defined %}
-          {% set coverChoices = coverChoices|merge([url]) %}
-          {% set seen = seen|merge({ (url): true }) %}
-        {% endif %}
-      {% endif %}
-    {% endfor %}
-
-    {% if coverChoices is not empty %}
-      <div class="mb-3">
-        <label class="form-label fw-semibold">Image de couverture</label>
-        <div class="small text-muted mb-3">Choisissez une image parmi les médias de votre collection</div>
-
-        <div class="cover-selection-grid">
-          
-          {# Option : Ne pas modifier (uniquement en édition) #}
-          <label class="cover-option">
-            <input type="radio" name="coverImage" value="__keep__" checked>
-            <div class="cover-card">
-              <div class="cover-placeholder">
-                <i class="bi bi-arrow-clockwise fs-1 text-muted"></i>
-              </div>
-              <div class="cover-label">
-                <i class="bi bi-check-circle text-primary"></i>
-                Ne pas modifier
-              </div>
-            </div>
-          </label>
-
-          {# Option : Aucune couverture #}
-          <label class="cover-option">
-            <input type="radio" name="coverImage" value="__none__" {{ c.coverImage is empty ? 'checked' : '' }}>
-            <div class="cover-card">
-              <div class="cover-placeholder">
-                <i class="bi bi-image fs-1 text-muted"></i>
-              </div>
-              <div class="cover-label">
-                <i class="bi bi-x-circle text-muted"></i>
-                Laisser vide
-              </div>
-            </div>
-          </label>
-
-          {# Images disponibles #}
-          {% for url in coverChoices %}
-            <label class="cover-option">
-              <input type="radio" name="coverImage" value="{{ url }}" {{ c.coverImage == url ? 'checked' : '' }}>
-              <div class="cover-card">
-                <div class="cover-image-wrapper">
-                  <img src="{{ url }}" alt="Couverture">
-                </div>
-                <div class="cover-label">
-                  <i class="bi bi-check-circle text-success"></i>
-                  Sélectionner
-                </div>
-              </div>
-            </label>
-          {% endfor %}
-
-        </div>
-      </div>
-    {% endif %}
-
-    {# Champ Genre - Liste deroulante #}
-    <div class="mb-3">
-      <label class="form-label">Genre</label>
-      <select class="form-select" name="genre" id="editCollectionGenre{{ c.id }}">
-        <option value="">Aucun genre spécifique</option>
-        
-        {# 
-          Je charge les genres selon le type de collection.
-          Les variables bookGenres et movieGenres sont passees depuis le controller.
-        #}
-        {% if c.mediaType == 'book' and bookGenres is defined %}
-          {% for genre in bookGenres %}
-            <option value="{{ genre.name }}" {{ c.genre == genre.name ? 'selected' : '' }}>
-              {{ genre.name }}
-            </option>
-          {% endfor %}
-        {% elseif c.mediaType == 'movie' and movieGenres is defined %}
-          {% for genre in movieGenres %}
-            <option value="{{ genre.name }}" {{ c.genre == genre.name ? 'selected' : '' }}>
-              {{ genre.name }}
-            </option>
-          {% endfor %}
-        {% endif %}
-      </select>
-      <small class="form-text text-muted">Le genre aide à classer et filtrer votre collection</small>
-    </div>
-
-    <div class="mb-0">
-      <label class="form-label">Description</label>
-      <textarea class="form-control" name="description" rows="4" maxlength="2000">{{ c.description }}</textarea>
-    </div>
-  {% endblock %}
-{% endembed %}

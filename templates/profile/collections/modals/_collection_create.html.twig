@@ -1,46 +1,49 @@
-{% embed 'components/_modal.html.twig' with {
+{# Capturer le contenu du modal dans une variable #}
+{% set modalCreateBody %}
+  {# Conteneur pour injecter les données de genres (utilisé par genre-selector.js) #}
+  <div id="genresData" 
+       data-book-genres='{{ bookGenres|default([])|json_encode|raw }}'
+       data-movie-genres='{{ movieGenres|default([])|json_encode|raw }}'
+       style="display: none;"></div>
+
+  <div class="mb-3">
+    <label class="form-label">Nom</label>
+    <input class="form-control" name="name" type="text" required maxlength="150"
+           placeholder="Ex : Mes films préférés">
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Type de collection</label>
+    <select class="form-select" name="mediaType" id="createCollectionMediaType" required>
+      <option value="" selected disabled>Choisir…</option>
+      <option value="book">Livres</option>
+      <option value="movie">Films</option>
+    </select>
+  </div>
+
+  {# Champ Genre dynamique #}
+  <div class="mb-3">
+    <label class="form-label">Genre</label>
+    <select class="form-select" name="genre" id="createCollectionGenre" disabled>
+      <option value="">Sélectionnez d'abord le type</option>
+    </select>
+    <small class="form-text text-muted">Choisissez d'abord le type de collection</small>
+  </div>
+
+  <div class="mb-0">
+    <label class="form-label">Description</label>
+    <textarea class="form-control" name="description" rows="4" maxlength="2000"
+              placeholder="Décris rapidement cette collection (optionnel)"></textarea>
+  </div>
+{% endset %}
+
+{# Afficher le modal avec le contenu capturé #}
+{% include 'components/_modal.html.twig' with {
   id: 'modalCreateCollection',
   title: 'Nouvelle collection',
   action: path('app_profile_create_collection'),
   csrf_id: 'create_collection',
   submit_label: 'Créer',
-  submit_class: 'btn-primary'
+  submit_class: 'btn-primary',
+  body: modalCreateBody
 } %}
-  {% block body %}
-    {# Conteneur pour injecter les données de genres (utilisé par genre-selector.js) #}
-    <div id="genresData" 
-         data-book-genres='{{ bookGenres|default([])|json_encode|raw }}'
-         data-movie-genres='{{ movieGenres|default([])|json_encode|raw }}'
-         style="display: none;"></div>
-
-    <div class="mb-3">
-      <label class="form-label">Nom</label>
-      <input class="form-control" name="name" type="text" required maxlength="150"
-             placeholder="Ex : Mes films préférés">
-    </div>
-
-    <div class="mb-3">
-      <label class="form-label">Type de collection</label>
-      <select class="form-select" name="mediaType" id="createCollectionMediaType" required>
-        <option value="" selected disabled>Choisir…</option>
-        <option value="book">Livres</option>
-        <option value="movie">Films</option>
-      </select>
-    </div>
-
-    {# Champ Genre dynamique #}
-    <div class="mb-3">
-      <label class="form-label">Genre</label>
-      <select class="form-select" name="genre" id="createCollectionGenre" disabled>
-        <option value="">Sélectionnez d'abord le type</option>
-      </select>
-      <small class="form-text text-muted">Choisissez d'abord le type de collection</small>
-    </div>
-
-    <div class="mb-0">
-      <label class="form-label">Description</label>
-      <textarea class="form-control" name="description" rows="4" maxlength="2000"
-                placeholder="Décris rapidement cette collection (optionnel)"></textarea>
-    </div>
-  {% endblock %}
-{% endembed %}
