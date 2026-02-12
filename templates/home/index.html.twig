@@ -10,12 +10,17 @@
         <h2 class="mt-home-hero__title mb-0">
           Bienvenue sur MediaTech !
         </h2>
+        {% if not app.user %}
+            <div class="alert alert-info mt-4 mb-0 text-center">
+              Créez un compte pour ajouter vos œuvres à votre espace personnel et constituer vos collections.
+            </div>
+        {% endif %}
       </div>
     </div>
   </section>
 
 
-  <section class="mt-4 mb-5">
+    <section class="mt-4 mb-5">
       <div class="card shadow-sm border-0">
         <div class="card-body">
           <h2 class="h5 mb-4 text-center">Comment ça marche ?</h2>
@@ -51,12 +56,6 @@
               </p>
             </div>
           </div>
-
-          {% if not app.user %}
-            <div class="alert alert-info mt-4 mb-0 text-center">
-              <strong>Astuce :</strong> créez un compte pour sauvegarder vos œuvres et accéder à votre collection personnelle.
-            </div>
-          {% endif %}
         </div>
       </div>
     </section>
