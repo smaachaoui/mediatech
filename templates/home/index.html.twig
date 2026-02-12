@@ -4,100 +4,149 @@
 
 {% block body %}
 
-<section class="mt-home-hero">
-  <div class="mt-home-hero__overlay">
-    <div class="mt-home-hero__content text-center text-white">
-      <h2 class="mt-home-hero__title mb-0">
-        Bienvenue sur MediaTech !
-      </h2>
+  <section class="mt-home-hero">
+    <div class="mt-home-hero__overlay">
+      <div class="mt-home-hero__content text-center text-white">
+        <h2 class="mt-home-hero__title mb-0">
+          Bienvenue sur MediaTech !
+        </h2>
+      </div>
     </div>
+  </section>
+
+
+  <section class="mt-4 mb-5">
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          <h2 class="h5 mb-4 text-center">Comment ça marche ?</h2>
+
+          <div class="row text-center">
+            <div class="col-md-4 mb-3">
+              <div class="mb-2 fs-2 text-primary">
+                <i class="bi bi-search"></i>
+              </div>
+              <h3 class="h6">Rechercher une œuvre</h3>
+              <p class="text-muted mb-0">
+                Je recherche un livre ou un film à partir du catalogue.
+              </p>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <div class="mb-2 fs-2 text-success">
+                <i class="bi bi-plus-circle"></i>
+              </div>
+              <h3 class="h6">Ajouter à ma collection</h3>
+              <p class="text-muted mb-0">
+                J’ajoute une œuvre à mon onglet non répertorié pour la retrouver facilement.
+              </p>
+            </div>
+
+            <div class="col-md-4 mb-3">
+              <div class="mb-2 fs-2 text-warning">
+                <i class="bi bi-collection"></i>
+              </div>
+              <h3 class="h6">Organiser et suivre</h3>
+              <p class="text-muted mb-0">
+                Je déplace mon livre ou film non répertorié vers une collection existante.
+              </p>
+            </div>
+          </div>
+
+          {% if not app.user %}
+            <div class="alert alert-info mt-4 mb-0 text-center">
+              <strong>Astuce :</strong> créez un compte pour sauvegarder vos œuvres et accéder à votre collection personnelle.
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </section>
+
+
+
+  <div class="d-flex flex-column gap-3 mt-3">
+
+    <section class="mt-card p-3">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h2 class="h6 mb-0 mt-section-title">Derniers livres ajoutés</h2>
+        <a class="btn btn-sm btn-outline-primary" href="{{ path('app_catalog', { type: 'book' }) }}">
+          Catalogue
+        </a>
+      </div>
+
+      {% if books is empty %}
+        {% include 'components/_state_empty.html.twig' with {
+          title: 'Aucun livre',
+          message: 'Impossible de charger le flux de livres pour le moment.'
+        } only %}
+      {% else %}
+        <div class="mt-home-row">
+          <button class="btn btn-outline-primary btn-sm mt-home-arrow"
+                  type="button"
+                  onclick="homeScroll('home-books', -1)"
+                  aria-label="Defiler a gauche">&#8249;</button>
+
+          <div id="home-books"
+              class="mt-home-scroll d-flex overflow-auto flex-nowrap py-2
+                      gap-2 gap-md-3 px-1 px-md-2">
+            {% for book in books %}
+              <div class="mt-home-item flex-shrink-0"
+                  style="min-width: 160px; max-width: 160px;"
+                  data-mt-w-md="180"
+                  data-mt-w-lg="190">
+                {% include 'components/_structure_media_grid.html.twig' with { item: book, kind: 'book' } only %}
+              </div>
+            {% endfor %}
+          </div>
+
+          <button class="btn btn-outline-primary btn-sm mt-home-arrow"
+                  type="button"
+                  onclick="homeScroll('home-books', 1)"
+                  aria-label="Defiler a droite">&#8250;</button>
+        </div>
+      {% endif %}
+    </section>
+
+    <section class="mt-card p-3">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h2 class="h6 mb-0 mt-section-title">Derniers films ajoutés</h2>
+        <a class="btn btn-sm btn-outline-primary" href="{{ path('app_catalog', { type: 'movie' }) }}">
+          Catalogue
+        </a>
+      </div>
+
+      {% if movies is empty %}
+        {% include 'components/_state_empty.html.twig' with {
+          title: 'Aucun film',
+          message: 'Impossible de charger le flux de films pour le moment.'
+        } only %}
+      {% else %}
+        <div class="mt-home-row">
+          <button class="btn btn-outline-primary btn-sm mt-home-arrow"
+                  type="button"
+                  onclick="homeScroll('home-movies', -1)"
+                  aria-label="Defiler a gauche">&#8249;</button>
+
+          <div id="home-movies"
+              class="mt-home-scroll d-flex overflow-auto flex-nowrap py-2
+                      gap-2 gap-md-3 px-1 px-md-2">
+            {% for movie in movies %}
+              <div class="mt-home-item flex-shrink-0"
+                  style="min-width: 160px; max-width: 160px;"
+                  data-mt-w-md="180"
+                  data-mt-w-lg="190">
+                {% include 'components/_structure_media_grid.html.twig' with { item: movie, kind: 'movie' } only %}
+              </div>
+            {% endfor %}
+          </div>
+
+          <button class="btn btn-outline-primary btn-sm mt-home-arrow"
+                  type="button"
+                  onclick="homeScroll('home-movies', 1)"
+                  aria-label="Defiler a droite">&#8250;</button>
+        </div>
+      {% endif %}
+    </section>
+
   </div>
-</section>
-
-<div class="d-flex flex-column gap-3 mt-3">
-
-  <section class="mt-card p-3">
-    <div class="d-flex justify-content-between align-items-center mb-2">
-      <h2 class="h6 mb-0 mt-section-title">Derniers livres ajoutés</h2>
-      <a class="btn btn-sm btn-outline-primary" href="{{ path('app_catalog', { type: 'book' }) }}">
-        Catalogue
-      </a>
-    </div>
-
-    {% if books is empty %}
-      {% include 'components/_state_empty.html.twig' with {
-        title: 'Aucun livre',
-        message: 'Impossible de charger le flux de livres pour le moment.'
-      } only %}
-    {% else %}
-      <div class="mt-home-row">
-        <button class="btn btn-outline-primary btn-sm mt-home-arrow"
-                type="button"
-                onclick="homeScroll('home-books', -1)"
-                aria-label="Defiler a gauche">&#8249;</button>
-
-        <div id="home-books"
-             class="mt-home-scroll d-flex overflow-auto flex-nowrap py-2
-                    gap-2 gap-md-3 px-1 px-md-2">
-          {% for book in books %}
-            <div class="mt-home-item flex-shrink-0"
-                 style="min-width: 160px; max-width: 160px;"
-                 data-mt-w-md="180"
-                 data-mt-w-lg="190">
-              {% include 'components/_structure_media_grid.html.twig' with { item: book, kind: 'book' } only %}
-            </div>
-          {% endfor %}
-        </div>
-
-        <button class="btn btn-outline-primary btn-sm mt-home-arrow"
-                type="button"
-                onclick="homeScroll('home-books', 1)"
-                aria-label="Defiler a droite">&#8250;</button>
-      </div>
-    {% endif %}
-  </section>
-
-  <section class="mt-card p-3">
-    <div class="d-flex justify-content-between align-items-center mb-2">
-      <h2 class="h6 mb-0 mt-section-title">Derniers films ajoutés</h2>
-      <a class="btn btn-sm btn-outline-primary" href="{{ path('app_catalog', { type: 'movie' }) }}">
-        Catalogue
-      </a>
-    </div>
-
-    {% if movies is empty %}
-      {% include 'components/_state_empty.html.twig' with {
-        title: 'Aucun film',
-        message: 'Impossible de charger le flux de films pour le moment.'
-      } only %}
-    {% else %}
-      <div class="mt-home-row">
-        <button class="btn btn-outline-primary btn-sm mt-home-arrow"
-                type="button"
-                onclick="homeScroll('home-movies', -1)"
-                aria-label="Defiler a gauche">&#8249;</button>
-
-        <div id="home-movies"
-             class="mt-home-scroll d-flex overflow-auto flex-nowrap py-2
-                    gap-2 gap-md-3 px-1 px-md-2">
-          {% for movie in movies %}
-            <div class="mt-home-item flex-shrink-0"
-                 style="min-width: 160px; max-width: 160px;"
-                 data-mt-w-md="180"
-                 data-mt-w-lg="190">
-              {% include 'components/_structure_media_grid.html.twig' with { item: movie, kind: 'movie' } only %}
-            </div>
-          {% endfor %}
-        </div>
-
-        <button class="btn btn-outline-primary btn-sm mt-home-arrow"
-                type="button"
-                onclick="homeScroll('home-movies', 1)"
-                aria-label="Defiler a droite">&#8250;</button>
-      </div>
-    {% endif %}
-  </section>
-
-</div>
 
 {% endblock %}
