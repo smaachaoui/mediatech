@@ -43,7 +43,10 @@
         "symfony/web-link": "6.4.*",
         "symfony/yaml": "6.4.*",
         "symfonycasts/reset-password-bundle": "^1.24",
+        "twig/cssinliner-extra": "^3.23",
         "twig/extra-bundle": "^2.12|^3.0",
+        "twig/inky-extra": "^3.23",
+        "twig/markdown-extra": "^3.23",
         "twig/twig": "^2.12|^3.0"
     },
     "require-dev": {
