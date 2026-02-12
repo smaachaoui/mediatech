@@ -15,7 +15,7 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 final class CatalogController extends AbstractController
 {
-    private const ITEMS_PER_PAGE = 12;
+    private const ITEMS_PER_PAGE = 4;
 
     #[Route('/catalog', name: 'app_catalog', methods: ['GET'])]
     public function index(
