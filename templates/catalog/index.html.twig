@@ -153,7 +153,7 @@
 
                 <div class="row g-3 mb-4 view-grid" id="booksGridView">
                   {% for book in books %}
-                    <div class="col-6 col-md-4 col-xl-3">
+                    <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
                       {% include 'components/_structure_media_grid.html.twig' with { item: book, kind: 'book' } only %}
                     </div>
                   {% endfor %}
@@ -183,7 +183,7 @@
 
                 <div class="row g-3 view-grid" id="moviesGridView">
                   {% for movie in movies %}
-                    <div class="col-6 col-md-4 col-xl-3">
+                    <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
                       {% include 'components/_structure_media_grid.html.twig' with { item: movie, kind: 'movie' } only %}
                     </div>
                   {% endfor %}
@@ -216,7 +216,7 @@
               {% else %}
                 <div class="row g-3 mb-4 view-grid" id="booksGridView">
                   {% for book in books %}
-                    <div class="col-6 col-md-4 col-xl-3">
+                    <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
                       {% include 'components/_structure_media_grid.html.twig' with { item: book, kind: 'book' } only %}
                     </div>
                   {% endfor %}
@@ -258,7 +258,7 @@
               {% else %}
                 <div class="row g-3 mb-4 view-grid" id="moviesGridView">
                   {% for movie in movies %}
-                    <div class="col-6 col-md-4 col-xl-3">
+                    <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
                       {% include 'components/_structure_media_grid.html.twig' with { item: movie, kind: 'movie' } only %}
                     </div>
                   {% endfor %}

@@ -1,0 +1,113 @@
+/* ========================================
+   LAYOUT.CSS - Navbar, Footer, Hero, Structure
+   ======================================== */
+
+/* Navbar */
+.mt-navbar {
+  background-color: var(--mt-primary);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.mt-navbar .navbar-brand,
+.mt-navbar .nav-link {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.mt-navbar .nav-link:hover,
+.mt-navbar .nav-link:focus {
+  color: #ffffff;
+}
+
+.mt-navbar .nav-link::after {
+  background-color: rgba(255, 255, 255, 0.75);
+  bottom: -4px;
+}
+
+.mt-navbar .navbar-toggler {
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.mt-navbar .navbar-toggler:focus {
+  box-shadow: 0 0 0 0.2rem rgba(121, 183, 255, 0.35);
+}
+
+.mt-navbar.navbar-dark {
+  --bs-navbar-color: rgba(255, 255, 255, 0.92);
+  --bs-navbar-hover-color: #ffffff;
+  --bs-navbar-toggler-border-color: rgba(255, 255, 255, 0.35);
+  --bs-navbar-toggler-icon-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 255%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+
+/* Footer */
+.mt-footer { background-color: var(--mt-primary); }
+.mt-footer, .mt-footer * { color: rgba(255, 255, 255, 0.92); }
+
+.mt-footer-link {
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+}
+
+.mt-footer-link:hover,
+.mt-footer-link:focus {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+/* Hero */
+.mt-home-hero {
+  width: 100%;
+  height: 280px;
+  background-image: url('../img/banner.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: var(--mt-radius);
+  border: 1px solid var(--mt-border);
+  box-shadow: var(--mt-shadow);
+  overflow: hidden;
+}
+
+.mt-home-hero__overlay {
+  width: 100%;
+  height: 100%;
+  background: rgba(10, 57, 112, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mt-home-hero__title {
+  font-weight: 700;
+  line-height: 1.25;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.65);
+  margin: 0;
+}
+
+/* Home row : arrow | scroller | arrow */
+.mt-home-row {
+  display: grid;
+  grid-template-columns: 40px 1fr 40px;
+  gap: 10px;
+  align-items: center;
+}
+
+.mt-home-arrow {
+  width: 40px;
+  height: 40px;
+  border-radius: 5px;
+  padding: 0;
+  display: inline-grid;
+  place-content: center;
+  font-size: 18px;
+}
+
+.mt-home-scroll {
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+}
+
+/* Home item width */
+.mt-home-item {
+  min-width: 190px;
+  max-width: 190px;
+}

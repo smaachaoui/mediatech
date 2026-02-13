@@ -1,0 +1,313 @@
+/* ========================================
+   COMPONENTS.CSS - Cartes, badges, avatars, formulaires
+   ======================================== */
+
+/* Badges */
+.mt-badge-count {
+  background: var(--mt-primary);
+  color: #fff;
+}
+
+.mt-badge-soft {
+  background: rgba(10, 57, 112, 0.08);
+  border: 1px solid rgba(10, 57, 112, 0.18);
+  color: var(--mt-primary);
+}
+
+/* ========================================
+   CARTES MÉDIA - Mode grille
+   ======================================== */
+
+.mt-media-card {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.mt-media-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 38px rgba(10, 57, 112, 0.14);
+}
+
+.mt-media-card__thumb {
+  display: block;
+  text-decoration: none;
+}
+
+.mt-media-card__thumb::after { content: none; }
+
+.mt-media-card__img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  display: block;
+  border-bottom: 1px solid var(--mt-border);
+}
+
+.mt-media-card__img-placeholder {
+  height: 200px;
+  display: grid;
+  place-content: center;
+  background: var(--mt-surface-2);
+  border-bottom: 1px solid var(--mt-border);
+}
+
+/* ========================================
+   CARTES MÉDIA - Mode liste
+   ======================================== */
+
+.mt-media-row {
+  overflow: hidden;
+}
+
+.mt-media-row__thumb {
+  display: block;
+  text-decoration: none;
+}
+
+.mt-media-row__thumb::after { content: none; }
+
+.mt-media-row__img {
+  width: 110px;
+  height: 150px;
+  object-fit: cover;
+  display: block;
+  border-right: 1px solid var(--mt-border);
+}
+
+.mt-media-row__img-placeholder {
+  width: 110px;
+  height: 150px;
+  display: grid;
+  place-content: center;
+  background: var(--mt-surface-2);
+  border-right: 1px solid var(--mt-border);
+}
+
+.mt-media-row .btn {
+  white-space: nowrap;
+}
+
+/* ========================================
+   AVATARS
+   ======================================== */
+
+.mt-avatar {
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid var(--mt-border);
+  background: var(--mt-surface-2);
+  flex: 0 0 auto;
+}
+
+.mt-avatar--lg { width: 64px; height: 64px; }
+.mt-avatar--sm { width: 36px; height: 36px; }
+
+.mt-avatar__img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.mt-avatar__fallback {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-content: center;
+  color: rgba(15, 23, 42, 0.65);
+  font-weight: 700;
+}
+
+/* ========================================
+   SÉLECTION MULTIPLE - Déplacement en masse
+   ======================================== */
+
+.item-checkbox {
+  cursor: pointer;
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+#bulkMoveForm {
+  transition: all 0.2s ease;
+}
+
+#bulkMoveBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+#selectedCount {
+  font-weight: 600;
+  color: var(--bs-primary, #0d6efd);
+  min-width: 1.5rem;
+  display: inline-block;
+  text-align: center;
+}
+
+.list-group-item:has(.item-checkbox) {
+  transition: background-color 0.15s ease;
+}
+
+.list-group-item:has(.item-checkbox:checked) {
+  background-color: rgba(13, 110, 253, 0.05);
+  border-left: 3px solid var(--bs-primary, #0d6efd);
+}
+
+/* ========================================
+   SÉLECTION DE COUVERTURE
+   ======================================== */
+
+.cover-selection-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.cover-option {
+  cursor: pointer;
+  display: block;
+  position: relative;
+  margin: 0;
+  animation: fadeInUp 0.3s ease backwards;
+}
+
+.cover-option input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.cover-card {
+  border: 2px solid #dee2e6;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: #fff;
+  transition: all 0.2s ease;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.cover-card:hover {
+  border-color: #adb5bd;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.cover-option input[type="radio"]:checked + .cover-card {
+  border-color: #0d6efd;
+  border-width: 3px;
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+}
+
+.cover-image-wrapper {
+  aspect-ratio: 2/3;
+  background: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.cover-image-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.cover-placeholder {
+  aspect-ratio: 2/3;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cover-label {
+  padding: 0.5rem;
+  text-align: center;
+  font-size: 0.875rem;
+  font-weight: 500;
+  background: #f8f9fa;
+  color: #6c757d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  border-top: 1px solid #dee2e6;
+}
+
+.cover-option input[type="radio"]:checked + .cover-card .cover-label {
+  background: #e7f1ff;
+  color: #0d6efd;
+  border-top-color: #0d6efd;
+}
+
+.cover-label i {
+  font-size: 1rem;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.cover-option input[type="radio"]:checked + .cover-card .cover-label i {
+  opacity: 1;
+}
+
+.cover-card:hover .cover-label {
+  background: #e9ecef;
+}
+
+/* Animation délai progressif */
+.cover-option:nth-child(1) { animation-delay: 0.05s; }
+.cover-option:nth-child(2) { animation-delay: 0.1s; }
+.cover-option:nth-child(3) { animation-delay: 0.15s; }
+.cover-option:nth-child(4) { animation-delay: 0.2s; }
+.cover-option:nth-child(5) { animation-delay: 0.25s; }
+.cover-option:nth-child(6) { animation-delay: 0.3s; }
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========================================
+   ADMINISTRATION - Cartes d'action
+   ======================================== */
+
+.mt-admin-action-card {
+  height: 100%;
+}
+
+.mt-admin-action-card .card-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.mt-admin-action-card .mt-admin-action-btn {
+  margin-top: auto;
+}
+
+/* Genre checkboxes */
+.genre-checkboxes .form-check {
+  display: inline-flex;
+  margin-right: 1rem;
+}
+
+/* Messages admin - statut visuel */
+.table-warning {
+  background-color: rgba(255, 193, 7, 0.1) !important;
+  border-left: 3px solid #ffc107;
+}
+
+/* Card générique */
+.card {
+  margin-bottom: 1rem;
+}
