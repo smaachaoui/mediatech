@@ -8,6 +8,8 @@ use App\Entity\CollectionBook;
 use App\Entity\CollectionMovie;
 use App\Entity\Movie;
 use App\Entity\User;
+use App\Service\GoogleBooksService;
+use App\Service\TmdbService;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 

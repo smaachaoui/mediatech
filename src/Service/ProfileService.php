@@ -12,6 +12,7 @@ use App\Repository\CollectionMovieRepository;
 use App\Repository\CollectionRepository;
 use App\Repository\CommentRepository;
 use App\Repository\GenreRepository;
+use App\Service\LibraryManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
