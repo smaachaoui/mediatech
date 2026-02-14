@@ -1,15 +1,87 @@
-/* Feuille de style css principale
-
-  Structure modulaire :
-  - base.css      : Variables, styles fondamentaux, boutons
-  - layout.css    : Navbar, footer, hero, structure page
-  - components.css: Cartes, badges, avatars, formulaires
-  - tablet.css    : Media queries tablette (576px - 991px)
-  - mobile.css    : Media queries mobile (< 576px)
-*/
+/**
+ * Feuille de style CSS principale de MediaTech
+ *
+ * J'ai organisé les styles de manière modulaire pour faciliter la maintenance.
+ * Chaque fichier a une responsabilité précise :
+ *
+ * - base.css       : Variables CSS, styles fondamentaux, boutons
+ * - layout.css     : Navbar, footer, hero, structure de page
+ * - components.css : Cartes, badges, avatars, formulaires
+ * - tablet.css     : Media queries tablette (576px - 991px)
+ * - mobile.css     : Media queries mobile (< 576px)
+ */
 
 @import url('base.css');
 @import url('layout.css');
 @import url('components.css');
 @import url('tablet.css');
 @import url('mobile.css');
+
+/**
+ * Header fixe sur mobile et tablette
+ *
+ * J'utilise position fixed car sticky ne fonctionne pas correctement
+ * avec la structure flex du body. Le header reste en haut de l'écran
+ * pendant tout le scroll.
+ */
+@media (max-width: 991.98px) {
+    header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1030;
+    }
+}
+
+/**
+ * Tablette (576px - 991px) : header compact avec logo 44px
+ * Je compense avec un padding adapté.
+ */
+@media (min-width: 576px) and (max-width: 991.98px) {
+    body.mt-page {
+        padding-top: 52px;
+    }
+}
+
+/**
+ * Petites tablettes (576px - 767px) : logo encore plus petit (36px)
+ */
+@media (min-width: 576px) and (max-width: 767.98px) {
+    body.mt-page {
+        padding-top: 44px;
+    }
+}
+
+/**
+ * Mobile (< 576px) : logo 60px avec padding navbar
+ */
+@media (max-width: 575.98px) {
+    body.mt-page {
+        padding-top: 76px;
+    }
+}
+
+/**
+ * Desktop : header statique normal, pas de padding compensatoire
+ */
+@media (min-width: 992px) {
+    header {
+        position: static;
+    }
+
+    body.mt-page {
+        padding-top: 0;
+    }
+}
+
+/**
+ * Scroll horizontal pour les carrousels de médias
+ *
+ * J'utilise le touch scrolling natif pour une meilleure expérience mobile.
+ */
+.mt-home-scroll {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+}

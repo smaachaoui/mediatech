@@ -55,20 +55,87 @@
   }
 }
 
-/*
- * Navbar sur tablette
- * Je la rends sticky pour qu'elle reste visible au scroll.
+/* Navbar sur tablette
+ * Je crée un menu compact sans burger : les liens sont visibles mais réduits.
+ * Le burger reste réservé au mobile uniquement.
  */
-@media (max-width: 991.98px) {
-  .mt-navbar {
-    position: sticky;
-    top: 0;
-    z-index: 1030;
-  }
+@media (min-width: 576px) and (max-width: 991.98px) {
+    /**
+     * J'ai réduit le padding vertical pour compacter le header.
+     */
+    .mt-navbar.navbar {
+        padding-top: 0.15rem !important;
+        padding-bottom: 0.15rem !important;
+    }
 
-  .navbar-collapse { text-align: right; }
-  .navbar-nav { align-items: flex-end; }
+    /**
+     * Je réduis la taille du logo à 44px pour gagner de la place.
+     */
+    .mt-navbar .navbar-brand img {
+        height: 44px;
+        width: auto;
+    }
+
+    /**
+     * Je compacte les liens de navigation avec une police plus petite.
+     */
+    .mt-navbar .nav-link {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.35rem;
+    }
+
+    /**
+     * Je réduis l'espacement entre les groupes de liens.
+     */
+    .mt-navbar .navbar-nav {
+        gap: 0 !important;
+    }
+
+    /**
+     * J'ai réduit la taille des boutons d'authentification.
+     */
+    .mt-navbar .btn-sm {
+        padding: 0.15rem 0.35rem;
+        font-size: 0.7rem;
+    }
+
+    /**
+     * Je supprime la marge à gauche des boutons.
+     */
+    .mt-navbar .ms-lg-2 {
+        margin-left: 0.25rem !important;
+    }
 }
+
+/**
+ * Tablettes plus petites (576px - 767px)
+ * J'applique des réductions supplémentaires pour les écrans étroits.
+ */
+@media (min-width: 576px) and (max-width: 767.98px) {
+    /**
+     * Je réduis encore le logo sur les petites tablettes.
+     */
+    .mt-navbar .navbar-brand img {
+        height: 36px;
+    }
+
+    /**
+     * Je réduis encore la taille des liens.
+     */
+    .mt-navbar .nav-link {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.25rem;
+    }
+
+    /**
+     * Je réduis encore les boutons.
+     */
+    .mt-navbar .btn-sm {
+        padding: 0.12rem 0.3rem;
+        font-size: 0.65rem;
+    }
+}
+
 
 /*
  * Sidebar admin sur tablette

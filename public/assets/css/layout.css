@@ -6,6 +6,7 @@
 .mt-navbar {
   background-color: var(--mt-primary);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  position: relative;
 }
 
 .mt-navbar .navbar-brand,
