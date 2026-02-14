@@ -342,4 +342,94 @@ final class LibraryManager
 
         return true;
     }
+
+    /**
+     * Je verifie si un livre est deja dans une collection de l'utilisateur (hors wishlist).
+     */
+    public function isBookInUserCollections(User $user, string $googleBooksId): bool
+    {
+        $repo = $this->em->getRepository(CollectionBook::class);
+
+        $result = $repo->createQueryBuilder('cb')
+            ->select('COUNT(cb.id)')
+            ->join('cb.collection', 'c')
+            ->join('cb.book', 'b')
+            ->where('c.user = :user')
+            ->andWhere('b.googleBooksId = :googleBooksId')
+            ->andWhere('c.name != :wishlistName')
+            ->setParameter('user', $user)
+            ->setParameter('googleBooksId', $googleBooksId)
+            ->setParameter('wishlistName', self::WISHLIST_COLLECTION_NAME)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return (int) $result > 0;
+    }
+
+    /**
+     * Je verifie si un film est deja dans une collection de l'utilisateur (hors wishlist).
+     */
+    public function isMovieInUserCollections(User $user, int $tmdbId): bool
+    {
+        $repo = $this->em->getRepository(CollectionMovie::class);
+
+        $result = $repo->createQueryBuilder('cm')
+            ->select('COUNT(cm.id)')
+            ->join('cm.collection', 'c')
+            ->join('cm.movie', 'm')
+            ->where('c.user = :user')
+            ->andWhere('m.tmdbId = :tmdbId')
+            ->andWhere('c.name != :wishlistName')
+            ->setParameter('user', $user)
+            ->setParameter('tmdbId', $tmdbId)
+            ->setParameter('wishlistName', self::WISHLIST_COLLECTION_NAME)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return (int) $result > 0;
+    }
+
+    /**
+     * Je verifie si un livre est dans la liste d'envie de l'utilisateur.
+     */
+    public function isBookInWishlist(User $user, string $googleBooksId): bool
+    {
+        $wishlist = $this->getWishlistCollection($user);
+
+        $repo = $this->em->getRepository(CollectionBook::class);
+
+        $result = $repo->createQueryBuilder('cb')
+            ->select('COUNT(cb.id)')
+            ->join('cb.book', 'b')
+            ->where('cb.collection = :collection')
+            ->andWhere('b.googleBooksId = :googleBooksId')
+            ->setParameter('collection', $wishlist)
+            ->setParameter('googleBooksId', $googleBooksId)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return (int) $result > 0;
+    }
+
+    /**
+     * Je verifie si un film est dans la liste d'envie de l'utilisateur.
+     */
+    public function isMovieInWishlist(User $user, int $tmdbId): bool
+    {
+        $wishlist = $this->getWishlistCollection($user);
+
+        $repo = $this->em->getRepository(CollectionMovie::class);
+
+        $result = $repo->createQueryBuilder('cm')
+            ->select('COUNT(cm.id)')
+            ->join('cm.movie', 'm')
+            ->where('cm.collection = :collection')
+            ->andWhere('m.tmdbId = :tmdbId')
+            ->setParameter('collection', $wishlist)
+            ->setParameter('tmdbId', $tmdbId)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return (int) $result > 0;
+    }
 }
