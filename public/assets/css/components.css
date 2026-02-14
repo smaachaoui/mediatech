@@ -311,3 +311,183 @@
 .card {
   margin-bottom: 1rem;
 }
+
+/* ========================================
+   GRILLE DE COUVERTURES - Collections
+   ======================================== */
+
+/**
+ * Base de la grille de couvertures.
+ * J'adapte la disposition selon le nombre de medias avec des classes specifiques.
+ */
+.collection-covers-grid {
+  aspect-ratio: 1;
+  overflow: hidden;
+}
+
+.collection-cover-item {
+  overflow: hidden;
+}
+
+.collection-cover-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/**
+ * 1 media : image pleine largeur
+ */
+.collection-covers-1 {
+  display: block;
+}
+
+.collection-covers-1 .collection-cover-item {
+  width: 100%;
+  height: 100%;
+}
+
+/**
+ * 2 medias : 2 colonnes cote a cote
+ */
+.collection-covers-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2px;
+}
+
+.collection-covers-2 .collection-cover-item {
+  height: 100%;
+}
+
+/**
+ * 3 medias : 1 grande a gauche + 2 petites a droite
+ */
+.collection-covers-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 2px;
+}
+
+.collection-covers-3 .collection-cover-item:first-child {
+  grid-row: 1 / 3;
+}
+
+/**
+ * 4 medias : grille 2x2 classique
+ */
+.collection-covers-4 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 2px;
+}
+
+/**
+ * Collection vide : message centre
+ */
+.collection-covers-0 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.collection-cover-empty-full {
+  width: 100%;
+  height: 100%;
+  background-color: var(--mt-surface-2);
+}
+
+/* ========================================
+   GRILLE DE COUVERTURES - Mode Liste
+   ======================================== */
+
+/**
+ * Mini-grille pour le mode liste.
+ * J'adapte la disposition selon le nombre de medias.
+ */
+.collection-list-covers {
+  width: 120px;
+  height: 120px;
+  overflow: hidden;
+  background-color: var(--mt-surface-2);
+}
+
+.collection-list-cover-item {
+  overflow: hidden;
+}
+
+.collection-list-cover-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/**
+ * 0 media : placeholder
+ */
+.collection-list-covers-0 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.collection-list-cover-empty {
+  width: 100%;
+  height: 100%;
+}
+
+.collection-list-cover-empty i {
+  font-size: 2rem;
+  opacity: 0.4;
+}
+
+/**
+ * 1 media : image pleine
+ */
+.collection-list-covers-1 {
+  display: block;
+}
+
+.collection-list-covers-1 .collection-list-cover-item {
+  width: 100%;
+  height: 100%;
+}
+
+/**
+ * 2 medias : 2 colonnes
+ */
+.collection-list-covers-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+}
+
+.collection-list-covers-2 .collection-list-cover-item {
+  height: 120px;
+}
+
+/**
+ * 3 medias : 1 grande + 2 petites
+ */
+.collection-list-covers-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 1px;
+}
+
+.collection-list-covers-3 .collection-list-cover-item:first-child {
+  grid-row: 1 / 3;
+}
+
+/**
+ * 4 medias : grille 2x2
+ */
+.collection-list-covers-4 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 1px;
+}

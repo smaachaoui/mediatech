@@ -186,25 +186,12 @@ final class ProfileCollectionController extends AbstractController
         $description = $request->request->get('description');
         $genre = $request->request->get('genre');
 
-        /*
-         * Je récupère la valeur postée pour la couverture.
-         * "__keep__" => je ne change rien
-         * "__none__" => je supprime la couverture
-         * URL => je tente d'appliquer uniquement si elle appartient à un média de la collection (contrôle côté service).
-         */
-        $coverImage = $request->request->get('coverImage');
-        $coverImage = is_string($coverImage) ? trim($coverImage) : null;
-
-        if ($coverImage === '__keep__' || $coverImage === '') {
-            $coverImage = null;
-        }
-
         $this->profileService->updateUserCollection(
             $user,
             $id,
             $name,
             is_string($genre) ? $genre : null,
-            $coverImage,
+            null,
             is_string($description) ? $description : null
         );
 
