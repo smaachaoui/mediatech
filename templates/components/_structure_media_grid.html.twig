@@ -56,40 +56,57 @@
     </div>
 
     <div class="mt-auto">
-      <div class="d-grid gap-2">
+      <div class="d-flex justify-content-center gap-2">
 
         {% if app.user %}
-          <form method="post" action="{{ addPath }}">
-            <input type="hidden" name="_token" value="{{ csrf_token(tokenId) }}">
-            <input type="hidden" name="redirectTo" value="{{ app.request.uri }}">
-            <button type="submit" class="btn btn-primary btn-sm w-100">
-              Ajouter
-            </button>
-          </form>
+          {% set inCollection = is_in_collection(kind, id) %}
+          {% set inWishlist = is_in_wishlist(kind, id) %}
 
-          <form method="post" action="{{ wishlistPath }}">
-            <input type="hidden" name="_token" value="{{ csrf_token(wishlistTokenId) }}">
-            <input type="hidden" name="redirectTo" value="{{ app.request.uri }}">
-            <button type="submit" class="btn btn-outline-primary btn-sm w-100">
-              Envies
-            </button>
-          </form>
+          {# Bouton collection #}
+          {% if inCollection %}
+            <span class="btn btn-success btn-sm" title="Deja dans votre collection">
+              <i class="bi bi-check-lg"></i>
+            </span>
+          {% else %}
+            <form method="post" action="{{ addPath }}">
+              <input type="hidden" name="_token" value="{{ csrf_token(tokenId) }}">
+              <input type="hidden" name="redirectTo" value="{{ app.request.uri }}">
+              <button type="submit" class="btn btn-primary btn-sm" title="Ajouter a ma collection">
+                <i class="bi bi-plus-lg"></i>
+              </button>
+            </form>
+          {% endif %}
+
+          {# Bouton wishlist #}
+          {% if inWishlist %}
+            <span class="btn btn-success btn-sm" title="Deja dans votre liste d'envies">
+              <i class="bi bi-heart-fill"></i>
+            </span>
+          {% else %}
+            <form method="post" action="{{ wishlistPath }}">
+              <input type="hidden" name="_token" value="{{ csrf_token(wishlistTokenId) }}">
+              <input type="hidden" name="redirectTo" value="{{ app.request.uri }}">
+              <button type="submit" class="btn btn-outline-primary btn-sm" title="Ajouter a ma liste d'envies">
+                <i class="bi bi-heart"></i>
+              </button>
+            </form>
+          {% endif %}
         {% else %}
           <a href="{{ path('app_login') }}"
-             class="btn btn-primary btn-sm w-100"
-             title="Vous devez etre connecte pour ajouter ce media a votre collection">
-            Ajouter
+             class="btn btn-primary btn-sm"
+             title="Connectez-vous pour ajouter a votre collection">
+            <i class="bi bi-plus-lg"></i>
           </a>
 
           <a href="{{ path('app_login') }}"
-             class="btn btn-outline-primary btn-sm w-100"
-             title="Vous devez etre connecte pour ajouter ce media a votre liste d'envie">
-            Envies
+             class="btn btn-outline-primary btn-sm"
+             title="Connectez-vous pour ajouter a votre liste d'envies">
+            <i class="bi bi-heart"></i>
           </a>
         {% endif %}
 
-        <a href="{{ showPath }}" class="btn btn-outline-primary btn-sm w-100">
-          Details
+        <a href="{{ showPath }}" class="btn btn-outline-primary btn-sm" title="Voir les details">
+          <i class="bi bi-eye"></i>
         </a>
 
       </div>
