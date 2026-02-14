@@ -39,7 +39,7 @@ final class LibraryManager
     }
 
     /**
-     * @return self::ADD_RESULT_*
+     * @return string One of: self::ADD_RESULT_ADDED, self::ADD_RESULT_ALREADY, self::ADD_RESULT_MOVED
      */
     public function addToDefaultCollection(User $user, string $kind, string $externalId): string
     {
@@ -47,7 +47,7 @@ final class LibraryManager
     }
 
     /**
-     * @return self::ADD_RESULT_*
+     * @return string One of: self::ADD_RESULT_ADDED, self::ADD_RESULT_ALREADY, self::ADD_RESULT_MOVED
      */
     public function addToWishlistCollection(User $user, string $kind, string $externalId): string
     {
@@ -62,7 +62,7 @@ final class LibraryManager
      * - Un media ne peut pas être à la fois dans "Non répertorié" et dans "Liste d'envie".
      *   Si j'ajoute un media à l'une, je le retire automatiquement de l'autre.
      *
-     * @return self::ADD_RESULT_*
+     * @return string One of: self::ADD_RESULT_ADDED, self::ADD_RESULT_ALREADY, self::ADD_RESULT_MOVED
      */
     private function addToSystemCollection(User $user, string $kind, string $externalId, string $systemCollectionName): string
     {
