@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service;
 
 use Psr\Cache\CacheItemPoolInterface;
@@ -7,7 +9,8 @@ use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
- * Je gere les appels a l'API Google Books avec mise en cache.
+ * Je gère les appels à l'API Google Books avec mise en cache.
+ * J'ai normalisé les données retournées afin de fournir un format stable au reste de l'application.
  */
 final class GoogleBooksService
 {
@@ -15,13 +18,14 @@ final class GoogleBooksService
 
     private const TTL_SEARCH = 1800;
     private const TTL_NEWEST = 21600;
-    private const TTL_BY_ID  = 86400;
+    private const TTL_BY_ID = 86400;
 
     public function __construct(
         private readonly HttpClientInterface $http,
         private readonly string $googleBooksApiKey,
         private readonly CacheItemPoolInterface $cache,
-    ) {}
+    ) {
+    }
 
     /**
      * Je recherche des livres via Google Books avec pagination.
@@ -42,8 +46,10 @@ final class GoogleBooksService
         $cacheKey = 'gbooks.search.v2.' . md5($query . '|' . $limit . '|' . $page);
 
         $item = $this->cache->getItem($cacheKey);
+
         if ($item->isHit()) {
             $cached = $item->get();
+
             return is_array($cached) ? $cached : ['items' => [], 'total' => 0];
         }
 
@@ -59,6 +65,7 @@ final class GoogleBooksService
         }
 
         $isEmpty = empty($result['items']);
+
         $item->set($result);
         $item->expiresAfter($isEmpty ? 120 : self::TTL_SEARCH);
         $this->cache->save($item);
@@ -67,7 +74,7 @@ final class GoogleBooksService
     }
 
     /**
-     * Je recupere les livres les plus recents avec pagination.
+     * Je récupère les livres les plus récents avec pagination.
      *
      * @return array{items: array<int, array<string, mixed>>, total: int}
      */
@@ -81,8 +88,10 @@ final class GoogleBooksService
         $cacheKey = 'gbooks.newest.v2.' . md5($subject . '|' . $limit . '|' . $page);
 
         $item = $this->cache->getItem($cacheKey);
+
         if ($item->isHit()) {
             $cached = $item->get();
+
             return is_array($cached) ? $cached : ['items' => [], 'total' => 0];
         }
 
@@ -113,14 +122,15 @@ final class GoogleBooksService
             ]);
 
             $isEmpty = empty($fallback['items']);
+
             $item->set($fallback);
             $item->expiresAfter($isEmpty ? 300 : self::TTL_NEWEST);
             $this->cache->save($item);
 
-
             return $fallback;
         } catch (TransportExceptionInterface|\RuntimeException) {
             $result = ['items' => [], 'total' => 0];
+
             $item->set($result);
             $item->expiresAfter(300);
             $this->cache->save($item);
@@ -130,14 +140,17 @@ final class GoogleBooksService
     }
 
     /**
-     * Je recherche des livres par sujet/genre avec normalisation intelligente.
-     * Google Books utilise des "subjects" varies, cette methode essaie plusieurs variantes
-     * pour maximiser les resultats.
+     * Je recherche des livres par sujet, en essayant plusieurs variantes pour maximiser les résultats.
+     * J'utilise cette méthode quand un filtre par genre est activé côté interface.
      *
      * @return array{items: array<int, array<string, mixed>>, total: int}
      */
-    public function searchBySubject(string $subject, int $limit = 12, int $page = 1, bool $newestFirst = false): array
-    {
+    public function searchBySubject(
+        string $subject,
+        int $limit = 12,
+        int $page = 1,
+        bool $newestFirst = false
+    ): array {
         $subject = trim($subject);
         $limit = max(1, min($limit, 40));
         $page = max(1, $page);
@@ -147,21 +160,23 @@ final class GoogleBooksService
             return $this->newest('fiction', $limit, $page);
         }
 
-        // Je cree des variantes du genre pour maximiser les correspondances
         $variants = $this->createSubjectVariants($subject);
 
-        $cacheKey = 'gbooks.subject.v3.' . md5(implode('|', $variants) . '|' . $limit . '|' . $page . '|' . ($newestFirst ? '1' : '0'));
+        $cacheKey = 'gbooks.subject.v3.' . md5(
+            implode('|', $variants) . '|' . $limit . '|' . $page . '|' . ($newestFirst ? '1' : '0')
+        );
 
         $item = $this->cache->getItem($cacheKey);
+
         if ($item->isHit()) {
             $cached = $item->get();
+
             return is_array($cached) ? $cached : ['items' => [], 'total' => 0];
         }
 
         try {
-            // J'essaie d'abord avec la variante principale
             $mainVariant = $variants[0];
-            
+
             $queryParams = [
                 'q' => sprintf('subject:%s', $mainVariant),
                 'printType' => 'books',
@@ -176,7 +191,6 @@ final class GoogleBooksService
 
             $result = $this->fetchListWithTotal($queryParams);
 
-            // Si j'ai assez de resultats, je retourne directement
             if (count($result['items']) >= $limit || count($variants) === 1) {
                 $item->set($result);
                 $item->expiresAfter(self::TTL_SEARCH);
@@ -185,7 +199,6 @@ final class GoogleBooksService
                 return $result;
             }
 
-            // Sinon, j'essaie avec les autres variantes pour completer
             $allItems = $result['items'];
             $seenIds = array_column($allItems, 'id');
 
@@ -200,11 +213,17 @@ final class GoogleBooksService
 
                 $additional = $this->fetchListWithTotal($queryParams);
 
-                // J'ajoute les nouveaux items en evitant les doublons
                 foreach ($additional['items'] as $book) {
-                    if (!in_array($book['id'], $seenIds, true)) {
+                    $bookId = $book['id'] ?? null;
+
+                    if (!is_string($bookId) || $bookId === '') {
+                        continue;
+                    }
+
+                    if (!in_array($bookId, $seenIds, true)) {
                         $allItems[] = $book;
-                        $seenIds[] = $book['id'];
+                        $seenIds[] = $bookId;
+
                         if (count($allItems) >= $limit) {
                             break;
                         }
@@ -224,6 +243,7 @@ final class GoogleBooksService
             return $finalResult;
         } catch (TransportExceptionInterface|\RuntimeException) {
             $result = ['items' => [], 'total' => 0];
+
             $item->set($result);
             $item->expiresAfter(300);
             $this->cache->save($item);
@@ -233,27 +253,23 @@ final class GoogleBooksService
     }
 
     /**
-     * Je cree des variantes d'un sujet pour ameliorer les correspondances.
-     * Google Books utilise des subjects varies, j'essaie plusieurs formulations.
+     * Je crée des variantes d'un sujet pour améliorer les correspondances.
+     * J'ai ajouté quelques mappings simples afin d'aider pour les genres courants.
      *
      * @return array<int, string>
      */
     private function createSubjectVariants(string $subject): array
     {
-        $variants = [];
+        $variants = [$subject];
 
-        // Variante 1 : Le sujet tel quel
-        $variants[] = $subject;
-
-        // Variante 2 : Sans tirets ni underscores
         $normalized = str_replace(['-', '_'], ' ', $subject);
         $normalized = preg_replace('/\s+/', ' ', $normalized);
-        $normalized = trim($normalized);
-        if ($normalized !== $subject && $normalized !== '') {
+        $normalized = trim((string) $normalized);
+
+        if ($normalized !== '' && $normalized !== $subject) {
             $variants[] = $normalized;
         }
 
-        // Variante 3 : Mappings specifiques pour les genres courants
         $mappings = [
             'science-fiction' => 'science fiction',
             'science fiction' => 'fiction / science fiction',
@@ -272,25 +288,24 @@ final class GoogleBooksService
         ];
 
         $lowerSubject = strtolower($subject);
+
         if (isset($mappings[$lowerSubject])) {
-            $mapped = $mappings[$lowerSubject];
-            if (!in_array($mapped, $variants, true)) {
-                $variants[] = $mapped;
-            }
+            $variants[] = $mappings[$lowerSubject];
         }
 
-        // Je retourne les variantes uniques
         return array_values(array_unique($variants));
     }
 
     /**
-     * Je recupere les details d'un livre via son ID Google Books.
+     * Je récupère les détails d'un livre via son ID Google Books.
+     * J'ai mis en cache le résultat afin d'éviter de solliciter l'API pour chaque affichage de fiche.
      *
      * @return array<string, mixed>
      */
     public function getById(string $googleBooksId): array
     {
         $googleBooksId = trim($googleBooksId);
+
         if ($googleBooksId === '') {
             throw new \InvalidArgumentException('Google Books ID invalide.');
         }
@@ -298,8 +313,10 @@ final class GoogleBooksService
         $cacheKey = 'gbooks.by_id.v2.' . md5($googleBooksId);
 
         $item = $this->cache->getItem($cacheKey);
+
         if ($item->isHit()) {
             $cached = $item->get();
+
             return is_array($cached) ? $cached : [];
         }
 
@@ -322,7 +339,6 @@ final class GoogleBooksService
             }
 
             $info = is_array($row['volumeInfo'] ?? null) ? $row['volumeInfo'] : [];
-
             $mapped = $this->mapItem($row, $info, $googleBooksId);
 
             $item->set($mapped);
@@ -340,9 +356,10 @@ final class GoogleBooksService
     }
 
     /**
-     * Je recupere une liste avec le total pour la pagination.
+     * Je récupère une liste avec son total pour la pagination.
      *
      * @param array<string, mixed> $query
+     *
      * @return array{items: array<int, array<string, mixed>>, total: int}
      */
     private function fetchListWithTotal(array $query): array
@@ -365,6 +382,7 @@ final class GoogleBooksService
         $total = isset($data['totalItems']) ? (int) $data['totalItems'] : 0;
 
         $items = $data['items'] ?? [];
+
         if (!is_array($items)) {
             return ['items' => [], 'total' => $total];
         }
@@ -375,10 +393,13 @@ final class GoogleBooksService
             if (!is_array($row)) {
                 continue;
             }
+
             $info = $row['volumeInfo'] ?? [];
+
             if (!is_array($info)) {
                 $info = [];
             }
+
             $mapped[] = $this->mapItem($row, $info);
         }
 
@@ -390,14 +411,15 @@ final class GoogleBooksService
      *
      * @param array<string, mixed> $row
      * @param array<string, mixed> $info
+     *
      * @return array<string, mixed>
      */
-
     private function mapItem(array $row, array $info, ?string $fallbackId = null): array
     {
         $id = (string) ($row['id'] ?? $fallbackId ?? '');
 
         $thumbnail = null;
+
         if (isset($info['imageLinks']) && is_array($info['imageLinks'])) {
             $thumb = $info['imageLinks']['thumbnail'] ?? null;
             $small = $info['imageLinks']['smallThumbnail'] ?? null;
@@ -414,11 +436,13 @@ final class GoogleBooksService
         }
 
         $authors = $info['authors'] ?? [];
+
         if (!is_array($authors)) {
             $authors = [];
         }
 
         $categories = $info['categories'] ?? [];
+
         if (!is_array($categories)) {
             $categories = [];
         }
@@ -440,20 +464,17 @@ final class GoogleBooksService
     private function normalizeBookCoverUrl(string $googleBooksId, string $url): ?string
     {
         $url = trim($url);
+
         if ($url === '') {
             return null;
         }
 
         $url = str_replace('http://', 'https://', $url);
 
-        // Si c’est déjà une URL Google Books "content", je la remplace par une version stable.
-        if (str_contains($url, 'books.google.') && str_contains($url, '/books/content')) {
-            if ($googleBooksId !== '') {
-                return $this->buildStableGoogleBooksCoverUrl($googleBooksId);
-            }
+        if ($googleBooksId !== '' && str_contains($url, 'books.google.') && str_contains($url, '/books/content')) {
+            return $this->buildStableGoogleBooksCoverUrl($googleBooksId);
         }
 
-        // Si c’est une URL tokenisée (imgtk), je préfère aussi une URL stable.
         if ($googleBooksId !== '' && str_contains($url, 'imgtk=')) {
             return $this->buildStableGoogleBooksCoverUrl($googleBooksId);
         }
@@ -469,11 +490,6 @@ final class GoogleBooksService
         );
     }
 
-
-
-    /**
-     * @param mixed $ids
-     */
     private static function extractIsbn(mixed $ids): ?string
     {
         if (!is_array($ids)) {
@@ -484,8 +500,10 @@ final class GoogleBooksService
             if (!is_array($id)) {
                 continue;
             }
+
             if (($id['type'] ?? '') === 'ISBN_13') {
                 $val = $id['identifier'] ?? null;
+
                 return is_string($val) ? $val : null;
             }
         }
@@ -494,8 +512,10 @@ final class GoogleBooksService
             if (!is_array($id)) {
                 continue;
             }
+
             if (($id['type'] ?? '') === 'ISBN_10') {
                 $val = $id['identifier'] ?? null;
+
                 return is_string($val) ? $val : null;
             }
         }

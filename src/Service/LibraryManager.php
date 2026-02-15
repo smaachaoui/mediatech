@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service;
 
 use App\Entity\Book;
@@ -8,15 +10,20 @@ use App\Entity\CollectionBook;
 use App\Entity\CollectionMovie;
 use App\Entity\Movie;
 use App\Entity\User;
-use App\Service\GoogleBooksService;
-use App\Service\TmdbService;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 
+/**
+ * Je centralise la logique métier liée à la bibliothèque de l'utilisateur.
+ * J'ai regroupé ici la gestion des collections système et la création des médias à partir des API externes.
+ */
 final class LibraryManager
 {
     private const DEFAULT_COLLECTION_NAME = 'Non répertorié';
     private const WISHLIST_COLLECTION_NAME = 'Liste d\'envie';
+
+    private const KIND_BOOK = 'book';
+    private const KIND_MOVIE = 'movie';
 
     public const ADD_RESULT_ADDED = 'added';
     public const ADD_RESULT_ALREADY = 'already';
@@ -26,7 +33,8 @@ final class LibraryManager
         private readonly EntityManagerInterface $em,
         private readonly GoogleBooksService $googleBooks,
         private readonly TmdbService $tmdb,
-    ) {}
+    ) {
+    }
 
     public function getDefaultCollection(User $user): Collection
     {
@@ -39,7 +47,9 @@ final class LibraryManager
     }
 
     /**
-     * @return string One of: self::ADD_RESULT_ADDED, self::ADD_RESULT_ALREADY, self::ADD_RESULT_MOVED
+     * J'ajoute un média à la collection système "Non répertorié".
+     *
+     * @return string Une valeur parmi self::ADD_RESULT_ADDED, self::ADD_RESULT_ALREADY, self::ADD_RESULT_MOVED
      */
     public function addToDefaultCollection(User $user, string $kind, string $externalId): string
     {
@@ -47,7 +57,9 @@ final class LibraryManager
     }
 
     /**
-     * @return string One of: self::ADD_RESULT_ADDED, self::ADD_RESULT_ALREADY, self::ADD_RESULT_MOVED
+     * J'ajoute un média à la collection système "Liste d'envie".
+     *
+     * @return string Une valeur parmi self::ADD_RESULT_ADDED, self::ADD_RESULT_ALREADY, self::ADD_RESULT_MOVED
      */
     public function addToWishlistCollection(User $user, string $kind, string $externalId): string
     {
@@ -55,23 +67,23 @@ final class LibraryManager
     }
 
     /**
-     * Je centralise l'ajout d'un média dans une collection système ("Non répertorié" ou "Liste d'envie").
+     * Je centralise l'ajout d'un média dans une collection système.
+     * J'empêche l'ajout en double dans une même collection.
+     * J'applique aussi la règle d'exclusivité entre "Non répertorié" et "Liste d'envie".
      *
-     * Règles de robustesse :
-     * - Je ne peux pas ajouter deux fois le même media à une même collection.
-     * - Un media ne peut pas être à la fois dans "Non répertorié" et dans "Liste d'envie".
-     *   Si j'ajoute un media à l'une, je le retire automatiquement de l'autre.
+     * @param string $kind Je n'accepte que "book" ou "movie".
      *
-     * @return string One of: self::ADD_RESULT_ADDED, self::ADD_RESULT_ALREADY, self::ADD_RESULT_MOVED
+     * @return string Une valeur parmi self::ADD_RESULT_ADDED, self::ADD_RESULT_ALREADY, self::ADD_RESULT_MOVED
      */
     private function addToSystemCollection(User $user, string $kind, string $externalId, string $systemCollectionName): string
     {
         $kind = trim($kind);
         $externalId = trim($externalId);
 
-        if (!in_array($kind, ['book', 'movie'], true)) {
+        if (!in_array($kind, [self::KIND_BOOK, self::KIND_MOVIE], true)) {
             throw new \InvalidArgumentException('Unknown kind. Expected "book" or "movie".');
         }
+
         if ($externalId === '') {
             throw new \InvalidArgumentException('External id cannot be empty.');
         }
@@ -81,9 +93,10 @@ final class LibraryManager
         $otherName = $systemCollectionName === self::DEFAULT_COLLECTION_NAME
             ? self::WISHLIST_COLLECTION_NAME
             : self::DEFAULT_COLLECTION_NAME;
+
         $otherCollection = $this->getOrCreateSystemCollection($user, $otherName);
 
-        if ($kind === 'book') {
+        if ($kind === self::KIND_BOOK) {
             $book = $this->getOrCreateBookFromApi($externalId);
 
             return $this->em->wrapInTransaction(function () use ($collection, $otherCollection, $book): string {
@@ -116,6 +129,10 @@ final class LibraryManager
         });
     }
 
+    /**
+     * Je garantis l'existence d'une collection système pour un utilisateur.
+     * J'ai choisi de la créer à la volée pour éviter une dépendance aux fixtures.
+     */
     private function getOrCreateSystemCollection(User $user, string $name): Collection
     {
         $repo = $this->em->getRepository(Collection::class);
@@ -144,12 +161,13 @@ final class LibraryManager
         return $collection;
     }
 
-        private function getOrCreateBookFromApi(string $googleBooksId): Book
+    private function getOrCreateBookFromApi(string $googleBooksId): Book
     {
         $repo = $this->em->getRepository(Book::class);
 
         /** @var Book|null $book */
         $book = $repo->findOneBy(['googleBooksId' => $googleBooksId]);
+
         if ($book instanceof Book) {
             return $book;
         }
@@ -161,7 +179,8 @@ final class LibraryManager
         $book->setTitle((string) ($data['title'] ?? 'Sans titre'));
 
         $authors = $data['authors'] ?? [];
-        if (is_array($authors) && !empty($authors)) {
+
+        if (is_array($authors) && $authors !== []) {
             $book->setAuthor(implode(', ', array_map('strval', $authors)));
         }
 
@@ -171,20 +190,14 @@ final class LibraryManager
         $book->setSynopsis($data['description'] ?? null);
         $book->setPublicationDate($this->parseFlexibleDate($data['publishedDate'] ?? null));
 
-        
         $thumbnail = $data['thumbnail'] ?? null;
-        if (is_string($thumbnail) && $thumbnail !== '') {
-            $book->setCoverImage($thumbnail);
-        } else {
-            $book->setCoverImage(null);
-        }
+        $book->setCoverImage(is_string($thumbnail) && $thumbnail !== '' ? $thumbnail : null);
 
         $this->em->persist($book);
         $this->em->flush();
 
         return $book;
     }
-
 
     private function getOrCreateMovieFromApi(int $tmdbId): Movie
     {
@@ -196,6 +209,7 @@ final class LibraryManager
 
         /** @var Movie|null $movie */
         $movie = $repo->findOneBy(['tmdbId' => $tmdbId]);
+
         if ($movie instanceof Movie) {
             return $movie;
         }
@@ -207,6 +221,7 @@ final class LibraryManager
         }
 
         $apiId = (int) $data['id'];
+
         if ($apiId <= 0) {
             throw new \RuntimeException('Film introuvable (TMDB).');
         }
@@ -231,6 +246,7 @@ final class LibraryManager
         }
 
         $dt = \DateTimeImmutable::createFromFormat('Y-m-d', $value);
+
         return $dt ?: null;
     }
 
@@ -245,9 +261,11 @@ final class LibraryManager
         if (preg_match('/^\d{4}$/', $v)) {
             return \DateTimeImmutable::createFromFormat('Y-m-d', $v . '-01-01') ?: null;
         }
+
         if (preg_match('/^\d{4}-\d{2}$/', $v)) {
             return \DateTimeImmutable::createFromFormat('Y-m-d', $v . '-01') ?: null;
         }
+
         if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $v)) {
             return \DateTimeImmutable::createFromFormat('Y-m-d', $v) ?: null;
         }
@@ -256,7 +274,7 @@ final class LibraryManager
     }
 
     /**
-     * @return bool true si déjà présent, false si nouvel ajout
+     * @return bool true si déjà présent, false si je viens d'ajouter le lien
      */
     private function attachBook(Collection $collection, Book $book): bool
     {
@@ -267,17 +285,17 @@ final class LibraryManager
         try {
             $this->em->persist($link);
             $this->em->flush();
+
             return false;
         } catch (UniqueConstraintViolationException) {
             $this->em->detach($link);
+
             return true;
         }
     }
 
     /**
-     * Je retire un livre d'une collection donnée si le lien existe.
-     *
-     * @return bool true si je l'ai effectivement retiré, false sinon.
+     * @return bool true si j'ai effectivement retiré le lien, false si rien n'existait
      */
     private function detachBook(Collection $collection, Book $book): bool
     {
@@ -300,7 +318,7 @@ final class LibraryManager
     }
 
     /**
-     * @return bool true si déjà présent, false si nouvel ajout
+     * @return bool true si déjà présent, false si je viens d'ajouter le lien
      */
     private function attachMovie(Collection $collection, Movie $movie): bool
     {
@@ -311,17 +329,17 @@ final class LibraryManager
         try {
             $this->em->persist($link);
             $this->em->flush();
+
             return false;
         } catch (UniqueConstraintViolationException) {
             $this->em->detach($link);
+
             return true;
         }
     }
 
     /**
-     * Je retire un film d'une collection donnée si le lien existe.
-     *
-     * @return bool true si je l'ai effectivement retiré, false sinon.
+     * @return bool true si j'ai effectivement retiré le lien, false si rien n'existait
      */
     private function detachMovie(Collection $collection, Movie $movie): bool
     {
@@ -343,9 +361,6 @@ final class LibraryManager
         return true;
     }
 
-    /**
-     * Je verifie si un livre est deja dans une collection de l'utilisateur (hors wishlist).
-     */
     public function isBookInUserCollections(User $user, string $googleBooksId): bool
     {
         $repo = $this->em->getRepository(CollectionBook::class);
@@ -366,9 +381,6 @@ final class LibraryManager
         return (int) $result > 0;
     }
 
-    /**
-     * Je verifie si un film est deja dans une collection de l'utilisateur (hors wishlist).
-     */
     public function isMovieInUserCollections(User $user, int $tmdbId): bool
     {
         $repo = $this->em->getRepository(CollectionMovie::class);
@@ -389,13 +401,9 @@ final class LibraryManager
         return (int) $result > 0;
     }
 
-    /**
-     * Je verifie si un livre est dans la liste d'envie de l'utilisateur.
-     */
     public function isBookInWishlist(User $user, string $googleBooksId): bool
     {
         $wishlist = $this->getWishlistCollection($user);
-
         $repo = $this->em->getRepository(CollectionBook::class);
 
         $result = $repo->createQueryBuilder('cb')
@@ -411,13 +419,9 @@ final class LibraryManager
         return (int) $result > 0;
     }
 
-    /**
-     * Je verifie si un film est dans la liste d'envie de l'utilisateur.
-     */
     public function isMovieInWishlist(User $user, int $tmdbId): bool
     {
         $wishlist = $this->getWishlistCollection($user);
-
         $repo = $this->em->getRepository(CollectionMovie::class);
 
         $result = $repo->createQueryBuilder('cm')
