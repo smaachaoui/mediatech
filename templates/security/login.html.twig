@@ -1,95 +1,124 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Connexion{% endblock %}
+{# Je définis le titre spécifique à la page de connexion #}
+{% block title %}
+    Connexion
+{% endblock %}
 
 {% block body %}
+
+{# J'encapsule le formulaire dans un container Bootstrap centré #}
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-12 col-sm-10 col-md-8 col-lg-5">
+
             <div class="card shadow-sm">
                 <div class="card-body p-4 p-md-5">
 
-                    <h1 class="h3 mb-1 text-center">Se connecter</h1>
+                    {# J'affiche le titre et un court texte d'introduction #}
+                    <h1 class="h3 mb-1 text-center">
+                        Se connecter
+                    </h1>
+
                     <p class="text-muted text-center mb-4">
                         Accède à ton espace MediaTech.
                     </p>
 
-                    {# ==============================
-                       FLASH MESSAGES (succès, info…)
-                       ============================== #}
+                    {# Je parcours les messages flash pour informer l'utilisateur (succès, info, etc.) #}
                     {% for label, messages in app.flashes %}
                         {% for message in messages %}
                             <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
                                 {{ message }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+                                <button
+                                    type="button"
+                                    class="btn-close"
+                                    data-bs-dismiss="alert"
+                                    aria-label="Fermer">
+                                </button>
                             </div>
                         {% endfor %}
                     {% endfor %}
 
-                    {# ==============================
-                       ERREUR D'AUTHENTIFICATION
-                       ============================== #}
+                    {# Si l'authentification échoue, j'affiche un message générique #}
                     {% if error %}
                         <div class="alert alert-danger" role="alert">
                             Adresse email ou mot de passe incorrect.
                         </div>
                     {% endif %}
 
-                    {# ==============================
-                       UTILISATEUR DÉJÀ CONNECTÉ
-                       ============================== #}
+                    {# Si l'utilisateur est déjà connecté, je lui propose de se déconnecter #}
                     {% if app.user %}
                         <div class="alert alert-info" role="alert">
-                            Connecté en tant que <strong>{{ app.user.userIdentifier }}</strong>.
-                            <a class="alert-link" href="{{ path('app_logout') }}">Se déconnecter</a>
+                            Connecté en tant que
+                            <strong>{{ app.user.userIdentifier }}</strong>.
+                            <a class="alert-link" href="{{ path('app_logout') }}">
+                                Se déconnecter
+                            </a>
                         </div>
                     {% endif %}
 
+                    {# Je construis le formulaire de connexion sécurisé #}
                     <form method="post" novalidate>
 
+                        {# Je définis le champ email avec autocomplétion activée #}
                         <div class="mb-3">
-                            <label for="username" class="form-label">Email</label>
+                            <label for="username" class="form-label">
+                                Email
+                            </label>
+
                             <input
                                 type="email"
-                                value="{{ last_username }}"
                                 name="_username"
                                 id="username"
+                                value="{{ last_username }}"
                                 class="form-control"
                                 autocomplete="email"
+                                placeholder="exemple@mail.com"
                                 required
                                 autofocus
-                                placeholder="exemple@mail.com"
                             >
                         </div>
 
+                        {# Je définis le champ mot de passe #}
                         <div class="mb-3">
-                            <label for="password" class="form-label">Mot de passe</label>
+                            <label for="password" class="form-label">
+                                Mot de passe
+                            </label>
+
                             <input
                                 type="password"
                                 name="_password"
                                 id="password"
                                 class="form-control"
                                 autocomplete="current-password"
-                                required
                                 placeholder="••••••••"
+                                required
                             >
                         </div>
 
+                        {# J'intègre un token CSRF pour sécuriser la soumission du formulaire #}
                         <input
                             type="hidden"
                             name="_csrf_token"
                             value="{{ csrf_token('authenticate') }}"
                         >
 
+                        {# Je propose un bouton principal de connexion #}
                         <button class="btn btn-primary w-100" type="submit">
                             Se connecter
                         </button>
 
+                        {# Je propose un lien vers l'inscription pour les nouveaux utilisateurs #}
                         <div class="text-center mt-3">
-                            <span class="text-muted">Pas encore de compte ?</span>
-                            <a href="{{ path('app_register') }}">Créer un compte</a>
+                            <span class="text-muted">
+                                Pas encore de compte ?
+                            </span>
+                            <a href="{{ path('app_register') }}">
+                                Créer un compte
+                            </a>
                         </div>
 
+                        {# J'ajoute un lien pour la réinitialisation du mot de passe #}
                         <div class="text-center mt-2">
                             <a href="{{ path('app_forgot_password_request') }}">
                                 Mot de passe oublié ?
@@ -100,7 +129,9 @@
 
                 </div>
             </div>
+
         </div>
     </div>
 </div>
+
 {% endblock %}
