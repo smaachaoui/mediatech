@@ -60,7 +60,7 @@ export function initGenreSelector() {
   // Événement sur le changement de type de média
   mediaTypeSelect.addEventListener('change', updateGenreOptions);
 
-  console.log('✓ Module genre-selector initialisé');
+  console.log('Module genre-selector initialisé');
 }
 
 export default initGenreSelector;
